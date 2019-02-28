@@ -2,6 +2,7 @@ package ar.edu.itba.cep.evaluations_service.models;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Represents an exam.
@@ -12,17 +13,14 @@ public class Exam {
      * The exam's id.
      */
     private final long id;
-
     /**
      * A description for the exam (e.g mid-term exams, final exams, etc.).
      */
     private final String description;
-
     /**
      * {@link LocalDateTime} at which the exam starts.
      */
     private final LocalDateTime startingAt;
-
     /**
      * {@link Duration} of the exam.
      */
@@ -70,5 +68,37 @@ public class Exam {
      */
     public Duration getDuration() {
         return duration;
+    }
+
+
+    // ================================
+    // equals, hashcode and toString
+    // ================================
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Exam)) {
+            return false;
+        }
+        final var exam = (Exam) o;
+        return id == exam.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Exam: [" +
+                "ID: " + id + ", " +
+                "Description: '" + description + "', " +
+                "StartingAt: " + startingAt + ", " +
+                "Duration: " + duration +
+                "]";
     }
 }

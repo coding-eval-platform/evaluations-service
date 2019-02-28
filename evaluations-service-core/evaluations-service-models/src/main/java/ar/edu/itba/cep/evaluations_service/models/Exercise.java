@@ -1,5 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import java.util.Objects;
+
 /**
  * Represents an exercise.
  */
@@ -9,12 +11,10 @@ public class Exercise {
      * The exercise's id.
      */
     private final long id;
-
     /**
      * The question being asked.
      */
     private final String question;
-
     /**
      * The {@link Exam} to which this exercise belongs to.
      */
@@ -53,5 +53,36 @@ public class Exercise {
      */
     public Exam getBelongsTo() {
         return belongsTo;
+    }
+
+
+    // ================================
+    // equals, hashcode and toString
+    // ================================
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Exercise)) {
+            return false;
+        }
+        final var exercise = (Exercise) o;
+        return id == exercise.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Exercise [" +
+                "ID: " + id + ", " +
+                "Question: '" + question + "', " +
+                "BelongsTo: " + belongsTo +
+                "]";
     }
 }
