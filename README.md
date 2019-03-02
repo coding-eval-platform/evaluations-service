@@ -5,9 +5,10 @@ Service in charge of evaluations management
 
 ## Features
 
-- Create evaluations
+- Create exams
 - Create exercises
-- Create exercises answers
+- Create exercises' test cases
+- Create exercises' answers
 - ... TODO: complete
 
 
