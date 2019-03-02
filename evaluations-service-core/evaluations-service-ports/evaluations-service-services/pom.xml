@@ -25,5 +25,12 @@
             <artifactId>evaluations-service-models</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <!-- Third party libraries -->
+        <!-- Repository Utils to have access to Paging and Sorting stuff -->
+        <dependency>
+            <groupId>com.bellotapps.webapps</groupId>
+            <artifactId>webapps-commons-repository-utils</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
  * A repository for {@link Exam}s.
  */
 @Repository
-public class SpringDataExamRepository { // TODO: make it interface when spring data is added
+public class SpringDataExerciseRepository { // TODO: make it interface when spring data is added
 }

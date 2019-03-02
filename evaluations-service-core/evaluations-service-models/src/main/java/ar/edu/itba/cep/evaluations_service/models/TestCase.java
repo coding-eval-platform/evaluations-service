@@ -14,30 +14,37 @@ public class TestCase {
      */
     private final long id;
     /**
-     * The input of the test case.
+     * The inputs of the test case.
      */
-    private final List<String> input;
+    private final List<String> inputs;
     /**
      * The expected output.
      */
-    private final List<String> expectedOutput;
+    private final List<String> expectedOutputs;
     /**
      * Indicates whether the test case is public or private.
      */
     // TODO: maybe, when implementing the scoring system, subclasses would be better (only privates will grant score).
     private Visibility visibility;
 
+    /**
+     * The {@link Exercise} to which this test case belongs to.
+     */
+    private final Exercise belongsTo;
+
 
     /**
      * Constructor.
      *
      * @param visibility Indicates whether the test case is public or private.
+     * @param belongsTo  The {@link Exercise} to which this test case belongs to.
      */
-    public TestCase(final Visibility visibility) {
+    public TestCase(final Visibility visibility, final Exercise belongsTo) {
         this.id = 0;
-        this.input = new LinkedList<>();
-        this.expectedOutput = new LinkedList<>();
+        this.inputs = new LinkedList<>();
+        this.expectedOutputs = new LinkedList<>();
         this.visibility = visibility;
+        this.belongsTo = belongsTo;
     }
 
 
@@ -49,17 +56,17 @@ public class TestCase {
     }
 
     /**
-     * @return The input of the test case.
+     * @return The inputs of the test case.
      */
-    public List<String> getInput() {
-        return input;
+    public List<String> getInputs() {
+        return inputs;
     }
 
     /**
      * @return The expected output.
      */
-    public List<String> getExpectedOutput() {
-        return expectedOutput;
+    public List<String> getExpectedOutputs() {
+        return expectedOutputs;
     }
 
     /**
@@ -69,6 +76,12 @@ public class TestCase {
         return visibility;
     }
 
+    /**
+     * @return The {@link Exercise} to which this test case belongs to.
+     */
+    public Exercise belongsToExercise() {
+        return belongsTo;
+    }
 
     /**
      * Changes the visibility for this test case.
@@ -80,71 +93,37 @@ public class TestCase {
     }
 
     /**
-     * Adds the given {@code input} to the {@link List} of inputs of this test case.
+     * Replaces the inputs {@link List} for this test case.
      *
-     * @param input The input to be added.
+     * @param inputs The new {@link List} of inputs for this test case.
      */
-    public void addInput(final String input) {
-        this.input.add(input);
+    public void setInputs(final List<String> inputs) {
+        this.inputs.clear();
+        this.inputs.addAll(inputs);
     }
 
     /**
-     * Adds the given {@code inputs} {@link List} to the {@link List} of inputs of this test case.
+     * Replaces the outputs {@link List} for this test case.
      *
-     * @param inputs The {@link List} of inputs to be added.
+     * @param outputs The new {@link List} of outputs for this test case.
      */
-    public void addInputs(final List<String> inputs) {
-        this.input.addAll(inputs);
-    }
-
-    /**
-     * Removes the given {@code input} from the {@link List} of inputs of this test case.
-     *
-     * @param input The input to be removed.
-     */
-    public void removeInput(final String input) {
-        this.input.remove(input);
+    public void setExpectedInputs(final List<String> outputs) {
+        this.expectedOutputs.clear();
+        this.expectedOutputs.addAll(outputs);
     }
 
     /**
      * Removes all inputs.
      */
     public void removeAllInputs() {
-        this.input.clear();
-    }
-
-    /**
-     * Adds the given {@code output} to the {@link List} of expected outputs of this test case.
-     *
-     * @param output The output to be added.
-     */
-    public void addExpectedOutput(final String output) {
-        this.expectedOutput.add(output);
-    }
-
-    /**
-     * Adds the given {@code outputs} {@link List} to the {@link List} of expected outputs of this test case.
-     *
-     * @param outputs The {@link List} of outputs to be added.
-     */
-    public void addExpectedOutputs(final List<String> outputs) {
-        this.expectedOutput.addAll(outputs);
-    }
-
-    /**
-     * Removes the given {@code output} from the {@link List} of expected outputs of this test case.
-     *
-     * @param output The output to be removed.
-     */
-    public void removeOutput(final String output) {
-        this.expectedOutput.remove(output);
+        this.inputs.clear();
     }
 
     /**
      * Removes all outputs.
      */
-    public void removeAllOutputs() {
-        this.expectedOutput.clear();
+    public void removeAllExpectedOutputs() {
+        this.expectedOutputs.clear();
     }
 
 
@@ -173,8 +152,8 @@ public class TestCase {
     public String toString() {
         return "TestCase [" +
                 "ID: " + id + ", " +
-                "Input: " + input + ", " +
-                "ExpectedOutput: " + expectedOutput + ", " +
+                "Input: " + inputs + ", " +
+                "ExpectedOutput: " + expectedOutputs + ", " +
                 "Visibility: " + visibility +
                 ']';
     }

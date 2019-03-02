@@ -51,7 +51,7 @@ public class Exercise {
     /**
      * @return The {@link Exam} to which this exercise belongs to.
      */
-    public Exam getBelongsTo() {
+    public Exam belongsToExam() {
         return belongsTo;
     }
 
@@ -61,7 +61,7 @@ public class Exercise {
      *
      * @param question The new question for the exercise.
      */
-    void setQuestion(final String question) {
+    public void setQuestion(final String question) {
         this.question = question;
     }
 
