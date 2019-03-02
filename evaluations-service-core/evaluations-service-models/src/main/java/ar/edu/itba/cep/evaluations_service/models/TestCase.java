@@ -1,6 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,20 +25,18 @@ public class TestCase {
      * Indicates whether the test case is public or private.
      */
     // TODO: maybe, when implementing the scoring system, subclasses would be better (only privates will grant score).
-    private final Visibility visibility;
+    private Visibility visibility;
 
 
     /**
      * Constructor.
      *
-     * @param input          The input of the test case.
-     * @param expectedOutput The expected output.
-     * @param visibility     Indicates whether the test case is public or private.
+     * @param visibility Indicates whether the test case is public or private.
      */
-    public TestCase(final List<String> input, final List<String> expectedOutput, final Visibility visibility) {
+    public TestCase(final Visibility visibility) {
         this.id = 0;
-        this.input = Collections.unmodifiableList(input);
-        this.expectedOutput = Collections.unmodifiableList(expectedOutput);
+        this.input = new LinkedList<>();
+        this.expectedOutput = new LinkedList<>();
         this.visibility = visibility;
     }
 
@@ -70,6 +68,85 @@ public class TestCase {
     public Visibility getVisibility() {
         return visibility;
     }
+
+
+    /**
+     * Changes the visibility for this test case.
+     *
+     * @param visibility The new {@link Visibility} for this test case.
+     */
+    public void setVisibility(final Visibility visibility) {
+        this.visibility = visibility;
+    }
+
+    /**
+     * Adds the given {@code input} to the {@link List} of inputs of this test case.
+     *
+     * @param input The input to be added.
+     */
+    public void addInput(final String input) {
+        this.input.add(input);
+    }
+
+    /**
+     * Adds the given {@code inputs} {@link List} to the {@link List} of inputs of this test case.
+     *
+     * @param inputs The {@link List} of inputs to be added.
+     */
+    public void addInputs(final List<String> inputs) {
+        this.input.addAll(inputs);
+    }
+
+    /**
+     * Removes the given {@code input} from the {@link List} of inputs of this test case.
+     *
+     * @param input The input to be removed.
+     */
+    public void removeInput(final String input) {
+        this.input.remove(input);
+    }
+
+    /**
+     * Removes all inputs.
+     */
+    public void removeAllInputs() {
+        this.input.clear();
+    }
+
+    /**
+     * Adds the given {@code output} to the {@link List} of expected outputs of this test case.
+     *
+     * @param output The output to be added.
+     */
+    public void addExpectedOutput(final String output) {
+        this.expectedOutput.add(output);
+    }
+
+    /**
+     * Adds the given {@code outputs} {@link List} to the {@link List} of expected outputs of this test case.
+     *
+     * @param outputs The {@link List} of outputs to be added.
+     */
+    public void addExpectedOutputs(final List<String> outputs) {
+        this.expectedOutput.addAll(outputs);
+    }
+
+    /**
+     * Removes the given {@code output} from the {@link List} of expected outputs of this test case.
+     *
+     * @param output The output to be removed.
+     */
+    public void removeOutput(final String output) {
+        this.expectedOutput.remove(output);
+    }
+
+    /**
+     * Removes all outputs.
+     */
+    public void removeAllOutputs() {
+        this.expectedOutput.clear();
+    }
+
 
     // ================================
     // equals, hashcode and toString
@@ -111,7 +188,15 @@ public class TestCase {
      * An enum holding visibility values (i.e indicate whether the test case is public or private).
      */
     public enum Visibility {
+        /**
+         * Indicates that the test case is public
+         * (i.e can be seen by the student sitting for the exam).
+         */
         PUBLIC,
+        /**
+         * Indicates that the test case is private
+         * (i.e cannot be seen by the student sitting for the exam, and is used to actually evaluate this student).
+         */
         PRIVATE,
         ;
     }

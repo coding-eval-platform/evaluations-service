@@ -35,10 +35,10 @@ public class ExerciseSolutionResult {
      * @param result   Indicates whether the result is approved or failed.
      */
     public ExerciseSolutionResult(final ExerciseSolution solution, final TestCase testCase, final Result result) {
-        this.result = result;
         this.id = 0;
         this.solution = solution;
         this.testCase = testCase;
+        this.result = result;
     }
 
 
@@ -69,6 +69,7 @@ public class ExerciseSolutionResult {
     public Result getResult() {
         return result;
     }
+
 
     // ================================
     // equals, hashcode and toString
@@ -110,7 +111,13 @@ public class ExerciseSolutionResult {
      * An enum indicating whether the result is "approved" or "failed".
      */
     public enum Result {
+        /**
+         * Indicates that an exercise's solution is accepted when testing it with a given test case.
+         */
         APPROVED,
+        /**
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case.
+         */
         FAILED,
         ;
     }

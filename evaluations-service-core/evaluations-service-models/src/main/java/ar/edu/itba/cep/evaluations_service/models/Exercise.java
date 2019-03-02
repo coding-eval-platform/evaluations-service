@@ -14,7 +14,7 @@ public class Exercise {
     /**
      * The question being asked.
      */
-    private final String question;
+    private String question;
     /**
      * The {@link Exam} to which this exercise belongs to.
      */
@@ -53,6 +53,16 @@ public class Exercise {
      */
     public Exam getBelongsTo() {
         return belongsTo;
+    }
+
+
+    /**
+     * Changes the question for this exercise.
+     *
+     * @param question The new question for the exercise.
+     */
+    void setQuestion(final String question) {
+        this.question = question;
     }
 
 

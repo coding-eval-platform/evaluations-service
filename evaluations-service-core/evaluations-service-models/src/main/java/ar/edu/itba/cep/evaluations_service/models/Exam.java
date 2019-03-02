@@ -16,15 +16,15 @@ public class Exam {
     /**
      * A description for the exam (e.g mid-term exams, final exams, etc.).
      */
-    private final String description;
+    private String description;
     /**
      * {@link LocalDateTime} at which the exam starts.
      */
-    private final LocalDateTime startingAt;
+    private LocalDateTime startingAt;
     /**
      * {@link Duration} of the exam.
      */
-    private final Duration duration;
+    private Duration duration;
 
 
     /**
@@ -68,6 +68,47 @@ public class Exam {
      */
     public Duration getDuration() {
         return duration;
+    }
+
+
+    /**
+     * Changes the description for this exam.
+     *
+     * @param description The new description for the exam.
+     */
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
+    /**
+     * Changes the starting moment for this exam.
+     *
+     * @param startingAt The new {@link LocalDateTime} at which the exam starts.
+     */
+    public void setStartingAt(final LocalDateTime startingAt) {
+        this.startingAt = startingAt;
+    }
+
+    /**
+     * Changes the duration for this exam.
+     *
+     * @param duration The new {@link Duration} for the exam.
+     */
+    public void setDuration(final Duration duration) {
+        this.duration = duration;
+    }
+
+    /**
+     * Updates all fields of this exam.
+     *
+     * @param description The new description for the exam.
+     * @param startingAt  The new {@link LocalDateTime} at which the exam starts.
+     * @param duration    The new {@link Duration} for the exam.
+     */
+    public void update(final String description, final LocalDateTime startingAt, final Duration duration) {
+        this.description = description;
+        this.startingAt = startingAt;
+        this.duration = duration;
     }
 
 
