@@ -218,6 +218,15 @@ public interface ExamService {
      */
     void clearOutputs(final long testCaseId);
 
+    /**
+     * Deletes the {@link TestCase} with the given {@code testCaseId}.
+     *
+     * @param testCaseId The id of the {@link TestCase} to be deleted.
+     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
+     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     */
+    void deleteTestCase(final long testCaseId);
+
 
     // ================================================================================================================
     // Solutions

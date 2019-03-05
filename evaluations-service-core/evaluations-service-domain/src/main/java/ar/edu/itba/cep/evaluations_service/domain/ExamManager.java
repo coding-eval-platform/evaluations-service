@@ -265,6 +265,16 @@ public class ExamManager implements ExamService {
         testCaseRepository.save(testCase);
     }
 
+    @Override
+    public void deleteTestCase(final long testCaseId) {
+        testCaseRepository.findById(testCaseId)
+                .ifPresent(testCase -> {
+                    if (cannotBeModified(testCase.belongsToExercise().belongsToExam())) {
+                        throw new IllegalEntityStateException(EXAM_ALREADY_STARTED);
+                    }
+                    testCaseRepository.delete(testCase);
+                });
+    }
 
     // ================================================================================================================
     // Solutions
