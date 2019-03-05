@@ -152,8 +152,8 @@ public class TestCase {
     public String toString() {
         return "TestCase [" +
                 "ID: " + id + ", " +
-                "Input: " + inputs + ", " +
-                "ExpectedOutput: " + expectedOutputs + ", " +
+                "Inputs: " + inputs + ", " +
+                "ExpectedOutputs: " + expectedOutputs + ", " +
                 "Visibility: " + visibility +
                 ']';
     }
