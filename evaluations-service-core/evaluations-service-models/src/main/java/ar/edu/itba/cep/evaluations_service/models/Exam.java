@@ -1,6 +1,10 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
+import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
+
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -25,6 +29,18 @@ public class Exam {
      * {@link Duration} of the exam.
      */
     private Duration duration;
+    /**
+     * The exam's {@link State} (i.e pending, in progress or finished).
+     */
+    private State state;
+    /**
+     * The actual {@link Instant} at which the exam really started.
+     */
+    private Instant actualStartingMoment;
+    /**
+     * The actual {@link Duration} of the exam.
+     */
+    private Duration actualDuration;
 
 
     /**
@@ -39,6 +55,9 @@ public class Exam {
         this.description = description;
         this.startingAt = startingAt;
         this.duration = duration;
+        this.state = State.PENDING;
+        this.actualStartingMoment = null;
+        this.actualDuration = null;
     }
 
 
@@ -70,13 +89,35 @@ public class Exam {
         return duration;
     }
 
+    /**
+     * @return The exam's {@link State} (i.e pending, in progress or finished).
+     */
+    public State getState() {
+        return state;
+    }
+
+    /**
+     * @return The actual {@link Instant} at which the exam really started.
+     */
+    public Instant getActualStartingMoment() {
+        return actualStartingMoment;
+    }
+
+    /**
+     * @return The actual {@link Duration} of the exam.
+     */
+    public Duration getActualDuration() {
+        return actualDuration;
+    }
 
     /**
      * Changes the description for this exam.
      *
      * @param description The new description for the exam.
+     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in pending state.
      */
-    public void setDescription(final String description) {
+    public void setDescription(final String description) throws IllegalEntityStateException {
+        verifyStateForUpdate();
         this.description = description;
     }
 
@@ -84,8 +125,10 @@ public class Exam {
      * Changes the starting moment for this exam.
      *
      * @param startingAt The new {@link LocalDateTime} at which the exam starts.
+     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in pending state.
      */
-    public void setStartingAt(final LocalDateTime startingAt) {
+    public void setStartingAt(final LocalDateTime startingAt) throws IllegalEntityStateException {
+        verifyStateForUpdate();
         this.startingAt = startingAt;
     }
 
@@ -93,8 +136,10 @@ public class Exam {
      * Changes the duration for this exam.
      *
      * @param duration The new {@link Duration} for the exam.
+     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in pending state.
      */
-    public void setDuration(final Duration duration) {
+    public void setDuration(final Duration duration) throws IllegalEntityStateException {
+        verifyStateForUpdate();
         this.duration = duration;
     }
 
@@ -104,11 +149,40 @@ public class Exam {
      * @param description The new description for the exam.
      * @param startingAt  The new {@link LocalDateTime} at which the exam starts.
      * @param duration    The new {@link Duration} for the exam.
+     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in pending state.
      */
-    public void update(final String description, final LocalDateTime startingAt, final Duration duration) {
+    public void update(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws IllegalEntityStateException {
+        verifyStateForUpdate();
         this.description = description;
         this.startingAt = startingAt;
         this.duration = duration;
+    }
+
+    /**
+     * Starts the exam.
+     *
+     * @throws IllegalEntityStateException If the exam is not in {@link State#PENDING} state.
+     */
+    public void startExam() throws IllegalEntityStateException {
+        if (this.state != State.PENDING) {
+            throw new IllegalEntityStateException(PENDING_STATE_FOR_STARTING);
+        }
+        this.state = State.IN_PROGRESS;
+        this.actualStartingMoment = Instant.now();
+    }
+
+    /**
+     * Finishes the exam.
+     *
+     * @throws IllegalEntityStateException If the exam is not in {@link State#IN_PROGRESS} state.
+     */
+    public void finishExam() throws IllegalEntityStateException {
+        if (this.state != State.IN_PROGRESS) {
+            throw new IllegalEntityStateException(IN_PROGRESS_STATE_FOR_FINISHING);
+        }
+        this.state = State.FINISHED;
+        this.actualDuration = Duration.between(actualStartingMoment, Instant.now());
     }
 
 
@@ -142,4 +216,67 @@ public class Exam {
                 "Duration: " + duration +
                 "]";
     }
+
+
+    // ================================
+    // Helpers
+    // ================================
+
+    /**
+     * Checks whether the exam can be modified.
+     *
+     * @throws IllegalEntityStateException If the exam cannot be modified.
+     */
+    private void verifyStateForUpdate() throws IllegalEntityStateException {
+        if (state != State.PENDING) {
+            throw new IllegalEntityStateException(PENDING_STATE_FOR_MODIFICATIONS);
+        }
+    }
+
+
+    // ================================
+    // Exam states
+    // ================================
+
+    /**
+     * An enum containing the different states in which an exam can be.
+     */
+    public enum State {
+        /**
+         * Indicates that an exam has not started yet.
+         */
+        PENDING,
+        /**
+         * Indicates that the exam is being taken right now.
+         */
+        IN_PROGRESS,
+        /**
+         * Indicates that the exam has already finished.
+         */
+        FINISHED,
+        ;
+    }
+
+
+    // ================================
+    // Errors
+    // ================================
+
+    /**
+     * Indicates that an exam cannot be modified if its state is not "pending".
+     */
+    private static final IllegalEntityStateError PENDING_STATE_FOR_MODIFICATIONS =
+            new IllegalEntityStateError("The exam must be pending to be modified", "state");
+
+    /**
+     * Indicates that an exam cannot be started if its state is not "pending".
+     */
+    private static final IllegalEntityStateError PENDING_STATE_FOR_STARTING =
+            new IllegalEntityStateError("The exam must be pending to be started", "state");
+
+    /**
+     * Indicates that an exam cannot be finished if its state is not "in progress".
+     */
+    private static final IllegalEntityStateError IN_PROGRESS_STATE_FOR_FINISHING =
+            new IllegalEntityStateError("The exam must be in progress to be finished", "state");
 }

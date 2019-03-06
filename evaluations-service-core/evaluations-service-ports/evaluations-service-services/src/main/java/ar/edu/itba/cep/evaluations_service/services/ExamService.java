@@ -4,6 +4,7 @@ import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
 
@@ -54,22 +55,42 @@ public interface ExamService {
      * @param description The new {@link Exam}'s description.
      * @param startingAt  The new {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The new {@link Exam}'s {@link Duration}.
-     * @apiNote It cannot be executed once the {@link Exam} has started or finished.
-     * The {@code startingAt} value cannot be modified if there is only one hour before starting the {@link Exam}.
+     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#PENDING} state.
      */
     void modifyExam(final long examId, final String description,
-                    final LocalDateTime startingAt, final Duration duration);
+                    final LocalDateTime startingAt, final Duration duration)
+            throws IllegalEntityStateException;
+
+    /**
+     * Starts the {@link Exam} with the given {@code examId}.
+     *
+     * @param examId The id The id of the {@link Exam} to be started.
+     * @throws IllegalEntityStateException If the {@link Exam}'s state is not {@link Exam.State#PENDING}.
+     * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#PENDING} state.
+     */
+    void startExam(final long examId) throws IllegalEntityStateException;
+
+    /**
+     * Finishes the {@link Exam} with the given {@code examId}.
+     *
+     * @param examId The id The id of the {@link Exam} to be finished.
+     * @throws IllegalEntityStateException If the {@link Exam}'s state is not {@link Exam.State#FINISHED}.
+     * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#IN_PROGRESS} state.
+     */
+    void finishExam(final long examId) throws IllegalEntityStateException;
 
     /**
      * Deletes the {@link Exam} with the given {@code examId}.
      *
      * @param examId The id of the {@link Exam} to be deleted.
+     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#PENDING} state.
      * @apiNote This method cascades the delete operation
      * (i.e it deletes all {@link Exercise}s belonging to the {@link Exam},
      * together with {@link TestCase}s belonging to the said {@link Exercise}s.).
-     * Note that it cannot be executed once the {@link Exam} has started or finished.
+     * It cannot be executed if the {@link Exam} is not in {@link Exam.State#PENDING} state.
      */
-    void deleteExam(final long examId);
+    void deleteExam(final long examId) throws IllegalEntityStateException;
 
     /**
      * Lists all the {@link Exercise}s of a given {@code Exam}.
@@ -83,9 +104,10 @@ public interface ExamService {
      * Removes all {@link Exercise}s of the {@link Exam} with the given {@code examId}.
      *
      * @param examId The id of the {@link Exam} whose {@link Exercise}s are going to be removed.
-     * @apiNote It cannot be executed once the {@link Exam} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#PENDING} state.
      */
-    void clearExercises(final long examId);
+    void clearExercises(final long examId) throws IllegalEntityStateException;
 
 
     // ================================================================================================================
@@ -98,30 +120,35 @@ public interface ExamService {
      * @param examId   The id of the {@link Exam} to which an {@link Exercise} will be added.
      * @param question The question of the {@link Exercise}.
      * @return The created {@link Exercise}.
-     * @apiNote It cannot be executed once the {@link Exam} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#PENDING} state.
      */
-    Exercise createExercise(final long examId, final String question);
+    Exercise createExercise(final long examId, final String question) throws IllegalEntityStateException;
 
     /**
      * Changes the question to the {@link Exercise}'s with the given {@code exerciseId}.
      *
      * @param exerciseId The id of the {@link Exercise} whose question will be changed.
      * @param question   The new question.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise}
-     * with the given {@code exerciseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void changeExerciseQuestion(final long exerciseId, final String question);
+    void changeExerciseQuestion(final long exerciseId, final String question) throws IllegalEntityStateException;
 
     /**
      * Deletes the {@link Exercise} with the given {@code exerciseId}.
      *
      * @param exerciseId The id of the {@link Exercise} to be deleted.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     is not in {@link Exam.State#PENDING} state.
      * @apiNote This method cascades the delete operation
      * (i.e it deletes all {@link TestCase}s belonging to the {@link Exercise}).
-     * It cannot be executed once the {@link Exam} owning the {@link Exercise}
-     * with the given {@code exerciseId} has started or finished.
+     * It cannot be executed if the {@link Exam} owning the {@link Exercise}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void deleteExercise(final long exerciseId);
+    void deleteExercise(final long exerciseId) throws IllegalEntityStateException;
 
     /**
      * Returns the public {@link TestCase}s of the {@link Exercise} with the given {@code exerciseId}.
@@ -164,68 +191,90 @@ public interface ExamService {
      * @param inputs          The inputs of the {@link TestCase}.
      * @param expectedOutputs The expected outputs of the {@link TestCase}.
      * @return The created {@link TestCase}.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise}
-     * with the given {@code exerciseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
+     * is not in {@link Exam.State#PENDING} state.
      */
     TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility,
-                            final List<String> inputs, final List<String> expectedOutputs);
+                            final List<String> inputs, final List<String> expectedOutputs)
+            throws IllegalEntityStateException;
 
     /**
      * Changes the {@link TestCase.Visibility} to the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} whose {@code TestCase.Visibility} will be changed.
      * @param visibility The new {@link TestCase.Visibility} value.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
-     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     that owns the {@link TestCase}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void changeVisibility(final long testCaseId, final TestCase.Visibility visibility);
+    void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
+            throws IllegalEntityStateException;
 
     /**
      * Changes the inputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which inputs will be replaced.
      * @param inputs     The {@link List} of inputs for the {@link TestCase}.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
-     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     that owns the {@link TestCase}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void changeInputs(final long testCaseId, final List<String> inputs);
+    void changeInputs(final long testCaseId, final List<String> inputs) throws IllegalEntityStateException;
 
     /**
      * Changes the expected outputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which expected outputs will be replaced.
      * @param outputs    The {@link List} of expected outputs for the {@link TestCase}.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
-     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     that owns the {@link TestCase}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void changeExpectedOutputs(final long testCaseId, final List<String> outputs);
+    void changeExpectedOutputs(final long testCaseId, final List<String> outputs) throws IllegalEntityStateException;
 
     /**
      * Removes all the inputs for the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which inputs will be removed.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
-     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     that owns the {@link TestCase}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void clearInputs(final long testCaseId);
+    void clearInputs(final long testCaseId) throws IllegalEntityStateException;
 
     /**
      * Removes all the expected outputs for the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which expected outputs will be removed.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
-     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     that owns the {@link TestCase}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void clearOutputs(final long testCaseId);
+    void clearOutputs(final long testCaseId) throws IllegalEntityStateException;
 
     /**
      * Deletes the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to be deleted.
-     * @apiNote It cannot be executed once the {@link Exam} owning the {@link Exercise} that owns
-     * the {@link TestCase} with the given {@code testCaseId} has started or finished.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     that owns the {@link TestCase}
+     *                                     is not in {@link Exam.State#PENDING} state.
+     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
+     * is not in {@link Exam.State#PENDING} state.
      */
-    void deleteTestCase(final long testCaseId);
+    void deleteTestCase(final long testCaseId) throws IllegalEntityStateException;
 
 
     // ================================================================================================================
@@ -237,10 +286,13 @@ public interface ExamService {
      *
      * @param exerciseId The id of the {@link Exercise} for which an {@link ExerciseSolution} will be created.
      * @param answer     The answer to the question of the {@link Exercise}.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     is not in {@link Exam.State#IN_PROGRESS} state.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
-     * with the given {@code exerciseId} has not started or has finished.
+     * is not in {@link Exam.State#IN_PROGRESS} state.
      */
-    ExerciseSolution createExerciseSolution(final long exerciseId, final String answer);
+    ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
+            throws IllegalEntityStateException;
 
 
     // ================================================================================================================
@@ -260,8 +312,6 @@ public interface ExamService {
      * @param exitCode   The execution's exit code.
      * @param stdOut     The standard output generated by the execution.
      * @param stdErr     The standard error output generated by the execution.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
-     * with the given {@code exerciseId} has not started
      */
     void processExecution(final long solutionId, final long testCaseId,
                           final int exitCode, final List<String> stdOut, final List<String> stdErr);
