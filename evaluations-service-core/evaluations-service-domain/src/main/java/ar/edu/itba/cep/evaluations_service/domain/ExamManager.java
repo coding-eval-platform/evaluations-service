@@ -113,7 +113,7 @@ public class ExamManager implements ExamService {
     public void deleteExam(final long examId) {
         examRepository.findById(examId)
                 .ifPresent(exam -> {
-                    performExamStateVerification(exam);
+                    performExamPendingStateVerification(exam);
                     testCaseRepository.deleteExamTestCases(exam);
                     exerciseRepository.deleteExamExercises(exam);
                     examRepository.delete(exam);
@@ -129,7 +129,7 @@ public class ExamManager implements ExamService {
     @Override
     public void clearExercises(final long examId) {
         final var exam = loadExam(examId);
-        performExamStateVerification(exam);
+        performExamPendingStateVerification(exam);
         exerciseRepository.deleteExamExercises(exam);
     }
 
@@ -141,7 +141,7 @@ public class ExamManager implements ExamService {
     @Override
     public Exercise createExercise(final long examId, final String question) {
         final var exam = loadExam(examId);
-        performExamStateVerification(exam);
+        performExamPendingStateVerification(exam);
         final var exercise = new Exercise(question, exam);
         return exerciseRepository.save(exercise);
     }
@@ -149,7 +149,7 @@ public class ExamManager implements ExamService {
     @Override
     public void changeExerciseQuestion(final long exerciseId, final String question) {
         final var exercise = loadExercise(exerciseId);
-        performExamStateVerification(exercise.belongsToExam());
+        performExamPendingStateVerification(exercise.belongsToExam());
         exercise.setQuestion(question);
         exerciseRepository.save(exercise);
     }
@@ -158,7 +158,7 @@ public class ExamManager implements ExamService {
     public void deleteExercise(final long exerciseId) {
         exerciseRepository.findById(exerciseId)
                 .ifPresent(exercise -> {
-                    performExamStateVerification(exercise.belongsToExam());
+                    performExamPendingStateVerification(exercise.belongsToExam());
                     testCaseRepository.deleteExerciseTestCases(exercise);
                     exerciseRepository.delete(exercise);
                 });
@@ -194,7 +194,7 @@ public class ExamManager implements ExamService {
                                    final TestCase.Visibility visibility,
                                    final List<String> inputs, final List<String> expectedOutputs) {
         final var exercise = loadExercise(exerciseId);
-        performExamStateVerification(exercise.belongsToExam());
+        performExamPendingStateVerification(exercise.belongsToExam());
         final var testCase = new TestCase(visibility, exercise);
         testCase.setInputs(inputs);
         testCase.setExpectedInputs(expectedOutputs);
@@ -204,7 +204,7 @@ public class ExamManager implements ExamService {
     @Override
     public void changeVisibility(final long testCaseId, final TestCase.Visibility visibility) {
         final var testCase = loadTestCase(testCaseId);
-        performExamStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamPendingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setVisibility(visibility);
         testCaseRepository.save(testCase);
     }
@@ -212,7 +212,7 @@ public class ExamManager implements ExamService {
     @Override
     public void changeInputs(final long testCaseId, final List<String> inputs) {
         final var testCase = loadTestCase(testCaseId);
-        performExamStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamPendingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setInputs(inputs);
         testCaseRepository.save(testCase);
     }
@@ -220,7 +220,7 @@ public class ExamManager implements ExamService {
     @Override
     public void changeExpectedOutputs(final long testCaseId, final List<String> outputs) {
         final var testCase = loadTestCase(testCaseId);
-        performExamStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamPendingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setExpectedInputs(outputs);
         testCaseRepository.save(testCase);
     }
@@ -228,7 +228,7 @@ public class ExamManager implements ExamService {
     @Override
     public void clearInputs(final long testCaseId) {
         final var testCase = loadTestCase(testCaseId);
-        performExamStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamPendingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.removeAllInputs();
         testCaseRepository.save(testCase);
     }
@@ -236,7 +236,7 @@ public class ExamManager implements ExamService {
     @Override
     public void clearOutputs(final long testCaseId) {
         final var testCase = loadTestCase(testCaseId);
-        performExamStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamPendingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.removeAllExpectedOutputs();
         testCaseRepository.save(testCase);
     }
@@ -245,7 +245,7 @@ public class ExamManager implements ExamService {
     public void deleteTestCase(final long testCaseId) {
         testCaseRepository.findById(testCaseId)
                 .ifPresent(testCase -> {
-                    performExamStateVerification(testCase.belongsToExercise().belongsToExam());
+                    performExamPendingStateVerification(testCase.belongsToExercise().belongsToExam());
                     testCaseRepository.delete(testCase);
                 });
     }
@@ -351,7 +351,7 @@ public class ExamManager implements ExamService {
      * @param exam The {@link Exam} to be checked.
      * @throws IllegalEntityStateException If the given {@link Exam}'s state is not {@link Exam.State#PENDING}.
      */
-    private static void performExamStateVerification(final Exam exam) throws IllegalEntityStateException {
+    private static void performExamPendingStateVerification(final Exam exam) throws IllegalEntityStateException {
         Assert.notNull(exam, "The exam to be checked must not be null");
         if (exam.getState() != Exam.State.PENDING) {
             throw new IllegalEntityStateException(EXAM_IS_NOT_PENDING);
