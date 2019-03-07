@@ -272,6 +272,10 @@ class ExamTest {
     // Creation
     // ================================
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when creating an {@link Exam} with a null description.
+     */
     @Test
     void testNullDescriptionOnCreation() {
         Assertions.assertThrows(
@@ -281,6 +285,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when creating an {@link Exam} with a too short description.
+     */
     @Test
     void testShortDescriptionOnCreation() {
         shortDescription().ifPresent(
@@ -292,6 +300,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when creating an {@link Exam} with a too long description.
+     */
     @Test
     void testLongDescriptionOnCreation() {
         Assertions.assertThrows(
@@ -301,6 +313,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when creating an {@link Exam} with a null starting at {@link LocalDateTime}.
+     */
     @Test
     void testNullStartingAtOnCreation() {
         Assertions.assertThrows(
@@ -310,6 +326,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when creating an {@link Exam} with a past staring at {@link LocalDateTime}.
+     */
     @Test
     void testPastStartingAtOnCreation() {
         Assertions.assertThrows(
@@ -319,6 +339,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when creating an {@link Exam} with a null duration.
+     */
     @Test
     void testNullDurationOnCreation() {
         Assertions.assertThrows(
@@ -333,6 +357,10 @@ class ExamTest {
     // Update
     // ================================
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when updating an {@link Exam} with a null description.
+     */
     @Test
     void testNullDescriptionOnUpdate() {
         final var exam = createExam();
@@ -343,6 +371,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when updating an {@link Exam} with a too short description.
+     */
     @Test
     void testShortDescriptionOnUpdate() {
         final var exam = createExam();
@@ -355,6 +387,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when updating an {@link Exam} with a too long description.
+     */
     @Test
     void testLongDescriptionOnUpdate() {
         final var exam = createExam();
@@ -365,6 +401,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when updating an {@link Exam} with a null starting at {@link LocalDateTime}.
+     */
     @Test
     void testNullStartingAtOnUpdate() {
         final var exam = createExam();
@@ -375,6 +415,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when updating an {@link Exam} with a past starting at {@link LocalDateTime}.
+     */
     @Test
     void testPastStartingAtOnUpdate() {
         final var exam = createExam();
@@ -385,6 +429,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when updating an {@link Exam} with a null duration.
+     */
     @Test
     void testNullDurationOnUpdate() {
         final var exam = createExam();
@@ -400,6 +448,10 @@ class ExamTest {
     // Setters
     // ================================
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when setting a null description to an {@link Exam}.
+     */
     @Test
     void testSetNullDescription() {
         final var exam = createExam();
@@ -410,6 +462,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when setting a too short description to an {@link Exam}.
+     */
     @Test
     void testSetShortDescription() {
         final var exam = createExam();
@@ -422,6 +478,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when setting a too long description to an {@link Exam}.
+     */
     @Test
     void testSetLongDescription() {
         final var exam = createExam();
@@ -432,6 +492,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when setting a null starting at {@link LocalDateTime} to an {@link Exam}.
+     */
     @Test
     void testSetNullStartingAt() {
         final var exam = createExam();
@@ -442,6 +506,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when setting a past staring at {@link LocalDateTime} to an {@link Exam}.
+     */
     @Test
     void testSetPastStartingAt() {
         final var exam = createExam();
@@ -452,6 +520,10 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * when setting a null duration to an {@link Exam}.
+     */
     @Test
     void testSetNullDuration() {
         final var exam = createExam();
