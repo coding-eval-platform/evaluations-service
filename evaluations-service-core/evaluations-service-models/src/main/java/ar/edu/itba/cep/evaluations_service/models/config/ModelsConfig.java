@@ -2,6 +2,7 @@ package ar.edu.itba.cep.evaluations_service.models.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * Configuration class for the model's module.
@@ -10,5 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackages = {
         "ar.edu.itba.cep.evaluations_service.models"
 })
+@Import(ValidationConfig.class)
 public class ModelsConfig {
 }

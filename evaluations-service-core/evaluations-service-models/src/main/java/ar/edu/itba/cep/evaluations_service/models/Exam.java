@@ -1,8 +1,14 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+
+import com.bellotapps.webapps_commons.errors.ConstraintViolationError;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
+import com.bellotapps.webapps_commons.validation.annotations.ValidateConstraintsAfter;
 
+import javax.validation.constraints.Future;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -17,17 +23,33 @@ public class Exam {
      * The exam's id.
      */
     private final long id;
+
     /**
      * A description for the exam (e.g mid-term exams, final exams, etc.).
      */
+    @NotNull(message = "Description is missing",
+            payload = ConstraintViolationError.ErrorCausePayload.MissingValue.class)
+    @Size(min = ValidationConstants.DESCRIPTION_MIN_LENGTH,
+            message = "Description too short",
+            payload = ConstraintViolationError.ErrorCausePayload.IllegalValue.class)
+    @Size(max = ValidationConstants.DESCRIPTION_MAX_LENGTH,
+            message = "Description too long",
+            payload = ConstraintViolationError.ErrorCausePayload.IllegalValue.class)
     private String description;
+
     /**
      * {@link LocalDateTime} at which the exam starts.
      */
+    @NotNull(message = "Starting Moment is missing",
+            payload = ConstraintViolationError.ErrorCausePayload.MissingValue.class)
+    @Future(message = "The Starting Moment must be in the future")
     private LocalDateTime startingAt;
+
     /**
      * {@link Duration} of the exam.
      */
+    @NotNull(message = "Duration is missing",
+            payload = ConstraintViolationError.ErrorCausePayload.MissingValue.class)
     private Duration duration;
     /**
      * The exam's {@link State} (i.e upcoming, in progress or finished).
@@ -50,6 +72,7 @@ public class Exam {
      * @param startingAt  {@link LocalDateTime} at which the exam starts.
      * @param duration    {@link Duration} of the exam.
      */
+    @ValidateConstraintsAfter
     public Exam(final String description, final LocalDateTime startingAt, final Duration duration) {
         this.id = 0;
         this.description = description;
@@ -116,6 +139,7 @@ public class Exam {
      * @param description The new description for the exam.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
      */
+    @ValidateConstraintsAfter
     public void setDescription(final String description) throws IllegalEntityStateException {
         verifyStateForUpdate();
         this.description = description;
@@ -127,6 +151,7 @@ public class Exam {
      * @param startingAt The new {@link LocalDateTime} at which the exam starts.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
      */
+    @ValidateConstraintsAfter
     public void setStartingAt(final LocalDateTime startingAt) throws IllegalEntityStateException {
         verifyStateForUpdate();
         this.startingAt = startingAt;
@@ -138,6 +163,7 @@ public class Exam {
      * @param duration The new {@link Duration} for the exam.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
      */
+    @ValidateConstraintsAfter
     public void setDuration(final Duration duration) throws IllegalEntityStateException {
         verifyStateForUpdate();
         this.duration = duration;
@@ -151,6 +177,7 @@ public class Exam {
      * @param duration    The new {@link Duration} for the exam.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
      */
+    @ValidateConstraintsAfter
     public void update(final String description, final LocalDateTime startingAt, final Duration duration)
             throws IllegalEntityStateException {
         verifyStateForUpdate();
