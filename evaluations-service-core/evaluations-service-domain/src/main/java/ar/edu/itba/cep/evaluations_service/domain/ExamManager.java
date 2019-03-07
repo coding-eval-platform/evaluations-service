@@ -142,7 +142,8 @@ public class ExamManager implements ExamService {
     // ================================================================================================================
 
     @Override
-    public Exercise createExercise(final long examId, final String question) throws IllegalEntityStateException {
+    public Exercise createExercise(final long examId, final String question)
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
         final var exercise = new Exercise(question, exam);
@@ -151,7 +152,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public void changeExerciseQuestion(final long exerciseId, final String question)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.belongsToExam());
         exercise.setQuestion(question);
@@ -166,7 +167,6 @@ public class ExamManager implements ExamService {
                     testCaseRepository.deleteExerciseTestCases(exercise);
                     exerciseRepository.delete(exercise);
                 });
-
     }
 
     @Override

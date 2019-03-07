@@ -10,6 +10,8 @@ public class ValidationConstants {
     // ==================================
     public final static int DESCRIPTION_MIN_LENGTH = 1;
 
+    public final static int QUESTION_MIN_LENGTH = 1;
+
     // ==================================
     // Maximum values
     // ==================================

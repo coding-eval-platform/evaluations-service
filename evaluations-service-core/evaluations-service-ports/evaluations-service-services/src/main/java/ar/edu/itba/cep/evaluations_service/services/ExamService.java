@@ -124,22 +124,26 @@ public interface ExamService {
      * @param examId   The id of the {@link Exam} to which an {@link Exercise} will be added.
      * @param question The question of the {@link Exercise}.
      * @return The created {@link Exercise}.
-     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalEntityStateException        If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws CustomConstraintViolationException If any argument for the {@link Exercise} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
-    Exercise createExercise(final long examId, final String question) throws IllegalEntityStateException;
+    Exercise createExercise(final long examId, final String question)
+            throws IllegalEntityStateException, CustomConstraintViolationException;
 
     /**
      * Changes the question to the {@link Exercise}'s with the given {@code exerciseId}.
      *
      * @param exerciseId The id of the {@link Exercise} whose question will be changed.
      * @param question   The new question.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalEntityStateException        If the {@link Exam} owning the {@link Exercise}
+     *                                            is not in {@link Exam.State#UPCOMING} state.
+     * @throws CustomConstraintViolationException If the given {@code question} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeExerciseQuestion(final long exerciseId, final String question) throws IllegalEntityStateException;
+    void changeExerciseQuestion(final long exerciseId, final String question)
+            throws IllegalEntityStateException, CustomConstraintViolationException;
 
     /**
      * Deletes the {@link Exercise} with the given {@code exerciseId}.
