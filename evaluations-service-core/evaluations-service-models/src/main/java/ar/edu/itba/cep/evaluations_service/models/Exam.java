@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.models;
 
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
+import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.validation.annotations.ValidateConstraintsAfter;
 
@@ -51,14 +52,17 @@ public class Exam {
     @NotNull(message = "Duration is missing",
             payload = ConstraintViolationError.ErrorCausePayload.MissingValue.class)
     private Duration duration;
+
     /**
      * The exam's {@link State} (i.e upcoming, in progress or finished).
      */
     private State state;
+
     /**
      * The actual {@link Instant} at which the exam really started.
      */
     private Instant actualStartingMoment;
+
     /**
      * The actual {@link Duration} of the exam.
      */
@@ -71,9 +75,11 @@ public class Exam {
      * @param description A description for the exam (e.g mid-term exams, final exams, etc.).
      * @param startingAt  {@link LocalDateTime} at which the exam starts.
      * @param duration    {@link Duration} of the exam.
+     * @throws CustomConstraintViolationException If any argument is not valid.
      */
     @ValidateConstraintsAfter
-    public Exam(final String description, final LocalDateTime startingAt, final Duration duration) {
+    public Exam(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws CustomConstraintViolationException {
         this.id = 0;
         this.description = description;
         this.startingAt = startingAt;
@@ -137,10 +143,12 @@ public class Exam {
      * Changes the description for this exam.
      *
      * @param description The new description for the exam.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalEntityStateException        If the exam cannot be updated because it's not in upcoming state.
+     * @throws CustomConstraintViolationException If the given {@code description} is not valid.
      */
     @ValidateConstraintsAfter
-    public void setDescription(final String description) throws IllegalEntityStateException {
+    public void setDescription(final String description)
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         verifyStateForUpdate();
         this.description = description;
     }
@@ -149,10 +157,12 @@ public class Exam {
      * Changes the starting moment for this exam.
      *
      * @param startingAt The new {@link LocalDateTime} at which the exam starts.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalEntityStateException        If the exam cannot be updated because it's not in upcoming state.
+     * @throws CustomConstraintViolationException If the given {@code startingAt} {@link LocalDateTime} is not valid.
      */
     @ValidateConstraintsAfter
-    public void setStartingAt(final LocalDateTime startingAt) throws IllegalEntityStateException {
+    public void setStartingAt(final LocalDateTime startingAt)
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         verifyStateForUpdate();
         this.startingAt = startingAt;
     }
@@ -161,10 +171,12 @@ public class Exam {
      * Changes the duration for this exam.
      *
      * @param duration The new {@link Duration} for the exam.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalEntityStateException        If the exam cannot be updated because it's not in upcoming state.
+     * @throws CustomConstraintViolationException If the given {@code duration} is not valid.
      */
     @ValidateConstraintsAfter
-    public void setDuration(final Duration duration) throws IllegalEntityStateException {
+    public void setDuration(final Duration duration)
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         verifyStateForUpdate();
         this.duration = duration;
     }
@@ -175,11 +187,12 @@ public class Exam {
      * @param description The new description for the exam.
      * @param startingAt  The new {@link LocalDateTime} at which the exam starts.
      * @param duration    The new {@link Duration} for the exam.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalEntityStateException        If the exam cannot be updated because it's not in upcoming state.
+     * @throws CustomConstraintViolationException If any argument is not valid.
      */
     @ValidateConstraintsAfter
     public void update(final String description, final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         verifyStateForUpdate();
         this.description = description;
         this.startingAt = startingAt;

@@ -4,6 +4,7 @@ import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
@@ -45,8 +46,10 @@ public interface ExamService {
      * @param startingAt  The {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The {@link Exam}'s {@link Duration}.
      * @return The created {@link Exam}.
+     * @throws CustomConstraintViolationException If any argument is not valid.
      */
-    Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration);
+    Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws CustomConstraintViolationException;
 
     /**
      * Modifies the {@link Exam} with the given {@code examId}.
@@ -55,12 +58,13 @@ public interface ExamService {
      * @param description The new {@link Exam}'s description.
      * @param startingAt  The new {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The new {@link Exam}'s {@link Duration}.
-     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalEntityStateException        If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws CustomConstraintViolationException If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     void modifyExam(final long examId, final String description,
                     final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, CustomConstraintViolationException;
 
     /**
      * Starts the {@link Exam} with the given {@code examId}.

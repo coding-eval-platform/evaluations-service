@@ -4,6 +4,7 @@ import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
+import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
@@ -82,7 +83,8 @@ public class ExamManager implements ExamService {
     }
 
     @Override
-    public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration) {
+    public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws CustomConstraintViolationException {
         final var exam = new Exam(description, startingAt, duration);
         return examRepository.save(exam);
     }
@@ -90,7 +92,7 @@ public class ExamManager implements ExamService {
     @Override
     public void modifyExam(final long examId,
                            final String description, final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, CustomConstraintViolationException {
         final var exam = loadExam(examId);
         exam.update(description, startingAt, duration); // The Exam verifies state by its own.
         examRepository.save(exam);
