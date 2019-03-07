@@ -1,8 +1,6 @@
-package ar.edu.itba.cep.evaluations_service;
+package ar.edu.itba.cep.evaluations_service.models;
 
-import ar.edu.itba.cep.evaluations_service.models.Exam;
-import ar.edu.itba.cep.evaluations_service.models.ValidationConstants;
-import ar.edu.itba.cep.evaluations_service.test_config.ModelsTestConfig;
+import ar.edu.itba.cep.evaluations_service.models.test_config.ModelsTestConfig;
 import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.github.javafaker.Faker;
@@ -270,8 +268,12 @@ class ExamTest {
     // Constraint testing
     // ================================================================================================================
 
+    // ================================
+    // Creation
+    // ================================
+
     @Test
-    void testNullDescription() {
+    void testNullDescriptionOnCreation() {
         Assertions.assertThrows(
                 CustomConstraintViolationException.class,
                 () -> new Exam(null, validStartingMoment(), validDuration()),
@@ -324,10 +326,141 @@ class ExamTest {
                 () -> new Exam(validDescription(), validStartingMoment(), null),
                 "Creating an exam with a null duration is being allowed."
         );
-
     }
 
-    // TODO: perform more constraints testing (on setters and updates).
+
+    // ================================
+    // Update
+    // ================================
+
+    @Test
+    void testNullDescriptionOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.update(null, validStartingMoment(), validDuration()),
+                "Updating an exam with a null description is being allowed."
+        );
+    }
+
+    @Test
+    void testShortDescriptionOnUpdate() {
+        final var exam = createExam();
+        shortDescription().ifPresent(
+                shortDescription -> Assertions.assertThrows(
+                        CustomConstraintViolationException.class,
+                        () -> exam.update(shortDescription, validStartingMoment(), validDuration()),
+                        "Updating an exam with a too short description is being allowed."
+                )
+        );
+    }
+
+    @Test
+    void testLongDescriptionOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.update(longDescription(), validStartingMoment(), validDuration()),
+                "Updating an exam with a too long description is being allowed."
+        );
+    }
+
+    @Test
+    void testNullStartingAtOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.update(validDescription(), null, validDuration()),
+                "Updating an exam with a null starting at local date time is being allowed."
+        );
+    }
+
+    @Test
+    void testPastStartingAtOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.update(validDescription(), pastStartingMoment(), validDuration()),
+                "Updating an exam with a past starting at local date time is being allowed."
+        );
+    }
+
+    @Test
+    void testNullDurationOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.update(validDescription(), validStartingMoment(), null),
+                "Updating an exam with a null duration is being allowed."
+        );
+    }
+
+
+    // ================================
+    // Setters
+    // ================================
+
+    @Test
+    void testSetNullDescription() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.setDescription(null),
+                "Updating an exam with a null description is being allowed."
+        );
+    }
+
+    @Test
+    void testSetShortDescription() {
+        final var exam = createExam();
+        shortDescription().ifPresent(
+                shortDescription -> Assertions.assertThrows(
+                        CustomConstraintViolationException.class,
+                        () -> exam.setDescription(shortDescription),
+                        "Updating an exam with a too short description is being allowed."
+                )
+        );
+    }
+
+    @Test
+    void testSetLongDescription() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.setDescription(longDescription()),
+                "Updating an exam with a too long description is being allowed."
+        );
+    }
+
+    @Test
+    void testSetNullStartingAt() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.setStartingAt(null),
+                "Updating an exam with a null starting at local date time is being allowed."
+        );
+    }
+
+    @Test
+    void testSetPastStartingAt() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.setStartingAt(pastStartingMoment()),
+                "Updating an exam with a past starting at local date time is being allowed."
+        );
+    }
+
+    @Test
+    void testSetNullDuration() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                CustomConstraintViolationException.class,
+                () -> exam.setDuration(null),
+                "Updating an exam with a null duration is being allowed."
+        );
+    }
 
 
     // ================================================================================================================

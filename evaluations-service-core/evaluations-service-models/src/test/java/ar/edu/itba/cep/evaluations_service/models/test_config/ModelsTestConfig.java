@@ -1,4 +1,4 @@
-package ar.edu.itba.cep.evaluations_service.test_config;
+package ar.edu.itba.cep.evaluations_service.models.test_config;
 
 import ar.edu.itba.cep.evaluations_service.models.config.ModelsConfig;
 import org.springframework.context.annotation.Configuration;
