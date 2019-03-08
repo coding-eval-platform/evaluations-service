@@ -202,7 +202,7 @@ public class ExamManager implements ExamService {
         performExamUpcomingStateVerification(exercise.belongsToExam());
         final var testCase = new TestCase(visibility, exercise);
         testCase.setInputs(inputs);
-        testCase.setExpectedInputs(expectedOutputs);
+        testCase.setExpectedOutputs(expectedOutputs);
         return testCaseRepository.save(testCase);
     }
 
@@ -228,7 +228,7 @@ public class ExamManager implements ExamService {
             throws IllegalEntityStateException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
-        testCase.setExpectedInputs(outputs);
+        testCase.setExpectedOutputs(outputs);
         testCaseRepository.save(testCase);
     }
 
