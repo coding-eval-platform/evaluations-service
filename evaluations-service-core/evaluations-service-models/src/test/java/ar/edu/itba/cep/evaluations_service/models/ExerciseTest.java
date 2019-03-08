@@ -17,6 +17,9 @@ import java.util.Optional;
 @ExtendWith(MockitoExtension.class)
 class ExerciseTest {
 
+    /**
+     * A mocked {@link Exam} that will own the created {@link Exercise}s to be tested.
+     */
     private final Exam mockedExam;
 
     /**
@@ -29,6 +32,10 @@ class ExerciseTest {
     }
 
 
+    // ================================================================================================================
+    // Acceptable arguments
+    // ================================================================================================================
+
     /**
      * Tests that creating an {@link Exercise} with valid values can be performed without any exception being thrown.
      */
@@ -39,6 +46,25 @@ class ExerciseTest {
         Mockito.verifyZeroInteractions(mockedExam);
     }
 
+    @Test
+    void testSetValidQuestion() {
+        Assertions.assertAll("Setting a valid question is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExercise().setQuestion(validQuestion()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exercise = createExercise();
+                    final var question = validQuestion();
+                    exercise.setQuestion(question);
+                    Assertions.assertEquals(
+                            question,
+                            exercise.getQuestion(),
+                            "Is not being set (does not change the Exercise value)"
+                    );
+                }
+        );
+    }
 
     // ================================================================================================================
     // Constraint testing
@@ -49,7 +75,7 @@ class ExerciseTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a null question.
      */
     @Test
@@ -63,7 +89,7 @@ class ExerciseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a too short question.
      */
     @Test
@@ -79,7 +105,7 @@ class ExerciseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a null {@link Exam}.
      */
     @Test
@@ -97,7 +123,7 @@ class ExerciseTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null question to an {@link Exercise}.
      */
     @Test
@@ -112,7 +138,7 @@ class ExerciseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a too short question to an {@link Exercise}.
      */
     @Test
@@ -171,7 +197,7 @@ class ExerciseTest {
     // ========================================
 
     /**
-     * @return An {@link Optional} containing a username whose length is below the valid limit
+     * @return An {@link Optional} containing a question whose length is below the valid limit
      * if there is such limit (i.e th min length is positive). Otherwise, an empty {@link Optional} is returned.
      */
     private static Optional<String> shortQuestion() {

@@ -24,6 +24,10 @@ class ExamTest {
     private final static int DAYS_IN_A_YEAR = 365;
 
 
+    // ================================================================================================================
+    // Acceptable arguments
+    // ================================================================================================================
+
     /**
      * Tests that creating an {@link Exam} with valid values can be performed without any exception being thrown.
      */
@@ -33,8 +37,102 @@ class ExamTest {
                 "An exam is not being created with acceptable arguments.");
     }
 
+    @Test
+    void testValidArgumentsUpdate() {
+        Assertions.assertAll("Updating with acceptable arguments is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().update(validDescription(), validStartingMoment(), validDuration()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exam = createExam();
+                    final var description = validDescription();
+                    final var startingAt = validStartingMoment();
+                    final var duration = validDuration();
+                    exam.setDescription(description);
+                    exam.setStartingAt(startingAt);
+                    exam.setDuration(duration);
+                    Assertions.assertAll("Is not being set (does not change the Exam value",
+                            () -> Assertions.assertEquals(
+                                    description,
+                                    exam.getDescription(),
+                                    "Description mismatch"),
+                            () -> Assertions.assertEquals(
+                                    startingAt,
+                                    exam.getStartingAt(),
+                                    "Starting moment mismatch"),
+                            () -> Assertions.assertEquals(
+                                    duration,
+                                    exam.getDuration(),
+                                    "Duration mismatch")
+                    );
+                }
+        );
+    }
+
+    @Test
+    void testSetValidDescription() {
+        Assertions.assertAll("Setting a valid description is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().setDescription(validDescription()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exam = createExam();
+                    final var description = validDescription();
+                    exam.setDescription(description);
+                    Assertions.assertEquals(
+                            description,
+                            exam.getDescription(),
+                            "Is not being set (does not change the Exam value)"
+                    );
+                }
+        );
+    }
+
+    @Test
+    void testSetValidStartingAt() {
+        Assertions.assertAll("Setting a valid starting at moment is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().setStartingAt(validStartingMoment()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exam = createExam();
+                    final var startingAt = validStartingMoment();
+                    exam.setStartingAt(startingAt);
+                    Assertions.assertEquals(
+                            startingAt,
+                            exam.getStartingAt(),
+                            "Is not being set (does not change the Exam value)"
+                    );
+                }
+        );
+    }
+
+    @Test
+    void testSetValidDuration() {
+        Assertions.assertAll("Setting a valid duration is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().setDuration(validDuration()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exam = createExam();
+                    final var duration = validDuration();
+                    exam.setDuration(duration);
+                    Assertions.assertEquals(
+                            duration,
+                            exam.getDuration(),
+                            "Is not being set (does not change the Exam value)"
+                    );
+                }
+        );
+    }
+
+
     // ================================================================================================================
-    // State testing
+    // Behaviour testing
     // ================================================================================================================
 
     /**
@@ -264,7 +362,7 @@ class ExamTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null description.
      */
     @Test
@@ -277,7 +375,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a too short description.
      */
     @Test
@@ -292,7 +390,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a too long description.
      */
     @Test
@@ -305,7 +403,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null starting at {@link LocalDateTime}.
      */
     @Test
@@ -318,7 +416,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a past staring at {@link LocalDateTime}.
      */
     @Test
@@ -331,7 +429,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null duration.
      */
     @Test
@@ -349,7 +447,7 @@ class ExamTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null description.
      */
     @Test
@@ -363,7 +461,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a too short description.
      */
     @Test
@@ -379,7 +477,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a too long description.
      */
     @Test
@@ -393,7 +491,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null starting at {@link LocalDateTime}.
      */
     @Test
@@ -407,7 +505,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a past starting at {@link LocalDateTime}.
      */
     @Test
@@ -421,7 +519,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null duration.
      */
     @Test
@@ -440,7 +538,7 @@ class ExamTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null description to an {@link Exam}.
      */
     @Test
@@ -454,7 +552,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a too short description to an {@link Exam}.
      */
     @Test
@@ -470,7 +568,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a too long description to an {@link Exam}.
      */
     @Test
@@ -484,7 +582,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null starting at {@link LocalDateTime} to an {@link Exam}.
      */
     @Test
@@ -498,7 +596,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a past staring at {@link LocalDateTime} to an {@link Exam}.
      */
     @Test
@@ -512,7 +610,7 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null duration to an {@link Exam}.
      */
     @Test
@@ -588,7 +686,7 @@ class ExamTest {
     // ========================================
 
     /**
-     * @return An {@link Optional} containing a username whose length is below the valid limit
+     * @return An {@link Optional} containing a description whose length is below the valid limit
      * if there is such limit (i.e th min length is positive). Otherwise, an empty {@link Optional} is returned.
      */
     private static Optional<String> shortDescription() {

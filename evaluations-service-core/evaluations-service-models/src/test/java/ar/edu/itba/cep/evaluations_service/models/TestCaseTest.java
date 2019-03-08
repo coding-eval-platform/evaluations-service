@@ -59,14 +59,14 @@ class TestCaseTest {
 
     @Test
     void testSetValidVisibility() {
-        Assertions.assertAll("Setting a valid visibility is not being allowed",
+        Assertions.assertAll("Setting a valid visibility is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
                         () -> createTestCase().setVisibility(TestCase.Visibility.PRIVATE),
-                        "Cannot set visibility to private"
+                        "It throws an exception when it is private"
                 ),
                 () -> Assertions.assertDoesNotThrow(
                         () -> createTestCase().setVisibility(TestCase.Visibility.PUBLIC),
-                        "Cannot set visibility to public"
+                        "It throws an exception when it is public"
                 ),
                 () -> {
                     final var testCase = createTestCase();
@@ -74,7 +74,7 @@ class TestCaseTest {
                     Assertions.assertSame(
                             TestCase.Visibility.PRIVATE,
                             testCase.getVisibility(),
-                            "Visibility is not being set to private (does not change the TestCase value)"
+                            "Is not being set to private (does not change the TestCase value)"
                     );
                 },
                 () -> {
@@ -83,7 +83,7 @@ class TestCaseTest {
                     Assertions.assertSame(
                             TestCase.Visibility.PUBLIC,
                             testCase.getVisibility(),
-                            "Visibility is not being set to public (does not change the TestCase value)"
+                            "Is not being set to public (does not change the TestCase value)"
                     );
                 }
         );
@@ -91,10 +91,10 @@ class TestCaseTest {
 
     @Test
     void testSetValidInputsList() {
-        Assertions.assertAll("Setting a valid inputs list is not being allowed",
+        Assertions.assertAll("Setting a valid inputs list is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
                         () -> createTestCase().setInputs(validList()),
-                        "Setting a valid inputs list is failing"
+                        "It throws an exception"
                 ),
                 () -> {
                     final var testCase = createTestCase();
@@ -103,7 +103,7 @@ class TestCaseTest {
                     Assertions.assertEquals(
                             inputsList,
                             testCase.getInputs(),
-                            "The inputs lists is not being set (does not change the TestCase value)"
+                            "Is not being set (does not change the TestCase value)"
                     );
                 }
         );
@@ -113,13 +113,13 @@ class TestCaseTest {
     void testSetValidExpectedOutputsList() {
         Assertions.assertDoesNotThrow(
                 () -> createTestCase().setExpectedOutputs(validList()),
-                "Setting a valid expected outputs list is not being allowed"
+                "Setting a valid expected outputs list is not working as expected"
         );
 
         Assertions.assertAll("Setting a valid expected outputs list is not being allowed",
                 () -> Assertions.assertDoesNotThrow(
                         () -> createTestCase().setExpectedOutputs(validList()),
-                        "Setting a valid expected outputs list is failing"
+                        "It throws an exception"
                 ),
                 () -> {
                     final var testCase = createTestCase();
@@ -128,7 +128,7 @@ class TestCaseTest {
                     Assertions.assertEquals(
                             outputsList,
                             testCase.getExpectedOutputs(),
-                            "The expected outputs lists is not being set (does not change the TestCase value)"
+                            "Is not being set (does not change the TestCase value)"
                     );
                 }
         );
