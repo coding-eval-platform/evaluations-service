@@ -284,7 +284,8 @@ public class ExamManager implements ExamService {
 
     @Override
     public void processExecution(final long solutionId, final long testCaseId,
-                                 final int exitCode, final List<String> stdOut, final List<String> stdErr) {
+                                 final int exitCode, final List<String> stdOut, final List<String> stdErr)
+            throws IllegalArgumentException {
         // First, validate arguments
         Assert.notNull(stdOut, "The stdout list cannot be null");
         Assert.notNull(stdErr, "The stderr list cannot be null");

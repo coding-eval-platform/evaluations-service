@@ -1,5 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import org.springframework.util.Assert;
+
 import java.util.Objects;
 
 /**
@@ -33,8 +35,13 @@ public class ExerciseSolutionResult {
      * @param solution The {@link ExerciseSolution} to which this result makes reference.
      * @param testCase The test case being used to reach the result.
      * @param result   Indicates whether the result is approved or failed.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    public ExerciseSolutionResult(final ExerciseSolution solution, final TestCase testCase, final Result result) {
+    public ExerciseSolutionResult(final ExerciseSolution solution, final TestCase testCase, final Result result)
+            throws IllegalArgumentException {
+        assertSolution(solution);
+        assertTestCase(testCase);
+        assertResult(result);
         this.id = 0;
         this.solution = solution;
         this.testCase = testCase;
@@ -120,5 +127,40 @@ public class ExerciseSolutionResult {
          */
         FAILED,
         ;
+    }
+
+
+    // ================================
+    // Assertions
+    // ================================
+
+    /**
+     * Asserts that the given {@code solution} is valid.
+     *
+     * @param solution The {@link ExerciseSolution} to be checked.
+     * @throws IllegalArgumentException If the solution is not valid.
+     */
+    private static void assertSolution(final ExerciseSolution solution) throws IllegalArgumentException {
+        Assert.notNull(solution, "The solution is missing");
+    }
+
+    /**
+     * Asserts that the given {@code testCase} is valid.
+     *
+     * @param testCase The {@link TestCase} to be checked.
+     * @throws IllegalArgumentException If the test case is not valid.
+     */
+    private static void assertTestCase(final TestCase testCase) throws IllegalArgumentException {
+        Assert.notNull(testCase, "The test case is missing");
+    }
+
+    /**
+     * Asserts that the given {@code result} is valid.
+     *
+     * @param result The {@link Result} to be checked.
+     * @throws IllegalArgumentException If the result is not valid.
+     */
+    private static void assertResult(final Result result) throws IllegalArgumentException {
+        Assert.notNull(result, "The result is missing");
     }
 }
