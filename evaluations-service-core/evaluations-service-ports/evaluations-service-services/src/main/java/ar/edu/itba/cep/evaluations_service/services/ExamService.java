@@ -4,7 +4,6 @@ import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
-import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
@@ -13,6 +12,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 
 /**
  * A port into the application that allows {@link Exam} management.
@@ -46,10 +46,10 @@ public interface ExamService {
      * @param startingAt  The {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The {@link Exam}'s {@link Duration}.
      * @return The created {@link Exam}.
-     * @throws CustomConstraintViolationException If any argument is not valid.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
     Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
-            throws CustomConstraintViolationException;
+            throws IllegalArgumentException;
 
     /**
      * Modifies the {@link Exam} with the given {@code examId}.
@@ -58,13 +58,13 @@ public interface ExamService {
      * @param description The new {@link Exam}'s description.
      * @param startingAt  The new {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The new {@link Exam}'s {@link Duration}.
-     * @throws IllegalEntityStateException        If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
-     * @throws CustomConstraintViolationException If any argument is not valid.
+     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     void modifyExam(final long examId, final String description,
                     final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException, CustomConstraintViolationException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Starts the {@link Exam} with the given {@code examId}.
@@ -124,26 +124,26 @@ public interface ExamService {
      * @param examId   The id of the {@link Exam} to which an {@link Exercise} will be added.
      * @param question The question of the {@link Exercise}.
      * @return The created {@link Exercise}.
-     * @throws IllegalEntityStateException        If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
-     * @throws CustomConstraintViolationException If any argument for the {@link Exercise} is not valid.
+     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If any argument for the {@link Exercise} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     Exercise createExercise(final long examId, final String question)
-            throws IllegalEntityStateException, CustomConstraintViolationException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the question to the {@link Exercise}'s with the given {@code exerciseId}.
      *
      * @param exerciseId The id of the {@link Exercise} whose question will be changed.
      * @param question   The new question.
-     * @throws IllegalEntityStateException        If the {@link Exam} owning the {@link Exercise}
-     *                                            is not in {@link Exam.State#UPCOMING} state.
-     * @throws CustomConstraintViolationException If the given {@code question} is not valid.
+     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
+     *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code question} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeExerciseQuestion(final long exerciseId, final String question)
-            throws IllegalEntityStateException, CustomConstraintViolationException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Deletes the {@link Exercise} with the given {@code exerciseId}.

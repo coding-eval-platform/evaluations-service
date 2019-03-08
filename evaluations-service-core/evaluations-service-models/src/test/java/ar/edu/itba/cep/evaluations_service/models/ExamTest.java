@@ -1,14 +1,9 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
-import ar.edu.itba.cep.evaluations_service.models.test_config.ModelsTestConfig;
-import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -21,10 +16,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test class for {@link Exam}s
  */
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {
-        ModelsTestConfig.class
-})
 class ExamTest {
 
     /**
@@ -273,27 +264,27 @@ class ExamTest {
     // ================================
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null description.
      */
     @Test
     void testNullDescriptionOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exam(null, validStartingMoment(), validDuration()),
                 "Creating an exam with a null description is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a too short description.
      */
     @Test
     void testShortDescriptionOnCreation() {
         shortDescription().ifPresent(
                 shortDescription -> Assertions.assertThrows(
-                        CustomConstraintViolationException.class,
+                        IllegalArgumentException.class,
                         () -> new Exam(shortDescription, validStartingMoment(), validDuration()),
                         "Creating an exam with a too short description is being allowed."
                 )
@@ -301,52 +292,52 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a too long description.
      */
     @Test
     void testLongDescriptionOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exam(longDescription(), validStartingMoment(), validDuration()),
                 "Creating an exam with a too long description is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null starting at {@link LocalDateTime}.
      */
     @Test
     void testNullStartingAtOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exam(validDescription(), null, validDuration()),
                 "Creating an exam with a null starting at local date time is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a past staring at {@link LocalDateTime}.
      */
     @Test
     void testPastStartingAtOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exam(validDescription(), pastStartingMoment(), validDuration()),
                 "Creating an exam with a past starting at local date time is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null duration.
      */
     @Test
     void testNullDurationOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exam(validDescription(), validStartingMoment(), null),
                 "Creating an exam with a null duration is being allowed."
         );
@@ -358,21 +349,21 @@ class ExamTest {
     // ================================
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null description.
      */
     @Test
     void testNullDescriptionOnUpdate() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.update(null, validStartingMoment(), validDuration()),
                 "Updating an exam with a null description is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a too short description.
      */
     @Test
@@ -380,7 +371,7 @@ class ExamTest {
         final var exam = createExam();
         shortDescription().ifPresent(
                 shortDescription -> Assertions.assertThrows(
-                        CustomConstraintViolationException.class,
+                        IllegalArgumentException.class,
                         () -> exam.update(shortDescription, validStartingMoment(), validDuration()),
                         "Updating an exam with a too short description is being allowed."
                 )
@@ -388,56 +379,56 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a too long description.
      */
     @Test
     void testLongDescriptionOnUpdate() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.update(longDescription(), validStartingMoment(), validDuration()),
                 "Updating an exam with a too long description is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null starting at {@link LocalDateTime}.
      */
     @Test
     void testNullStartingAtOnUpdate() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.update(validDescription(), null, validDuration()),
                 "Updating an exam with a null starting at local date time is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a past starting at {@link LocalDateTime}.
      */
     @Test
     void testPastStartingAtOnUpdate() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.update(validDescription(), pastStartingMoment(), validDuration()),
                 "Updating an exam with a past starting at local date time is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null duration.
      */
     @Test
     void testNullDurationOnUpdate() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.update(validDescription(), validStartingMoment(), null),
                 "Updating an exam with a null duration is being allowed."
         );
@@ -449,21 +440,21 @@ class ExamTest {
     // ================================
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a null description to an {@link Exam}.
      */
     @Test
     void testSetNullDescription() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.setDescription(null),
                 "Updating an exam with a null description is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a too short description to an {@link Exam}.
      */
     @Test
@@ -471,7 +462,7 @@ class ExamTest {
         final var exam = createExam();
         shortDescription().ifPresent(
                 shortDescription -> Assertions.assertThrows(
-                        CustomConstraintViolationException.class,
+                        IllegalArgumentException.class,
                         () -> exam.setDescription(shortDescription),
                         "Updating an exam with a too short description is being allowed."
                 )
@@ -479,56 +470,56 @@ class ExamTest {
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a too long description to an {@link Exam}.
      */
     @Test
     void testSetLongDescription() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.setDescription(longDescription()),
                 "Updating an exam with a too long description is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a null starting at {@link LocalDateTime} to an {@link Exam}.
      */
     @Test
     void testSetNullStartingAt() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.setStartingAt(null),
                 "Updating an exam with a null starting at local date time is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a past staring at {@link LocalDateTime} to an {@link Exam}.
      */
     @Test
     void testSetPastStartingAt() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.setStartingAt(pastStartingMoment()),
                 "Updating an exam with a past starting at local date time is being allowed."
         );
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a null duration to an {@link Exam}.
      */
     @Test
     void testSetNullDuration() {
         final var exam = createExam();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exam.setDuration(null),
                 "Updating an exam with a null duration is being allowed."
         );

@@ -1,12 +1,9 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
-import com.bellotapps.webapps_commons.errors.ConstraintViolationError;
-import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
-import com.bellotapps.webapps_commons.validation.annotations.ValidateConstraintsAfter;
+import org.springframework.util.Assert;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Objects;
+
 
 /**
  * Represents an exercise.
@@ -17,20 +14,15 @@ public class Exercise {
      * The exercise's id.
      */
     private final long id;
+
     /**
      * The question being asked.
      */
-    @NotNull(message = "The question is missing",
-            payload = ConstraintViolationError.ErrorCausePayload.MissingValue.class)
-    @Size(min = ValidationConstants.QUESTION_MIN_LENGTH,
-            message = "Description too short",
-            payload = ConstraintViolationError.ErrorCausePayload.IllegalValue.class)
     private String question;
+
     /**
      * The {@link Exam} to which this exercise belongs to.
      */
-    @NotNull(message = "The exam is missing",
-            payload = ConstraintViolationError.ErrorCausePayload.MissingValue.class)
     private final Exam belongsTo;
 
 
@@ -39,13 +31,14 @@ public class Exercise {
      *
      * @param question  The question being asked.
      * @param belongsTo The {@link Exam} to which this exercise belongs to.
-     * @throws CustomConstraintViolationException If any argument is not valid.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    @ValidateConstraintsAfter
-    public Exercise(final String question, final Exam belongsTo) throws CustomConstraintViolationException {
-        this.belongsTo = belongsTo;
+    public Exercise(final String question, final Exam belongsTo) throws IllegalArgumentException {
+        assertQuestion(question);
+        assertExam(belongsTo);
         this.id = 0;
         this.question = question;
+        this.belongsTo = belongsTo;
     }
 
 
@@ -75,10 +68,10 @@ public class Exercise {
      * Changes the question for this exercise.
      *
      * @param question The new question for the exercise.
-     * @throws CustomConstraintViolationException If the given {@code question} is not valid.
+     * @throws IllegalArgumentException If the given {@code question} is not valid.
      */
-    @ValidateConstraintsAfter
-    public void setQuestion(final String question) throws CustomConstraintViolationException {
+    public void setQuestion(final String question) throws IllegalArgumentException {
+        assertQuestion(question);
         this.question = question;
     }
 
@@ -111,5 +104,32 @@ public class Exercise {
                 "Question: '" + question + "', " +
                 "BelongsTo: " + belongsTo +
                 "]";
+    }
+
+
+    // ================================
+    // Assertions
+    // ================================
+
+    /**
+     * Asserts that the given {@code question} is valid.
+     *
+     * @param question The description to be checked.
+     * @throws IllegalArgumentException If the question is not valid.
+     */
+    private static void assertQuestion(final String question) throws IllegalArgumentException {
+        Assert.notNull(question, "The question is missing");
+        Assert.isTrue(question.length() >= ValidationConstants.QUESTION_MIN_LENGTH,
+                "The question is too short");
+    }
+
+    /**
+     * Asserts that the given {@code exam} is valid.
+     *
+     * @param exam The {@link Exam} to be checked.
+     * @throws IllegalArgumentException If the exam is not valid.
+     */
+    private static void assertExam(final Exam exam) throws IllegalArgumentException {
+        Assert.notNull(exam, "The exam is missing");
     }
 }

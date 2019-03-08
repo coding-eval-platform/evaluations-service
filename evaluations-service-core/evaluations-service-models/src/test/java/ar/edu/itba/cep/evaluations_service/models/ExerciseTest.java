@@ -1,7 +1,5 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
-import ar.edu.itba.cep.evaluations_service.models.test_config.ModelsTestConfig;
-import com.bellotapps.webapps_commons.exceptions.CustomConstraintViolationException;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -9,19 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
+
 
 /**
  * Test class for {@link Exercise}s
  */
-@ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = {
-        ModelsTestConfig.class
-})
 class ExerciseTest {
 
     private final Exam mockedExam;
@@ -56,13 +49,13 @@ class ExerciseTest {
     // ================================
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a null question.
      */
     @Test
     void testNullQuestionOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exercise(null, mockedExam),
                 "Creating an exercise with a null question is being allowed."
         );
@@ -70,14 +63,14 @@ class ExerciseTest {
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a too short question.
      */
     @Test
     void testShortQuestionOnCreation() {
         shortQuestion().ifPresent(
                 shortQuestion -> Assertions.assertThrows(
-                        CustomConstraintViolationException.class,
+                        IllegalArgumentException.class,
                         () -> new Exercise(shortQuestion, mockedExam),
                         "Creating an exercise with a too short question is being allowed."
                 )
@@ -86,13 +79,13 @@ class ExerciseTest {
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a null {@link Exam}.
      */
     @Test
     void testNullExamOnCreation() {
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> new Exercise(validQuestion(), null),
                 "Creating an exercise with a null exam is being allowed."
         );
@@ -104,14 +97,14 @@ class ExerciseTest {
     // ================================
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a null question to an {@link Exercise}.
      */
     @Test
     void testSetNullQuestion() {
         final var exercise = createExercise();
         Assertions.assertThrows(
-                CustomConstraintViolationException.class,
+                IllegalArgumentException.class,
                 () -> exercise.setQuestion(null),
                 "Updating an exercise with a null question is being allowed."
         );
@@ -119,7 +112,7 @@ class ExerciseTest {
     }
 
     /**
-     * Tests that a {@link CustomConstraintViolationException} is thrown
+     * Tests that a {@link IllegalArgumentException} is thrown
      * when setting a too short question to an {@link Exercise}.
      */
     @Test
@@ -127,7 +120,7 @@ class ExerciseTest {
         final var exercise = createExercise();
         shortQuestion().ifPresent(
                 shortQuestion -> Assertions.assertThrows(
-                        CustomConstraintViolationException.class,
+                        IllegalArgumentException.class,
                         () -> exercise.setQuestion(shortQuestion),
                         "Updating an exercise with a too short question is being allowed."
                 )
