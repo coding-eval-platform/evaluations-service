@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -17,13 +16,6 @@ import java.util.Optional;
  */
 @ExtendWith(MockitoExtension.class)
 class ExerciseSolutionTest {
-
-    /**
-     * Indicates how many elements must have the created {@link String} {@link List}s used for testing
-     * (i.e to be used as inputs and expected outputs).
-     */
-    private static final int STRING_LISTS_SIZE = 10;
-
 
     /**
      * A mocked {@link Exercise} that will own the created {@link ExerciseSolution}s to be tested.

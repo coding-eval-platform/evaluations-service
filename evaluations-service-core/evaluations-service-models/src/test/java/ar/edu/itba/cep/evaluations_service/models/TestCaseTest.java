@@ -14,7 +14,7 @@ import java.util.List;
 
 
 /**
- * Test class for {@link Exercise}s
+ * Test class for {@link TestCase}s
  */
 @ExtendWith(MockitoExtension.class)
 class TestCaseTest {
@@ -211,7 +211,7 @@ class TestCaseTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating a {@link TestCase} with a null {@link TestCase.Visibility}.
      */
     @Test
@@ -226,11 +226,11 @@ class TestCaseTest {
 
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating a {@link TestCase} with a null {@link Exercise}.
      */
     @Test
-    void testNullExamOnCreation() {
+    void testNullExerciseOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> new TestCase(validVisibility(), null),
@@ -244,7 +244,7 @@ class TestCaseTest {
     // ================================
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null {@link TestCase.Visibility} to a {@link TestCase}.
      */
     @Test
@@ -258,7 +258,7 @@ class TestCaseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null inputs {@link List} to a {@link TestCase}.
      */
     @Test
@@ -271,7 +271,7 @@ class TestCaseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting an empty inputs {@link List} to a {@link TestCase}.
      */
     @Test
@@ -284,7 +284,7 @@ class TestCaseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting an inputs {@link List} containing a null element to a {@link TestCase}.
      */
     @Test
@@ -298,7 +298,7 @@ class TestCaseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting a null expected outputs {@link List} to a {@link TestCase}.
      */
     @Test
@@ -312,7 +312,7 @@ class TestCaseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting an empty expected outputs {@link List} to a {@link TestCase}.
      */
     @Test
@@ -325,7 +325,7 @@ class TestCaseTest {
     }
 
     /**
-     * Tests that a {@link IllegalArgumentException} is thrown
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when setting an expected outputs {@link List} containing a null element to a {@link TestCase}.
      */
     @Test
@@ -350,7 +350,7 @@ class TestCaseTest {
     /**
      * Creates a valid {@link TestCase}.
      *
-     * @return a {@link TestCase}.
+     * @return A {@link TestCase}.
      */
     private TestCase createTestCase() {
         return new TestCase(
