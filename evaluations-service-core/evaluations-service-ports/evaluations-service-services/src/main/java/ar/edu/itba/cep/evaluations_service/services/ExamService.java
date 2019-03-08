@@ -302,11 +302,12 @@ public interface ExamService {
      * @param answer     The answer to the question of the {@link Exercise}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#IN_PROGRESS} state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#IN_PROGRESS} state.
      */
     ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
 
     // ================================================================================================================

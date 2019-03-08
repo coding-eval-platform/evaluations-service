@@ -264,7 +264,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         // Verify that the exam is in progress in order to create solutions for exercises owned by it.
         if (exercise.belongsToExam().getState() != Exam.State.IN_PROGRESS) {
