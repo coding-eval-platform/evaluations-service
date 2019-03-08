@@ -114,7 +114,7 @@ public class Exercise {
     /**
      * Asserts that the given {@code question} is valid.
      *
-     * @param question The description to be checked.
+     * @param question The question to be checked.
      * @throws IllegalArgumentException If the question is not valid.
      */
     private static void assertQuestion(final String question) throws IllegalArgumentException {
