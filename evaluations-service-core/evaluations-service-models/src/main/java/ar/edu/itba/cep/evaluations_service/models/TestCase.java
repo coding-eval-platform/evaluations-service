@@ -43,8 +43,9 @@ public class TestCase {
      *
      * @param visibility Indicates whether the test case is public or private.
      * @param belongsTo  The {@link Exercise} to which this test case belongs to.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    public TestCase(final Visibility visibility, final Exercise belongsTo) {
+    public TestCase(final Visibility visibility, final Exercise belongsTo) throws IllegalArgumentException {
         assertVisibility(visibility);
         assertExercise(belongsTo);
         this.id = 0;
@@ -94,8 +95,9 @@ public class TestCase {
      * Changes the visibility for this test case.
      *
      * @param visibility The new {@link Visibility} for this test case.
+     * @throws IllegalArgumentException If the given {@code visibility} is not valid.
      */
-    public void setVisibility(final Visibility visibility) {
+    public void setVisibility(final Visibility visibility) throws IllegalArgumentException {
         assertVisibility(visibility);
         this.visibility = visibility;
     }
@@ -104,8 +106,9 @@ public class TestCase {
      * Replaces the inputs {@link List} for this test case.
      *
      * @param inputs The new {@link List} of inputs for this test case.
+     * @throws IllegalArgumentException If the given {@code inputs} {@link List} is not valid.
      */
-    public void setInputs(final List<String> inputs) {
+    public void setInputs(final List<String> inputs) throws IllegalArgumentException {
         assertInputList(inputs);
         this.inputs.clear();
         this.inputs.addAll(inputs);
@@ -115,8 +118,9 @@ public class TestCase {
      * Replaces the outputs {@link List} for this test case.
      *
      * @param outputs The new {@link List} of outputs for this test case.
+     * @throws IllegalArgumentException If the given {@code outputs} {@link List} is not valid.
      */
-    public void setExpectedOutputs(final List<String> outputs) {
+    public void setExpectedOutputs(final List<String> outputs) throws IllegalArgumentException {
         assertExpectedOutputsList(outputs);
         this.expectedOutputs.clear();
         this.expectedOutputs.addAll(outputs);

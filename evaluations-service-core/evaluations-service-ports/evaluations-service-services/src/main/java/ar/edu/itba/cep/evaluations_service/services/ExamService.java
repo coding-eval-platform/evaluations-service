@@ -201,12 +201,13 @@ public interface ExamService {
      * @return The created {@link TestCase}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
     TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility,
                             final List<String> inputs, final List<String> expectedOutputs)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the {@link TestCase.Visibility} to the {@link TestCase} with the given {@code testCaseId}.
@@ -216,11 +217,12 @@ public interface ExamService {
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code visibility} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the inputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
@@ -230,10 +232,12 @@ public interface ExamService {
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code inputs} {@link List} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeInputs(final long testCaseId, final List<String> inputs) throws IllegalEntityStateException;
+    void changeInputs(final long testCaseId, final List<String> inputs)
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the expected outputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
@@ -243,10 +247,12 @@ public interface ExamService {
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code outputs} {@link List} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeExpectedOutputs(final long testCaseId, final List<String> outputs) throws IllegalEntityStateException;
+    void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Removes all the inputs for the {@link TestCase} with the given {@code testCaseId}.

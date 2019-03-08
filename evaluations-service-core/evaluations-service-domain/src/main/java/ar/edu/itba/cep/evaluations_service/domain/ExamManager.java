@@ -197,7 +197,7 @@ public class ExamManager implements ExamService {
     public TestCase createTestCase(final long exerciseId,
                                    final TestCase.Visibility visibility,
                                    final List<String> inputs, final List<String> expectedOutputs)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.belongsToExam());
         final var testCase = new TestCase(visibility, exercise);
@@ -208,7 +208,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setVisibility(visibility);
@@ -216,7 +216,8 @@ public class ExamManager implements ExamService {
     }
 
     @Override
-    public void changeInputs(final long testCaseId, final List<String> inputs) throws IllegalEntityStateException {
+    public void changeInputs(final long testCaseId, final List<String> inputs)
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setInputs(inputs);
@@ -225,7 +226,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setExpectedOutputs(outputs);
