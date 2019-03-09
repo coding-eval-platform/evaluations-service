@@ -1,5 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import org.springframework.util.Assert;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -13,14 +15,17 @@ public class TestCase {
      * The test case's id.
      */
     private final long id;
+
     /**
      * The inputs of the test case.
      */
     private final List<String> inputs;
+
     /**
      * The expected output.
      */
     private final List<String> expectedOutputs;
+
     /**
      * Indicates whether the test case is public or private.
      */
@@ -38,8 +43,11 @@ public class TestCase {
      *
      * @param visibility Indicates whether the test case is public or private.
      * @param belongsTo  The {@link Exercise} to which this test case belongs to.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    public TestCase(final Visibility visibility, final Exercise belongsTo) {
+    public TestCase(final Visibility visibility, final Exercise belongsTo) throws IllegalArgumentException {
+        assertVisibility(visibility);
+        assertExercise(belongsTo);
         this.id = 0;
         this.inputs = new LinkedList<>();
         this.expectedOutputs = new LinkedList<>();
@@ -87,8 +95,10 @@ public class TestCase {
      * Changes the visibility for this test case.
      *
      * @param visibility The new {@link Visibility} for this test case.
+     * @throws IllegalArgumentException If the given {@code visibility} is not valid.
      */
-    public void setVisibility(final Visibility visibility) {
+    public void setVisibility(final Visibility visibility) throws IllegalArgumentException {
+        assertVisibility(visibility);
         this.visibility = visibility;
     }
 
@@ -96,8 +106,10 @@ public class TestCase {
      * Replaces the inputs {@link List} for this test case.
      *
      * @param inputs The new {@link List} of inputs for this test case.
+     * @throws IllegalArgumentException If the given {@code inputs} {@link List} is not valid.
      */
-    public void setInputs(final List<String> inputs) {
+    public void setInputs(final List<String> inputs) throws IllegalArgumentException {
+        assertInputList(inputs);
         this.inputs.clear();
         this.inputs.addAll(inputs);
     }
@@ -106,8 +118,10 @@ public class TestCase {
      * Replaces the outputs {@link List} for this test case.
      *
      * @param outputs The new {@link List} of outputs for this test case.
+     * @throws IllegalArgumentException If the given {@code outputs} {@link List} is not valid.
      */
-    public void setExpectedInputs(final List<String> outputs) {
+    public void setExpectedOutputs(final List<String> outputs) throws IllegalArgumentException {
+        assertExpectedOutputsList(outputs);
         this.expectedOutputs.clear();
         this.expectedOutputs.addAll(outputs);
     }
@@ -156,6 +170,57 @@ public class TestCase {
                 "ExpectedOutputs: " + expectedOutputs + ", " +
                 "Visibility: " + visibility +
                 ']';
+    }
+
+
+    // ================================
+    // Assertions
+    // ================================
+
+    /**
+     * Asserts that the given {@code visibility} is valid.
+     *
+     * @param visibility The {@link Visibility} to be checked.
+     * @throws IllegalArgumentException If the visibility is not valid.
+     */
+    private static void assertVisibility(final Visibility visibility) throws IllegalArgumentException {
+        Assert.notNull(visibility, "The visibility is missing");
+    }
+
+    /**
+     * Asserts that the given {@code exercise} is valid.
+     *
+     * @param exercise The {@link Exercise} to be checked.
+     * @throws IllegalArgumentException If the exercise is not valid.
+     */
+    private static void assertExercise(final Exercise exercise) throws IllegalArgumentException {
+        Assert.notNull(exercise, "The exercise is missing");
+    }
+
+    /**
+     * Asserts that the given {@code inputs} {@link List} is valid.
+     *
+     * @param inputs The inputs {@link List} to be checked.
+     * @throws IllegalArgumentException If the inputs {@link List} is not valid.
+     */
+    private static void assertInputList(final List<String> inputs) throws IllegalArgumentException {
+        Assert.notNull(inputs, "The inputs list is missing");
+        Assert.notEmpty(inputs,
+                "The list must not be empty. To clear the inputs list use TestCase#removeAllInputs");
+        Assert.isTrue(inputs.stream().noneMatch(Objects::isNull), "The list must not contain null elements");
+    }
+
+    /**
+     * Asserts that the given {@code outputs} {@link List} is valid.
+     *
+     * @param outputs The outputs {@link List} to be checked.
+     * @throws IllegalArgumentException If the outputs {@link List} is not valid.
+     */
+    private static void assertExpectedOutputsList(final List<String> outputs) throws IllegalArgumentException {
+        Assert.notNull(outputs, "The expected outputs list is missing");
+        Assert.notEmpty(outputs,
+                "The list must not be empty. To clear the inputs list use TestCase#removeAllExpectedOutputs");
+        Assert.isTrue(outputs.stream().noneMatch(Objects::isNull), "The list must not contain null elements");
     }
 
 

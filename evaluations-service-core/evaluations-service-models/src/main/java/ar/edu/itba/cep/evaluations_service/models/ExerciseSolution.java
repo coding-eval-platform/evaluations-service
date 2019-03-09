@@ -1,5 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import org.springframework.util.Assert;
+
 import java.util.Objects;
 
 /**
@@ -26,8 +28,11 @@ public class ExerciseSolution {
      *
      * @param belongsTo The {@link Exercise} to which it belongs to.
      * @param answer    The answer to the question of the {@link Exercise} (i.e the code written by the student).
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    public ExerciseSolution(final Exercise belongsTo, final String answer) {
+    public ExerciseSolution(final Exercise belongsTo, final String answer) throws IllegalArgumentException {
+        assertExercise(belongsTo);
+        assertAnswer(answer);
         this.id = 0;
         this.belongsTo = belongsTo;
         this.answer = answer;
@@ -84,5 +89,32 @@ public class ExerciseSolution {
                 "BelongsTo: " + belongsTo + ", " +
                 "Answer: '" + answer + "'" +
                 "]";
+    }
+
+
+    // ================================
+    // Assertions
+    // ================================
+
+    /**
+     * Asserts that the given {@code exercise} is valid.
+     *
+     * @param exercise The {@link Exercise} to be checked.
+     * @throws IllegalArgumentException If the exercise is not valid.
+     */
+    private static void assertExercise(final Exercise exercise) throws IllegalArgumentException {
+        Assert.notNull(exercise, "The exercise is missing");
+    }
+
+    /**
+     * Asserts that the given {@code answer} is valid.
+     *
+     * @param answer The answer to be checked.
+     * @throws IllegalArgumentException If the answer is not valid.
+     */
+    private static void assertAnswer(final String answer) throws IllegalArgumentException {
+        Assert.notNull(answer, "The answer is missing");
+        Assert.isTrue(answer.length() >= ValidationConstants.ANSWER_MIN_LENGTH,
+                "The answer is too short");
     }
 }

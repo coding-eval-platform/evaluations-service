@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
 /**
  * A port into the application that allows {@link Exam} management.
  */
@@ -45,8 +46,10 @@ public interface ExamService {
      * @param startingAt  The {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The {@link Exam}'s {@link Duration}.
      * @return The created {@link Exam}.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration);
+    Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws IllegalArgumentException;
 
     /**
      * Modifies the {@link Exam} with the given {@code examId}.
@@ -56,11 +59,12 @@ public interface ExamService {
      * @param startingAt  The new {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The new {@link Exam}'s {@link Duration}.
      * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     void modifyExam(final long examId, final String description,
                     final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Starts the {@link Exam} with the given {@code examId}.
@@ -121,9 +125,11 @@ public interface ExamService {
      * @param question The question of the {@link Exercise}.
      * @return The created {@link Exercise}.
      * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If any argument for the {@link Exercise} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
-    Exercise createExercise(final long examId, final String question) throws IllegalEntityStateException;
+    Exercise createExercise(final long examId, final String question)
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the question to the {@link Exercise}'s with the given {@code exerciseId}.
@@ -132,10 +138,12 @@ public interface ExamService {
      * @param question   The new question.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code question} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeExerciseQuestion(final long exerciseId, final String question) throws IllegalEntityStateException;
+    void changeExerciseQuestion(final long exerciseId, final String question)
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Deletes the {@link Exercise} with the given {@code exerciseId}.
@@ -193,12 +201,13 @@ public interface ExamService {
      * @return The created {@link TestCase}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
     TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility,
                             final List<String> inputs, final List<String> expectedOutputs)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the {@link TestCase.Visibility} to the {@link TestCase} with the given {@code testCaseId}.
@@ -208,11 +217,12 @@ public interface ExamService {
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code visibility} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the inputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
@@ -222,10 +232,12 @@ public interface ExamService {
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code inputs} {@link List} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeInputs(final long testCaseId, final List<String> inputs) throws IllegalEntityStateException;
+    void changeInputs(final long testCaseId, final List<String> inputs)
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the expected outputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
@@ -235,10 +247,12 @@ public interface ExamService {
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
+     * @throws IllegalArgumentException    If the given {@code outputs} {@link List} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeExpectedOutputs(final long testCaseId, final List<String> outputs) throws IllegalEntityStateException;
+    void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
+            throws IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Removes all the inputs for the {@link TestCase} with the given {@code testCaseId}.
@@ -288,11 +302,12 @@ public interface ExamService {
      * @param answer     The answer to the question of the {@link Exercise}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#IN_PROGRESS} state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#IN_PROGRESS} state.
      */
     ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws IllegalEntityStateException;
+            throws IllegalEntityStateException, IllegalArgumentException;
 
 
     // ================================================================================================================
@@ -312,7 +327,9 @@ public interface ExamService {
      * @param exitCode   The execution's exit code.
      * @param stdOut     The standard output generated by the execution.
      * @param stdErr     The standard error output generated by the execution.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
     void processExecution(final long solutionId, final long testCaseId,
-                          final int exitCode, final List<String> stdOut, final List<String> stdErr);
+                          final int exitCode, final List<String> stdOut, final List<String> stdErr)
+            throws IllegalArgumentException;
 }

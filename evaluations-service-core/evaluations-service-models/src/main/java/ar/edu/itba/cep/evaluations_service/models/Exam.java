@@ -1,12 +1,15 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
+import org.springframework.util.Assert;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Objects;
+
 
 /**
  * Represents an exam.
@@ -17,26 +20,32 @@ public class Exam {
      * The exam's id.
      */
     private final long id;
+
     /**
      * A description for the exam (e.g mid-term exams, final exams, etc.).
      */
     private String description;
+
     /**
      * {@link LocalDateTime} at which the exam starts.
      */
     private LocalDateTime startingAt;
+
     /**
      * {@link Duration} of the exam.
      */
     private Duration duration;
+
     /**
      * The exam's {@link State} (i.e upcoming, in progress or finished).
      */
     private State state;
+
     /**
      * The actual {@link Instant} at which the exam really started.
      */
     private Instant actualStartingMoment;
+
     /**
      * The actual {@link Duration} of the exam.
      */
@@ -49,8 +58,13 @@ public class Exam {
      * @param description A description for the exam (e.g mid-term exams, final exams, etc.).
      * @param startingAt  {@link LocalDateTime} at which the exam starts.
      * @param duration    {@link Duration} of the exam.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    public Exam(final String description, final LocalDateTime startingAt, final Duration duration) {
+    public Exam(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws IllegalArgumentException {
+        assertDescription(description);
+        assertStartingAt(startingAt);
+        assertDuration(duration);
         this.id = 0;
         this.description = description;
         this.startingAt = startingAt;
@@ -115,8 +129,11 @@ public class Exam {
      *
      * @param description The new description for the exam.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalArgumentException    If the given {@code description} is not valid.
      */
-    public void setDescription(final String description) throws IllegalEntityStateException {
+    public void setDescription(final String description)
+            throws IllegalEntityStateException, IllegalArgumentException {
+        assertDescription(description);
         verifyStateForUpdate();
         this.description = description;
     }
@@ -126,8 +143,11 @@ public class Exam {
      *
      * @param startingAt The new {@link LocalDateTime} at which the exam starts.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalArgumentException    If the given {@code startingAt} {@link LocalDateTime} is not valid.
      */
-    public void setStartingAt(final LocalDateTime startingAt) throws IllegalEntityStateException {
+    public void setStartingAt(final LocalDateTime startingAt)
+            throws IllegalEntityStateException, IllegalArgumentException {
+        assertStartingAt(startingAt);
         verifyStateForUpdate();
         this.startingAt = startingAt;
     }
@@ -137,8 +157,11 @@ public class Exam {
      *
      * @param duration The new {@link Duration} for the exam.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalArgumentException    If the given {@code duration} is not valid.
      */
-    public void setDuration(final Duration duration) throws IllegalEntityStateException {
+    public void setDuration(final Duration duration)
+            throws IllegalEntityStateException, IllegalArgumentException {
+        assertDuration(duration);
         verifyStateForUpdate();
         this.duration = duration;
     }
@@ -150,9 +173,13 @@ public class Exam {
      * @param startingAt  The new {@link LocalDateTime} at which the exam starts.
      * @param duration    The new {@link Duration} for the exam.
      * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
+     * @throws IllegalArgumentException    If any argument is not valid.
      */
     public void update(final String description, final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
+        assertDescription(description);
+        assertStartingAt(startingAt);
+        assertDuration(duration);
         verifyStateForUpdate();
         this.description = description;
         this.startingAt = startingAt;
@@ -215,6 +242,46 @@ public class Exam {
                 "StartingAt: " + startingAt + ", " +
                 "Duration: " + duration +
                 "]";
+    }
+
+
+    // ================================
+    // Assertions
+    // ================================
+
+    /**
+     * Asserts that the given {@code description} is valid.
+     *
+     * @param description The description to be checked.
+     * @throws IllegalArgumentException If the description is not valid.
+     */
+    private static void assertDescription(final String description) throws IllegalArgumentException {
+        Assert.notNull(description, "The description is missing");
+        Assert.isTrue(description.length() >= ValidationConstants.DESCRIPTION_MIN_LENGTH,
+                "The description is too short");
+        Assert.isTrue(description.length() <= ValidationConstants.DESCRIPTION_MAX_LENGTH,
+                "The description is too long");
+    }
+
+    /**
+     * Asserts that the given {@code startingAt} {@link LocalDateTime} is valid.
+     *
+     * @param startingAt The {@link LocalDateTime} to be checked.
+     * @throws IllegalArgumentException If the starting at {@link LocalDateTime} is not valid.
+     */
+    private static void assertStartingAt(final LocalDateTime startingAt) throws IllegalArgumentException {
+        Assert.notNull(startingAt, "The starting moment is missing");
+        Assert.isTrue(startingAt.isAfter(LocalDateTime.now()), "The starting moment must be in the future");
+    }
+
+    /**
+     * Asserts that the given {@code duration} is valid.
+     *
+     * @param duration The duration to be checked.
+     * @throws IllegalArgumentException If the duration is not valid.
+     */
+    private static void assertDuration(final Duration duration) throws IllegalArgumentException {
+        Assert.notNull(duration, "The duration is missing");
     }
 
 

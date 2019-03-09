@@ -1,6 +1,9 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import org.springframework.util.Assert;
+
 import java.util.Objects;
+
 
 /**
  * Represents an exercise.
@@ -11,10 +14,12 @@ public class Exercise {
      * The exercise's id.
      */
     private final long id;
+
     /**
      * The question being asked.
      */
     private String question;
+
     /**
      * The {@link Exam} to which this exercise belongs to.
      */
@@ -26,11 +31,14 @@ public class Exercise {
      *
      * @param question  The question being asked.
      * @param belongsTo The {@link Exam} to which this exercise belongs to.
+     * @throws IllegalArgumentException If any argument is not valid.
      */
-    public Exercise(final String question, final Exam belongsTo) {
-        this.belongsTo = belongsTo;
+    public Exercise(final String question, final Exam belongsTo) throws IllegalArgumentException {
+        assertQuestion(question);
+        assertExam(belongsTo);
         this.id = 0;
         this.question = question;
+        this.belongsTo = belongsTo;
     }
 
 
@@ -60,8 +68,10 @@ public class Exercise {
      * Changes the question for this exercise.
      *
      * @param question The new question for the exercise.
+     * @throws IllegalArgumentException If the given {@code question} is not valid.
      */
-    public void setQuestion(final String question) {
+    public void setQuestion(final String question) throws IllegalArgumentException {
+        assertQuestion(question);
         this.question = question;
     }
 
@@ -94,5 +104,32 @@ public class Exercise {
                 "Question: '" + question + "', " +
                 "BelongsTo: " + belongsTo +
                 "]";
+    }
+
+
+    // ================================
+    // Assertions
+    // ================================
+
+    /**
+     * Asserts that the given {@code question} is valid.
+     *
+     * @param question The question to be checked.
+     * @throws IllegalArgumentException If the question is not valid.
+     */
+    private static void assertQuestion(final String question) throws IllegalArgumentException {
+        Assert.notNull(question, "The question is missing");
+        Assert.isTrue(question.length() >= ValidationConstants.QUESTION_MIN_LENGTH,
+                "The question is too short");
+    }
+
+    /**
+     * Asserts that the given {@code exam} is valid.
+     *
+     * @param exam The {@link Exam} to be checked.
+     * @throws IllegalArgumentException If the exam is not valid.
+     */
+    private static void assertExam(final Exam exam) throws IllegalArgumentException {
+        Assert.notNull(exam, "The exam is missing");
     }
 }

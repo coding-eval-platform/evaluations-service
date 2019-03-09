@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
 /**
  * Manager for {@link Exam}s.
  */
@@ -82,7 +83,8 @@ public class ExamManager implements ExamService {
     }
 
     @Override
-    public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration) {
+    public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
+            throws IllegalArgumentException {
         final var exam = new Exam(description, startingAt, duration);
         return examRepository.save(exam);
     }
@@ -90,7 +92,7 @@ public class ExamManager implements ExamService {
     @Override
     public void modifyExam(final long examId,
                            final String description, final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exam = loadExam(examId);
         exam.update(description, startingAt, duration); // The Exam verifies state by its own.
         examRepository.save(exam);
@@ -140,7 +142,8 @@ public class ExamManager implements ExamService {
     // ================================================================================================================
 
     @Override
-    public Exercise createExercise(final long examId, final String question) throws IllegalEntityStateException {
+    public Exercise createExercise(final long examId, final String question)
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
         final var exercise = new Exercise(question, exam);
@@ -149,7 +152,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public void changeExerciseQuestion(final long exerciseId, final String question)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.belongsToExam());
         exercise.setQuestion(question);
@@ -164,7 +167,6 @@ public class ExamManager implements ExamService {
                     testCaseRepository.deleteExerciseTestCases(exercise);
                     exerciseRepository.delete(exercise);
                 });
-
     }
 
     @Override
@@ -195,18 +197,18 @@ public class ExamManager implements ExamService {
     public TestCase createTestCase(final long exerciseId,
                                    final TestCase.Visibility visibility,
                                    final List<String> inputs, final List<String> expectedOutputs)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.belongsToExam());
         final var testCase = new TestCase(visibility, exercise);
         testCase.setInputs(inputs);
-        testCase.setExpectedInputs(expectedOutputs);
+        testCase.setExpectedOutputs(expectedOutputs);
         return testCaseRepository.save(testCase);
     }
 
     @Override
     public void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setVisibility(visibility);
@@ -214,7 +216,8 @@ public class ExamManager implements ExamService {
     }
 
     @Override
-    public void changeInputs(final long testCaseId, final List<String> inputs) throws IllegalEntityStateException {
+    public void changeInputs(final long testCaseId, final List<String> inputs)
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
         testCase.setInputs(inputs);
@@ -223,10 +226,10 @@ public class ExamManager implements ExamService {
 
     @Override
     public void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
-        testCase.setExpectedInputs(outputs);
+        testCase.setExpectedOutputs(outputs);
         testCaseRepository.save(testCase);
     }
 
@@ -261,7 +264,7 @@ public class ExamManager implements ExamService {
 
     @Override
     public ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws IllegalEntityStateException {
+            throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         // Verify that the exam is in progress in order to create solutions for exercises owned by it.
         if (exercise.belongsToExam().getState() != Exam.State.IN_PROGRESS) {
@@ -281,7 +284,8 @@ public class ExamManager implements ExamService {
 
     @Override
     public void processExecution(final long solutionId, final long testCaseId,
-                                 final int exitCode, final List<String> stdOut, final List<String> stdErr) {
+                                 final int exitCode, final List<String> stdOut, final List<String> stdErr)
+            throws IllegalArgumentException {
         // First, validate arguments
         Assert.notNull(stdOut, "The stdout list cannot be null");
         Assert.notNull(stdErr, "The stderr list cannot be null");
