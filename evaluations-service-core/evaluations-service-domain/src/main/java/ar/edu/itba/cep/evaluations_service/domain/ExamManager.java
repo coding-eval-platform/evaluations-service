@@ -133,6 +133,7 @@ public class ExamManager implements ExamService {
     public void clearExercises(final long examId) throws IllegalEntityStateException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
+        testCaseRepository.deleteExamTestCases(exam);
         exerciseRepository.deleteExamExercises(exam);
     }
 
