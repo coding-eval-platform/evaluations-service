@@ -1,7 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import org.junit.jupiter.api.Assertions;
@@ -11,9 +10,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -107,73 +103,6 @@ class ExamManagerTest {
     // Exams
     // ================================================================================================================
 
-    // ================================
-    // Get exam
-    // ================================
-
-    /**
-     * Tests that searching for an {@link Exam} that exists returns the expected {@link Exam}.
-     *
-     * @param exam A mocked {@link Exam}.
-     */
-    @Test
-    void testSearchForExamThatExists(@Mock final Exam exam) {
-        final var examId = TestHelper.validExamId();
-        Mockito.when(exam.getId()).thenReturn(examId);
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
-        final var examOptional = examManager.getExam(examId);
-        Assertions.assertAll("Searching for an exam that exists is not working as expected",
-                () -> Assertions.assertTrue(
-                        examOptional.isPresent(),
-                        "The returned Optional is empty"
-                ),
-                () -> Assertions.assertEquals(
-                        examId,
-                        examOptional.map(Exam::getId).get().longValue(),
-                        "The returned Exam id's is not the same as the requested"
-                )
-        );
-        Mockito.verify(examRepository, Mockito.only()).findById(examId);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
-
-    // ================================
-    // Create Exam
-    // ================================
-
-    /**
-     * Tests that an {@link Exam} is created (i.e is saved) when arguments are valid.
-     */
-    @Test
-    void testExamIsCreatedUsingValidArguments() {
-        final var description = TestHelper.validExamDescription();
-        final var startingAt = TestHelper.validExamStartingMoment();
-        final var duration = TestHelper.validExamDuration();
-        Mockito.when(examRepository.save(Mockito.any(Exam.class))).then(invocation -> invocation.getArgument(0));
-        Assertions.assertAll("Creating an exam with valid arguments does not work as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> examManager.createExam(description, startingAt, duration),
-                        "It throws an exception"
-                ),
-                () -> assertExamProperties(
-                        examManager.createExam(description, startingAt, duration),
-                        description,
-                        startingAt,
-                        duration
-                )
-        );
-        Mockito.verify(examRepository, Mockito.atLeastOnce()).save(Mockito.any(Exam.class));
-        Mockito.verifyNoMoreInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
     /**
      * Tests that an {@link Exam} is not created (i.e {@link ExamRepository#save(Object)} is not called)
      * when arguments are not valid.
@@ -200,34 +129,6 @@ class ExamManagerTest {
     // ================================
     // Modify exam
     // ================================
-
-    /**
-     * Tests that an {@link Exam} is updated (i.e is saved) when arguments are valid.
-     */
-    @Test
-    void testExamIsModifiedWithValidArguments() {
-        final var exam = Mockito.spy(TestHelper.validExam());
-        final var newDescription = TestHelper.validExamDescription();
-        final var newStartingAt = TestHelper.validExamStartingMoment();
-        final var newDuration = TestHelper.validExamDuration();
-        final var examId = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
-        Mockito.when(examRepository.save(Mockito.any(Exam.class))).then(invocation -> invocation.getArgument(0));
-        Assertions.assertAll("Updating an exam with valid arguments does not work as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> examManager.modifyExam(examId, newDescription, newStartingAt, newDuration),
-                        "It throws an exception"
-                ),
-                () -> assertExamProperties(exam, newDescription, newStartingAt, newDuration)
-        );
-        Mockito.verify(examRepository, Mockito.atLeastOnce()).findById(examId);
-        Mockito.verify(examRepository, Mockito.atLeastOnce()).save(Mockito.any(Exam.class));
-        Mockito.verifyNoMoreInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
 
     /**
      * Tests that an {@link Exam} is not updated (i.e {@link ExamRepository#save(Object)} is not called)
@@ -261,31 +162,6 @@ class ExamManagerTest {
     // ================================
     // Start exam
     // ================================
-
-    /**
-     * Tests that starting an upcoming {@link Exam} works as expected
-     * (changes the state and then saves the exam instance).
-     */
-    @Test
-    void testExamIsStartedWhenIsUpcoming() {
-        final var exam = Mockito.spy(TestHelper.validExam());
-        final var examId = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
-        Mockito.when(examRepository.save(Mockito.any(Exam.class))).then(invocation -> invocation.getArgument(0));
-        examManager.startExam(examId);
-        Assertions.assertSame(
-                Exam.State.IN_PROGRESS,
-                exam.getState(),
-                "Change of state to \"IN_PROGRESS\" is not being performed"
-        );
-        Mockito.verify(exam, Mockito.times(1)).startExam();
-        Mockito.verify(examRepository, Mockito.atLeastOnce()).save(exam);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
 
     /**
      * Tests that starting an in progress {@link Exam} works as expected
@@ -346,32 +222,6 @@ class ExamManagerTest {
     // ================================
 
     /**
-     * Tests that finishing an in progress {@link Exam} works as expected
-     * (changes the state and then saves the exam instance).
-     */
-    @Test
-    void testExamIsFinishedWhenIsInProgress() {
-        final var exam = TestHelper.validExam();
-        exam.startExam();
-        final var spiedExam = Mockito.spy(exam);
-        final var examId = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(spiedExam));
-        Mockito.when(examRepository.save(Mockito.any(Exam.class))).then(invocation -> invocation.getArgument(0));
-        examManager.finishExam(examId);
-        Assertions.assertSame(
-                Exam.State.FINISHED,
-                spiedExam.getState(),
-                "Change of state to \"FINISHED\" is not being performed"
-        );
-        Mockito.verify(spiedExam, Mockito.times(1)).finishExam();
-        Mockito.verify(examRepository, Mockito.atLeastOnce()).save(spiedExam);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
-    /**
      * Tests that starting an in progress {@link Exam} works as expected
      * (throws an {@link IllegalEntityStateException}).
      */
@@ -429,33 +279,6 @@ class ExamManagerTest {
     // ================================
 
     /**
-     * Tests that deleting an upcoming exam is performed as expected.
-     *
-     * @param exam A mocked {@link Exam}.
-     */
-    @Test
-    void testDeleteOfUpcomingExam(@Mock final Exam exam) {
-        final var id = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(id)).thenReturn(Optional.of(exam));
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Assertions.assertDoesNotThrow(
-                () -> examManager.deleteExam(id),
-                "Deleting an exam throws an exception"
-        );
-        Mockito.verify(examRepository, Mockito.atLeastOnce()).findById(id);
-        Mockito.verify(examRepository, Mockito.times(1)).delete(exam);
-        Mockito.verify(exerciseRepository, Mockito.times(1)).deleteExamExercises(exam);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).deleteExamTestCases(exam);
-        Mockito.verifyNoMoreInteractions(
-                examRepository,
-                exerciseRepository,
-                testCaseRepository
-        );
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
-    /**
      * Tests that deleting an in progress exam is not allowed.
      */
     @Test
@@ -502,62 +325,10 @@ class ExamManagerTest {
     // Get exam exercises
     // ================================
 
-    /**
-     * Tests that the {@link List} of {@link Exercise}s belonging to a given {@link Exam} is returned as expected.
-     *
-     * @param exam            A mocked {@link Exam} (the owner of the {@link Exercise}s).
-     * @param mockedExercises A mocked {@link List} of {@link Exercise}s owned by the {@link Exam}.
-     */
-    @Test
-    void testGetExamExercises(
-            @Mock final Exam exam,
-            @Mock final List<Exercise> mockedExercises) {
-        final var id = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(id)).thenReturn(Optional.of(exam));
-        Mockito.when(exerciseRepository.getExamExercises(exam)).thenReturn(mockedExercises);
-        final var exercises = examManager.getExercises(id);
-        Assertions.assertEquals(
-                mockedExercises,
-                exercises,
-                "The returned exercises list is not the one returned by the repository"
-        );
-        Mockito.verify(examRepository, Mockito.only()).findById(id);
-        Mockito.verify(exerciseRepository, Mockito.only()).getExamExercises(exam);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
 
     // ================================
     // Clear exam exercises
     // ================================
-
-    /**
-     * Tests that clearing an upcoming exam exercises is performed as expected.
-     *
-     * @param exam A mocked {@link Exam}.
-     */
-    @Test
-    void testClearExercisesOfUpcomingExam(@Mock final Exam exam) {
-        final var examId = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Assertions.assertDoesNotThrow(
-                () -> examManager.clearExercises(examId),
-                "Clearing exam's exercises throws an exception"
-        );
-        Mockito.verify(examRepository, Mockito.only()).findById(examId);
-        Mockito.verify(exerciseRepository, Mockito.times(1)).deleteExamExercises(exam);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).deleteExamTestCases(exam);
-        Mockito.verifyNoMoreInteractions(
-                examRepository,
-                exerciseRepository,
-                testCaseRepository
-        );
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
 
     /**
      * Tests that clearing exercises of an in progress exam is not allowed.
@@ -610,10 +381,6 @@ class ExamManagerTest {
     // Create exercise
     // ================================
 
-    void testCreateExerciseForUpcomingExam() {
-        // TODO: implement
-    }
-
     @Test
     void testCreateExerciseForInProgressExam() {
         final var examId = TestHelper.validExamId();
@@ -658,38 +425,6 @@ class ExamManagerTest {
     // ========================================
     // Custom assertions
     // ========================================
-
-    /**
-     * Asserts that the given {@code exam} properties are equal as the given
-     * {@code description}, {@code startingAt} and {@code duration}.
-     *
-     * @param exam        The {@link Exam} to be asserted.
-     * @param description The expected description.
-     * @param startingAt  The expected {@link LocalDateTime} starting moment.
-     * @param duration    The expected duration.
-     */
-    private static void assertExamProperties(final Exam exam,
-                                             final String description,
-                                             final LocalDateTime startingAt,
-                                             final Duration duration) {
-        Assertions.assertAll("Exam properties are not the expected",
-                () -> Assertions.assertEquals(
-                        description,
-                        exam.getDescription(),
-                        "There is a mismatch in the description"
-                ),
-                () -> Assertions.assertEquals(
-                        startingAt,
-                        exam.getStartingAt(),
-                        "There is a mismatch in the starting moment"
-                ),
-                () -> Assertions.assertEquals(
-                        duration,
-                        exam.getDuration(),
-                        "There is a mismatch in the duration"
-                )
-        );
-    }
 
     /**
      * Asserts that executing the given {@code examManagerAction} using the given {@code examManager} and {@code id}

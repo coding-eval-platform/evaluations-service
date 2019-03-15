@@ -23,85 +23,28 @@ import java.util.function.BiConsumer;
  * (i.e how the manager behaves when trying to operate over entities that do not exist).
  */
 @ExtendWith(MockitoExtension.class)
-class ExamManagerNonExistenceTest {
-
-    // ================================================================================================================
-    // Mocks
-    // ================================================================================================================
-
-    /**
-     * A mocked {@link ExamRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    private final ExamRepository examRepository;
-    /**
-     * A mocked {@link ExerciseRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    private final ExerciseRepository exerciseRepository;
-    /**
-     * A mocked {@link TestCaseRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    private final TestCaseRepository testCaseRepository;
-    /**
-     * A mocked {@link ExamRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    private final ExerciseSolutionRepository exerciseSolutionRepository;
-    /**
-     * A mocked {@link ExerciseSolutionResultRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    private final ExerciseSolutionResultRepository exerciseSolutionResultRepository;
-
-
-    // ================================================================================================================
-    // Exam Manager
-    // ================================================================================================================
-
-    /**
-     * The {@link ExamManager} being tested.
-     */
-    private final ExamManager examManager;
-
-
-    // ================================================================================================================
-    // Constructor
-    // ================================================================================================================
+class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
 
     /**
      * Constructor.
      *
-     * @param examRepository                   A mocked {@link ExamRepository}
-     *                                         that is injected to the {@link ExamManager}.
-     * @param exerciseRepository               A mocked {@link ExerciseRepository}
-     *                                         that is injected to the {@link ExamManager}.
-     * @param testCaseRepository               A mocked {@link TestCaseRepository}
-     *                                         that is injected to the {@link ExamManager}.
-     * @param exerciseSolutionRepository       A mocked {@link ExamRepository}
-     *                                         that is injected to the {@link ExamManager}.
-     * @param exerciseSolutionResultRepository A mocked {@link ExerciseSolutionResultRepository}
-     *                                         that is injected to the {@link ExamManager}.
+     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
+     * @param exerciseSolutionRepository A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
      */
     ExamManagerNonExistenceTest(
-            @Mock final ExamRepository examRepository,
-            @Mock final ExerciseRepository exerciseRepository,
-            @Mock final TestCaseRepository testCaseRepository,
-            @Mock final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock final ExerciseSolutionResultRepository exerciseSolutionResultRepository) {
-        this.examRepository = examRepository;
-        this.exerciseRepository = exerciseRepository;
-        this.testCaseRepository = testCaseRepository;
-        this.exerciseSolutionRepository = exerciseSolutionRepository;
-        this.exerciseSolutionResultRepository = exerciseSolutionResultRepository;
-        this.examManager = new ExamManager(
-                examRepository,
+            @Mock(name = "examRep") final ExamRepository examRepository,
+            @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
+            @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
+            @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
+            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep) {
+        super(examRepository,
                 exerciseRepository,
                 testCaseRepository,
                 exerciseSolutionRepository,
-                exerciseSolutionResultRepository
-        );
+                exerciseSolResultRep);
     }
 
 
@@ -614,30 +557,6 @@ class ExamManagerNonExistenceTest {
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-    }
-
-    /**
-     * Performs a "missing exercise solution" test.
-     *
-     * @param missingEntityAssertion The {@link MissingEntityAssertion} to be used to assert a given condition
-     *                               when executing the {@code examManagerAction}.
-     * @param examManagerAction      The action being tested.
-     * @param message                The message to be displayed in case of assertion failure.
-     */
-    private void testMissingExerciseSolution(
-            final MissingEntityAssertion missingEntityAssertion,
-            final BiConsumer<ExamManager, Long> examManagerAction,
-            final String message) {
-        final var testCaseId = TestHelper.validExerciseId();
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.empty());
-
-        missingEntityAssertion.assertion(examManager, testCaseId, examManagerAction, message);
-
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(testCaseId);
         Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
     }
 
