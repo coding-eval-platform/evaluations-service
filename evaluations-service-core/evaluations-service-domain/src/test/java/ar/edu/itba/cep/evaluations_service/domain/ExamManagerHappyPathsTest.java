@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -125,7 +124,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         final var newDescription = TestHelper.validExamDescription();
         final var newStartingAt = TestHelper.validExamStartingMoment();
         final var newDuration = TestHelper.validExamDuration();
-        setExamStateField(exam, Exam.State.UPCOMING);
         Mockito.doNothing().when(exam).update(newDescription, newStartingAt, newDuration);
         Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
         Mockito.when(examRepository.save(Mockito.any(Exam.class))).then(invocation -> invocation.getArgument(0));
@@ -463,7 +461,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     // ================================================================================================================
 
     /**
-     * Tests that creating an exercise for an upcoming exam is performed as expected.
+     * Tests that creating a test case for an exercise of an upcoming exam is performed as expected.
      *
      * @param exam     A mocked {@link Exam} (the owner of the {@link Exercise}s).
      * @param exercise A mocked {@link Exercise} (the future owner of the {@link TestCase}).
@@ -912,28 +910,5 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
         Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
         Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
-    }
-
-
-    // ================================================================================================================
-    // Helpers
-    // ================================================================================================================
-
-    // ========================================
-    // Mock helpers
-    // ========================================
-
-    /**
-     * Sets the given {@code state} in the given {@code exam}.
-     *
-     * @param exam  The {@link Exam} being altered.
-     * @param state The {@link Exam.State} being set to the {@link Exam}.
-     */
-    private static void setExamStateField(final Exam exam, final Exam.State state) {
-        try {
-            FieldSetter.setField(exam, Exam.class.getDeclaredField("state"), state);
-        } catch (final NoSuchFieldException e) {
-            throw new RuntimeException("Cannot find field \"state\" in Exam class", e);
-        }
     }
 }
