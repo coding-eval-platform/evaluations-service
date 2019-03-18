@@ -1,7 +1,11 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 /**
  * A base Test class for {@link ExamManager}.
@@ -85,5 +89,55 @@ abstract class AbstractExamManagerTest {
                 exerciseSolutionRepository,
                 exerciseSolutionResultRepository
         );
+    }
+
+    /**
+     * Verifies that there were no interactions with any repository.
+     */
+    /* package */ void verifyNoInteractionWithAnyMockedRepository() {
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verifyZeroInteractions(testCaseRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+    }
+
+    /**
+     * Verifies that interactions with repositories only implies searching for an {@link Exam}.
+     *
+     * @param examId The id of the {@link Exam} being searched.
+     */
+    /* package */ void verifyOnlyExamSearch(final long examId) {
+        Mockito.verify(examRepository, Mockito.only()).findById(examId);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verifyZeroInteractions(testCaseRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+    }
+
+    /**
+     * Verifies that interactions with repositories only implies searching for an {@link Exercise}.
+     *
+     * @param exerciseId The id of the {@link Exercise} being searched.
+     */
+    /* package */ void verifyOnlyExerciseSearch(final long exerciseId) {
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
+        Mockito.verifyZeroInteractions(testCaseRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+    }
+
+    /**
+     * Verifies that interactions with repositories only implies searching for a {@link TestCase}.
+     *
+     * @param testCaseId The id of the {@link TestCase} being searched.
+     */
+    /* package */ void verifyOnlyTestCaseSearch(final long testCaseId) {
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
+        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
     }
 }

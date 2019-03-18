@@ -70,11 +70,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                         "The returned Exam id's is not the same as the requested"
                 )
         );
-        Mockito.verify(examRepository, Mockito.only()).findById(examId);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyOnlyExamSearch(examId);
     }
 
 
