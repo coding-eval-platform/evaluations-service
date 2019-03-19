@@ -355,13 +355,15 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     /**
      * Tests that trying to process an execution for an {@link ExerciseSolution} that does not not exists
      * does not throws a {@link NoSuchEntityException}.
+     *
+     * @param testCase A mocked {@link TestCase} (the one from which the inputs were taken for the execution).
      */
     @Test
-    void testProcessExecutionForNonExistenceSolution() {
+    void testProcessExecutionForNonExistenceSolution(@Mock(name = "testCase") final TestCase testCase) {
         final var solutionId = TestHelper.validExerciseId();
         Mockito
                 .when(testCaseRepository.findById(solutionId))
-                .thenReturn(Optional.of(TestHelper.validTestCase()));
+                .thenReturn(Optional.of(testCase));
         Mockito
                 .when(exerciseSolutionRepository.findById(solutionId))
                 .thenReturn(Optional.empty());
@@ -391,13 +393,15 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     /**
      * Tests that trying to process an execution for a {@link TestCase} that does not not exists
      * does not throws a {@link NoSuchEntityException}.
+     *
+     * @param solution A mocked {@link ExerciseSolution} (the one from which the executed code was taken).
      */
     @Test
-    void testProcessExecutionForNonExistenceTestCase() {
+    void testProcessExecutionForNonExistenceTestCase(@Mock(name = "solution") final ExerciseSolution solution) {
         final var testCaseId = TestHelper.validExerciseId();
         Mockito
                 .when(exerciseSolutionRepository.findById(testCaseId))
-                .thenReturn(Optional.of(TestHelper.validExerciseSolution()));
+                .thenReturn(Optional.of(solution));
         Mockito
                 .when(testCaseRepository.findById(testCaseId))
                 .thenReturn(Optional.empty());

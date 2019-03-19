@@ -36,59 +36,6 @@ class TestHelper {
     // Valid values
     // ================================================================================================================
 
-    // ================================
-    // Entities
-    // ================================
-
-    /**
-     * @return A valid {@link Exam}.
-     */
-    /* package */
-    static Exam validExam() {
-        return new Exam(
-                validExamDescription(),
-                validExamStartingMoment(),
-                validExamDuration()
-        );
-    }
-
-    /**
-     * @return A valid {@link Exercise}.
-     */
-    /* package */
-    static Exercise validExercise() {
-        return new Exercise(
-                validExerciseQuestion(),
-                validExam()
-        );
-    }
-
-    /**
-     * @return A valid {@link TestCase}.
-     */
-    /* package */
-    static TestCase validTestCase() {
-        return new TestCase(
-                validTestCaseVisibility(),
-                validExercise()
-        );
-    }
-
-    /**
-     * @return A valid {@link ExerciseSolution}.
-     */
-    /* package */
-    static ExerciseSolution validExerciseSolution() {
-        return new ExerciseSolution(
-                validExercise(),
-                validExerciseSolutionAnswer()
-        );
-    }
-
-    // ================================
-    // Values
-    // ================================
-
     /**
      * @return A valid {@link Exam} id.
      */
@@ -354,13 +301,5 @@ class TestHelper {
                 .number()
                 .numberBetween(0, possibleValues.size());
         return possibleValues.get(index);
-    }
-
-    /**
-     * @return An invalid {@link List} of {@link String} to be used as stdout or stderr when processing an execution.
-     */
-    /* package */
-    static List<String> invalidExerciseSolutionResultList() {
-        return null;
     }
 }
