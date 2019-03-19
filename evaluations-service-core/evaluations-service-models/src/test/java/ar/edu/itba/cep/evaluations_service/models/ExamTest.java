@@ -52,7 +52,7 @@ class ExamTest {
                     exam.setDescription(description);
                     exam.setStartingAt(startingAt);
                     exam.setDuration(duration);
-                    Assertions.assertAll("Is not being set (does not change the Exam value",
+                    Assertions.assertAll("Is not being set (does not change the Exam value)",
                             () -> Assertions.assertEquals(
                                     description,
                                     exam.getDescription(),
