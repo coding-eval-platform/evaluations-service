@@ -27,7 +27,7 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>evaluations-service-domain</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -35,13 +35,13 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>evaluations-service-spring-data-adapter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>evaluations-service-rest-adapter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
             <scope>runtime</scope>
         </dependency>
 
