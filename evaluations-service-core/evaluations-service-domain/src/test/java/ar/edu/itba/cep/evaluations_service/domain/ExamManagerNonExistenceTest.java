@@ -6,7 +6,7 @@ import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
-import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

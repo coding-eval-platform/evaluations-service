@@ -1,11 +1,12 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories;
+package ar.edu.itba.cep.evaluations_service.spring_data;
 
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExamRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExerciseSolutionResultRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionResultRepository;
+import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -38,16 +39,16 @@ public class SpringDataExerciseSolutionResultRepositoryAdapter implements Exerci
 
     @Override
     public <S extends ExerciseSolutionResult> S save(final S result) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Optional<ExerciseSolutionResult> find(final ExerciseSolution solution, final TestCase testCase) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public List<ExerciseSolutionResult> find(final ExerciseSolution solution) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 }

@@ -1,11 +1,12 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories;
+package ar.edu.itba.cep.evaluations_service.spring_data;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExamRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataTestCaseRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataTestCaseRepository;
+import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -37,61 +38,61 @@ public class SpringDataTestCaseRepositoryAdapter implements TestCaseRepository {
 
     @Override
     public List<TestCase> getExercisePublicTestCases(final Exercise exercise) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public List<TestCase> getExercisePrivateTestCases(final Exercise exercise) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteExerciseTestCases(final Exercise exercise) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteExamTestCases(final Exam exam) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public long count() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Optional<TestCase> findById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Iterable<TestCase> findAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends TestCase> S save(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends TestCase> void delete(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 }

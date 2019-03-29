@@ -1,4 +1,4 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories.config;
+package ar.edu.itba.cep.evaluations_service.spring_data.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ComponentScan(basePackages = {
-        "ar.edu.itba.cep.evaluations_service.spring_data_repositories"
+        "ar.edu.itba.cep.evaluations_service.spring_data"
 })
 // TODO: add @EnableJpaRepositories
 // TODO: add @EntityScan
