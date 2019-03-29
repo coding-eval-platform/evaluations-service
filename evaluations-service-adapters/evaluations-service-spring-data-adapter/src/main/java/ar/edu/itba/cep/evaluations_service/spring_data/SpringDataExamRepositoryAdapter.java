@@ -1,10 +1,11 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories;
+package ar.edu.itba.cep.evaluations_service.spring_data;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExamRepository;
-import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
+import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -34,46 +35,46 @@ public class SpringDataExamRepositoryAdapter implements ExamRepository {
 
     @Override
     public Page<Exam> findAll(final PagingRequest pagingRequest) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public long count() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Optional<Exam> findById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Iterable<Exam> findAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends Exam> S save(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends Exam> void delete(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 }

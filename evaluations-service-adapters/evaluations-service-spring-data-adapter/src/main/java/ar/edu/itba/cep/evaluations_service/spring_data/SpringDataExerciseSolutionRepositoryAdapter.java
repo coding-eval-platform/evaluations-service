@@ -1,12 +1,13 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories;
+package ar.edu.itba.cep.evaluations_service.spring_data;
 
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExamRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExerciseSolutionRepository;
-import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionRepository;
+import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -37,46 +38,46 @@ public class SpringDataExerciseSolutionRepositoryAdapter implements ExerciseSolu
 
     @Override
     public Page<ExerciseSolution> getExerciseSolutions(final Exercise exercise, final PagingRequest pagingRequest) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public long count() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Optional<ExerciseSolution> findById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Iterable<ExerciseSolution> findAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends ExerciseSolution> S save(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends ExerciseSolution> void delete(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 }

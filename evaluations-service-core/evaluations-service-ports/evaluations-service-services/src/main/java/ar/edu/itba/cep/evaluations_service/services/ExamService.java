@@ -5,8 +5,8 @@ import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
-import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

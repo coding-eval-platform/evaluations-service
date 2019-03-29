@@ -2,8 +2,8 @@ package ar.edu.itba.cep.evaluations_service.domain;
 
 import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
-import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

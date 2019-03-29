@@ -2,8 +2,9 @@ package ar.edu.itba.cep.evaluations_service.repositories;
 
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import com.bellotapps.webapps_commons.persistence.repository_utils.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.repository_utils.repositories.BasicRepository;
 
 /**
  * A port out of the application that allows {@link ExerciseSolution} persistence.

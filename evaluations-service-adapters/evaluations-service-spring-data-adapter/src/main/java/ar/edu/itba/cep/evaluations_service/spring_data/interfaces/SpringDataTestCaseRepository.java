@@ -1,4 +1,4 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces;
+package ar.edu.itba.cep.evaluations_service.spring_data.interfaces;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import org.springframework.stereotype.Repository;

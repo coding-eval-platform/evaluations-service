@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.repositories;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import com.bellotapps.webapps_commons.persistence.repository_utils.repositories.BasicRepository;
 
 import java.util.List;
 

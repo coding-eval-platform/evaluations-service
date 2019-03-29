@@ -1,10 +1,11 @@
-package ar.edu.itba.cep.evaluations_service.spring_data_repositories;
+package ar.edu.itba.cep.evaluations_service.spring_data;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExamRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data_repositories.spring_data_interfaces.SpringDataExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
+import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseRepository;
+import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -36,51 +37,51 @@ public class SpringDataExerciseRepositoryAdapter implements ExerciseRepository {
 
     @Override
     public List<Exercise> getExamExercises(final Exam exam) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteExamExercises(final Exam exam) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public long count() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Optional<Exercise> findById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public Iterable<Exercise> findAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends Exercise> S save(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public <S extends Exercise> void delete(final S entity) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 
     @Override
     public void deleteAll() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        throw new NotImplementedException();
     }
 }
