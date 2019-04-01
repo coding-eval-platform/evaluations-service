@@ -7,6 +7,23 @@ spring:
     main:
         banner-mode: "off"
 
+    jersey:
+        servlet:
+            load-on-startup: 1
+
+server:
+    port: 8000
+    error:
+        include-stacktrace: never
+        whitelabel:
+            enabled: false
+        include-exception: false
+    servlet:
+        context-path: /
+    compression:
+        enabled: true
+
+
 ---
 # Configuration for Development Environment
 
