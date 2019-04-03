@@ -53,6 +53,14 @@ public class Exam {
 
 
     /**
+     * Default constructor.
+     */
+    /* package */ Exam() {
+        // Initialize final fields with default values.
+        this.id = 0;
+    }
+
+    /**
      * Constructor.
      *
      * @param description A description for the exam (e.g mid-term exams, final exams, etc.).

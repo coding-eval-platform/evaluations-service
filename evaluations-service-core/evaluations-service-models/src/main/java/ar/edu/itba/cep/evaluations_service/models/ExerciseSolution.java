@@ -24,6 +24,16 @@ public class ExerciseSolution {
 
 
     /**
+     * Default constructor.
+     */
+    /* package */ ExerciseSolution() {
+        // Initialize final fields with default values.
+        this.id = 0;
+        this.belongsTo = null;
+        this.answer = null;
+    }
+
+    /**
      * Constructor.
      *
      * @param belongsTo The {@link Exercise} to which it belongs to.

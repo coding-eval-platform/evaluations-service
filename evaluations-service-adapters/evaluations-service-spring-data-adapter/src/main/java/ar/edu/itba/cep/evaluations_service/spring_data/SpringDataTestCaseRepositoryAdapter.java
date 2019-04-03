@@ -6,19 +6,20 @@ import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataTestCaseRepository;
-import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.BasicRepositoryAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * A concrete implementation of a {@link TestCaseRepository}
  * which acts as an adapter for a {@link SpringDataTestCaseRepository}.
  */
 @Repository
-public class SpringDataTestCaseRepositoryAdapter implements TestCaseRepository {
+public class SpringDataTestCaseRepositoryAdapter
+        implements TestCaseRepository, BasicRepositoryAdapter<TestCase, Long> {
 
     /**
      * A {@link SpringDataExamRepository} to which all operations are delegated.
@@ -36,63 +37,37 @@ public class SpringDataTestCaseRepositoryAdapter implements TestCaseRepository {
     }
 
 
+    // ================================================================================================================
+    // RepositoryAdapter
+    // ================================================================================================================
+
+    @Override
+    public CrudRepository<TestCase, Long> getCrudRepository() {
+        return repository;
+    }
+
+
+    // ================================================================================================================
+    // TestCaseRepository specific methods
+    // ================================================================================================================
+
     @Override
     public List<TestCase> getExercisePublicTestCases(final Exercise exercise) {
-        throw new NotImplementedException();
+        return repository.getByBelongsToAndVisibility(exercise, TestCase.Visibility.PUBLIC);
     }
 
     @Override
     public List<TestCase> getExercisePrivateTestCases(final Exercise exercise) {
-        throw new NotImplementedException();
+        return repository.getByBelongsToAndVisibility(exercise, TestCase.Visibility.PRIVATE);
     }
 
     @Override
     public void deleteExerciseTestCases(final Exercise exercise) {
-        throw new NotImplementedException();
+        repository.deleteByBelongsTo(exercise);
     }
 
     @Override
     public void deleteExamTestCases(final Exam exam) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public long count() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Optional<TestCase> findById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Iterable<TestCase> findAll() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends TestCase> S save(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends TestCase> void delete(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteAll() {
-        throw new NotImplementedException();
+        repository.deleteByBelongsToBelongsTo(exam);
     }
 }

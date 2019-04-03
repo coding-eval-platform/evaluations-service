@@ -6,7 +6,6 @@ import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionResultRepository;
-import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -39,16 +38,16 @@ public class SpringDataExerciseSolutionResultRepositoryAdapter implements Exerci
 
     @Override
     public <S extends ExerciseSolutionResult> S save(final S result) throws IllegalArgumentException {
-        throw new NotImplementedException();
+        return repository.save(result);
     }
 
     @Override
     public Optional<ExerciseSolutionResult> find(final ExerciseSolution solution, final TestCase testCase) {
-        throw new NotImplementedException();
+        return repository.findBySolutionAndTestCase(solution, testCase);
     }
 
     @Override
     public List<ExerciseSolutionResult> find(final ExerciseSolution solution) {
-        throw new NotImplementedException();
+        return repository.findBySolution(solution);
     }
 }

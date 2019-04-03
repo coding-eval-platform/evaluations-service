@@ -39,6 +39,17 @@ public class TestCase {
 
 
     /**
+     * Default constructor.
+     */
+    /* package */ TestCase() {
+        // Initialize final fields with default values.
+        this.id = 0;
+        this.inputs = null;
+        this.expectedOutputs = null;
+        this.belongsTo = null;
+    }
+
+    /**
      * Constructor.
      *
      * @param visibility Indicates whether the test case is public or private.

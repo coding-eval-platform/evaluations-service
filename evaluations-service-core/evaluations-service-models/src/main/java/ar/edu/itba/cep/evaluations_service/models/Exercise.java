@@ -27,6 +27,15 @@ public class Exercise {
 
 
     /**
+     * Default constructor.
+     */
+    /* package */ Exercise() {
+        // Initialize final fields with default values.
+        this.id = 0;
+        this.belongsTo = null;
+    }
+
+    /**
      * Constructor.
      *
      * @param question  The question being asked.
