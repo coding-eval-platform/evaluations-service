@@ -27,7 +27,7 @@ public interface SpringDataTestCaseRepository extends CrudRepository<TestCase, L
             "       FROM TestCase tc " +
             "           LEFT JOIN FETCH tc.inputs " +
             "           LEFT JOIN FETCH tc.expectedOutputs " +
-            "       WHERE tc.belongsTo = :exercise AND tc.visibility = :visibility")
+            "       WHERE tc.exercise = :exercise AND tc.visibility = :visibility")
     List<TestCase> getByBelongsToAndVisibility(
             @Param("exercise") final Exercise exercise,
             @Param("visibility") final TestCase.Visibility visibility
@@ -39,12 +39,12 @@ public interface SpringDataTestCaseRepository extends CrudRepository<TestCase, L
      *
      * @param exercise The {@link Exercise} owning the {@link TestCase}s being deleted.
      */
-    void deleteByBelongsTo(final Exercise exercise);
+    void deleteByExercise(final Exercise exercise);
 
     /**
      * Deletes the {@link TestCase}s belonging to {@link Exercise}s owned by the given {@code exam}.
      *
      * @param exam The {@link Exam} owning the {@link Exercise}s that own the {@link TestCase}s being deleted.
      */
-    void deleteByBelongsToBelongsTo(final Exam exam);
+    void deleteByExerciseExam(final Exam exam);
 }

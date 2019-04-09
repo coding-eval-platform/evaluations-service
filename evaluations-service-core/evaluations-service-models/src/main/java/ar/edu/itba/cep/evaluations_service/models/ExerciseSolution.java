@@ -16,7 +16,7 @@ public class ExerciseSolution {
     /**
      * The {@link Exercise} to which it belongs to.
      */
-    private final Exercise belongsTo;
+    private final Exercise exercise;
     /**
      * The answer to the question of the {@link Exercise} (i.e the code written by the student).
      */
@@ -29,22 +29,22 @@ public class ExerciseSolution {
     /* package */ ExerciseSolution() {
         // Initialize final fields with default values.
         this.id = 0;
-        this.belongsTo = null;
+        this.exercise = null;
         this.answer = null;
     }
 
     /**
      * Constructor.
      *
-     * @param belongsTo The {@link Exercise} to which it belongs to.
-     * @param answer    The answer to the question of the {@link Exercise} (i.e the code written by the student).
+     * @param exercise The {@link Exercise} to which it belongs to.
+     * @param answer   The answer to the question of the {@link Exercise} (i.e the code written by the student).
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public ExerciseSolution(final Exercise belongsTo, final String answer) throws IllegalArgumentException {
-        assertExercise(belongsTo);
+    public ExerciseSolution(final Exercise exercise, final String answer) throws IllegalArgumentException {
+        assertExercise(exercise);
         assertAnswer(answer);
         this.id = 0;
-        this.belongsTo = belongsTo;
+        this.exercise = exercise;
         this.answer = answer;
     }
 
@@ -59,8 +59,8 @@ public class ExerciseSolution {
     /**
      * @return The {@link Exercise} to which it belongs to.
      */
-    public Exercise getBelongsTo() {
-        return belongsTo;
+    public Exercise getExercise() {
+        return exercise;
     }
 
     /**
@@ -96,7 +96,7 @@ public class ExerciseSolution {
     public String toString() {
         return "ExerciseSolution [" +
                 "ID: " + id + ", " +
-                "BelongsTo: " + belongsTo + ", " +
+                "Exercise: " + exercise + ", " +
                 "Answer: '" + answer + "'" +
                 "]";
     }

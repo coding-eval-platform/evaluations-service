@@ -52,11 +52,11 @@ public class SpringDataExerciseRepositoryAdapter
 
     @Override
     public List<Exercise> getExamExercises(final Exam exam) {
-        return repository.getByBelongsTo(exam);
+        return repository.getByExam(exam);
     }
 
     @Override
     public void deleteExamExercises(final Exam exam) {
-        repository.deleteByBelongsTo(exam);
+        repository.deleteByExam(exam);
     }
 }

@@ -19,12 +19,12 @@ public interface SpringDataExerciseRepository extends CrudRepository<Exercise, L
      * @param exam The {@link Exam} owning the {@link Exercise}s being returned.
      * @return The {@link Exercise}s belonging to the given {@code exam}.
      */
-    List<Exercise> getByBelongsTo(final Exam exam);
+    List<Exercise> getByExam(final Exam exam);
 
     /**
      * Deletes the {@link Exercise}s belonging to the given {@code exam}.
      *
      * @param exam The {@link Exam} owning the {@link Exercise}s being deleted.
      */
-    void deleteByBelongsTo(final Exam exam);
+    void deleteByExam(final Exam exam);
 }

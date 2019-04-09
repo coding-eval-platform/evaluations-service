@@ -54,7 +54,7 @@ public class SpringDataExerciseSolutionRepositoryAdapter
     @Override
     public Page<ExerciseSolution> getExerciseSolutions(final Exercise exercise, final PagingRequest pagingRequest) {
         final var pageable = PagingMapper.map(pagingRequest);
-        final var page = repository.getByBelongsTo(exercise, pageable);
+        final var page = repository.getByExercise(exercise, pageable);
         return PagingMapper.map(page);
     }
 }

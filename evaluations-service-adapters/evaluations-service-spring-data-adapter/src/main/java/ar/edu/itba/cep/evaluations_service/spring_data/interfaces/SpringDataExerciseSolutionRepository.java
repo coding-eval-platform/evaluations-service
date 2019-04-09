@@ -22,5 +22,5 @@ public interface SpringDataExerciseSolutionRepository extends CrudRepository<Exe
      * @return A {@link Page} of {@link ExerciseSolution} answering the given {@link Exercise}'s question,
      * meeting the paging and sorting information of the given {@link Pageable}.
      */
-    Page<ExerciseSolution> getByBelongsTo(final Exercise exercise, Pageable pageable);
+    Page<ExerciseSolution> getByExercise(final Exercise exercise, Pageable pageable);
 }

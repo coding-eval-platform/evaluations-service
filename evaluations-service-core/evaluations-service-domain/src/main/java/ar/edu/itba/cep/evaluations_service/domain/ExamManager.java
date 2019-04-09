@@ -165,7 +165,7 @@ public class ExamManager implements ExamService {
     public void changeExerciseQuestion(final long exerciseId, final String question)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
-        performExamUpcomingStateVerification(exercise.belongsToExam());
+        performExamUpcomingStateVerification(exercise.getExam());
         exercise.setQuestion(question);
         exerciseRepository.save(exercise);
     }
@@ -175,7 +175,7 @@ public class ExamManager implements ExamService {
     public void deleteExercise(final long exerciseId) throws IllegalEntityStateException {
         exerciseRepository.findById(exerciseId)
                 .ifPresent(exercise -> {
-                    performExamUpcomingStateVerification(exercise.belongsToExam());
+                    performExamUpcomingStateVerification(exercise.getExam());
                     testCaseRepository.deleteExerciseTestCases(exercise);
                     exerciseRepository.delete(exercise);
                 });
@@ -212,7 +212,7 @@ public class ExamManager implements ExamService {
                                    final List<String> inputs, final List<String> expectedOutputs)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
-        performExamUpcomingStateVerification(exercise.belongsToExam());
+        performExamUpcomingStateVerification(exercise.getExam());
         final var testCase = new TestCase(visibility, exercise);
         testCase.setInputs(inputs);
         testCase.setExpectedOutputs(expectedOutputs);
@@ -224,7 +224,7 @@ public class ExamManager implements ExamService {
     public void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamUpcomingStateVerification(testCase.getExercise().getExam());
         testCase.setVisibility(visibility);
         testCaseRepository.save(testCase);
     }
@@ -234,7 +234,7 @@ public class ExamManager implements ExamService {
     public void changeInputs(final long testCaseId, final List<String> inputs)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamUpcomingStateVerification(testCase.getExercise().getExam());
         testCase.setInputs(inputs);
         testCaseRepository.save(testCase);
     }
@@ -244,7 +244,7 @@ public class ExamManager implements ExamService {
     public void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamUpcomingStateVerification(testCase.getExercise().getExam());
         testCase.setExpectedOutputs(outputs);
         testCaseRepository.save(testCase);
     }
@@ -253,7 +253,7 @@ public class ExamManager implements ExamService {
     @Transactional
     public void clearInputs(final long testCaseId) throws IllegalEntityStateException {
         final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamUpcomingStateVerification(testCase.getExercise().getExam());
         testCase.removeAllInputs();
         testCaseRepository.save(testCase);
     }
@@ -262,7 +262,7 @@ public class ExamManager implements ExamService {
     @Transactional
     public void clearOutputs(final long testCaseId) throws IllegalEntityStateException {
         final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
+        performExamUpcomingStateVerification(testCase.getExercise().getExam());
         testCase.removeAllExpectedOutputs();
         testCaseRepository.save(testCase);
     }
@@ -272,7 +272,7 @@ public class ExamManager implements ExamService {
     public void deleteTestCase(final long testCaseId) throws IllegalEntityStateException {
         testCaseRepository.findById(testCaseId)
                 .ifPresent(testCase -> {
-                    performExamUpcomingStateVerification(testCase.belongsToExercise().belongsToExam());
+                    performExamUpcomingStateVerification(testCase.getExercise().getExam());
                     testCaseRepository.delete(testCase);
                 });
     }
@@ -287,7 +287,7 @@ public class ExamManager implements ExamService {
             throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         // Verify that the exam is in progress in order to create solutions for exercises owned by it.
-        if (exercise.belongsToExam().getState() != Exam.State.IN_PROGRESS) {
+        if (exercise.getExam().getState() != Exam.State.IN_PROGRESS) {
             throw new IllegalEntityStateException(EXAM_IS_NOT_IN_PROGRESS);
         }
         final var solution = new ExerciseSolution(exercise, answer);

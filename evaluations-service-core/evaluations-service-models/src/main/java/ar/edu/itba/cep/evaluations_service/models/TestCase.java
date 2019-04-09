@@ -35,7 +35,7 @@ public class TestCase {
     /**
      * The {@link Exercise} to which this test case belongs to.
      */
-    private final Exercise belongsTo;
+    private final Exercise exercise;
 
 
     /**
@@ -46,24 +46,24 @@ public class TestCase {
         this.id = 0;
         this.inputs = null;
         this.expectedOutputs = null;
-        this.belongsTo = null;
+        this.exercise = null;
     }
 
     /**
      * Constructor.
      *
      * @param visibility Indicates whether the test case is public or private.
-     * @param belongsTo  The {@link Exercise} to which this test case belongs to.
+     * @param exercise   The {@link Exercise} to which this test case belongs to.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public TestCase(final Visibility visibility, final Exercise belongsTo) throws IllegalArgumentException {
+    public TestCase(final Visibility visibility, final Exercise exercise) throws IllegalArgumentException {
         assertVisibility(visibility);
-        assertExercise(belongsTo);
+        assertExercise(exercise);
         this.id = 0;
         this.inputs = new LinkedList<>();
         this.expectedOutputs = new LinkedList<>();
         this.visibility = visibility;
-        this.belongsTo = belongsTo;
+        this.exercise = exercise;
     }
 
 
@@ -98,8 +98,8 @@ public class TestCase {
     /**
      * @return The {@link Exercise} to which this test case belongs to.
      */
-    public Exercise belongsToExercise() {
-        return belongsTo;
+    public Exercise getExercise() {
+        return exercise;
     }
 
     /**
@@ -179,7 +179,8 @@ public class TestCase {
                 "ID: " + id + ", " +
                 "Inputs: " + inputs + ", " +
                 "ExpectedOutputs: " + expectedOutputs + ", " +
-                "Visibility: " + visibility +
+                "Visibility: " + visibility + ", " +
+                "Exercise: " + exercise +
                 ']';
     }
 

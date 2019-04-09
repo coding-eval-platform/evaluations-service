@@ -63,11 +63,11 @@ public class SpringDataTestCaseRepositoryAdapter
 
     @Override
     public void deleteExerciseTestCases(final Exercise exercise) {
-        repository.deleteByBelongsTo(exercise);
+        repository.deleteByExercise(exercise);
     }
 
     @Override
     public void deleteExamTestCases(final Exam exam) {
-        repository.deleteByBelongsToBelongsTo(exam);
+        repository.deleteByExerciseExam(exam);
     }
 }
