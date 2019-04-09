@@ -57,7 +57,6 @@
 
     <entity class="TestCase" access="FIELD">
         <table name="test_cases"/>
-
         <attributes>
             <id name="id">
                 <column name="id" nullable="false" updatable="false"/>
