@@ -5,6 +5,7 @@ import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
+import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 
@@ -58,31 +59,34 @@ public interface ExamService {
      * @param description The new {@link Exam}'s description.
      * @param startingAt  The new {@link LocalDateTime} at which the {@link Exam} starts.
      * @param duration    The new {@link Exam}'s {@link Duration}.
+     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      * @throws IllegalArgumentException    If any argument is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     void modifyExam(final long examId, final String description,
                     final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Starts the {@link Exam} with the given {@code examId}.
      *
      * @param examId The id The id of the {@link Exam} to be started.
+     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam}'s state is not {@link Exam.State#UPCOMING}.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
-    void startExam(final long examId) throws IllegalEntityStateException;
+    void startExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException;
 
     /**
      * Finishes the {@link Exam} with the given {@code examId}.
      *
      * @param examId The id The id of the {@link Exam} to be finished.
+     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam}'s state is not {@link Exam.State#FINISHED}.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#IN_PROGRESS} state.
      */
-    void finishExam(final long examId) throws IllegalEntityStateException;
+    void finishExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException;
 
     /**
      * Deletes the {@link Exam} with the given {@code examId}.
@@ -101,17 +105,19 @@ public interface ExamService {
      *
      * @param examId The id of the {@link Exam} whose {@link Exercise}s are being requested.
      * @return A {@link List} containing the {@link Exercise}s of the {@link Exam} with the given {@code examId}.
+     * @throws NoSuchEntityException If there is no {@link Exam} with the given {@code examId}.
      */
-    List<Exercise> getExercises(final long examId);
+    List<Exercise> getExercises(final long examId) throws NoSuchEntityException;
 
     /**
      * Removes all {@link Exercise}s of the {@link Exam} with the given {@code examId}.
      *
      * @param examId The id of the {@link Exam} whose {@link Exercise}s are going to be removed.
+     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
-    void clearExercises(final long examId) throws IllegalEntityStateException;
+    void clearExercises(final long examId) throws NoSuchEntityException, IllegalEntityStateException;
 
 
     // ================================================================================================================
@@ -124,18 +130,20 @@ public interface ExamService {
      * @param examId   The id of the {@link Exam} to which an {@link Exercise} will be added.
      * @param question The question of the {@link Exercise}.
      * @return The created {@link Exercise}.
+     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      * @throws IllegalArgumentException    If any argument for the {@link Exercise} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     Exercise createExercise(final long examId, final String question)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the question to the {@link Exercise}'s with the given {@code exerciseId}.
      *
      * @param exerciseId The id of the {@link Exercise} whose question will be changed.
      * @param question   The new question.
+     * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#UPCOMING} state.
      * @throws IllegalArgumentException    If the given {@code question} is not valid.
@@ -143,7 +151,7 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeExerciseQuestion(final long exerciseId, final String question)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Deletes the {@link Exercise} with the given {@code exerciseId}.
@@ -164,8 +172,9 @@ public interface ExamService {
      * @param exerciseId The id of the {@link Exercise} whose public {@link TestCase}s are being requested.
      * @return A {@link List} containing the public {@link TestCase}s
      * of the {@link Exercise} with the given {@code exerciseId}.
+     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
      */
-    List<TestCase> getPublicTestCases(final long exerciseId);
+    List<TestCase> getPublicTestCases(final long exerciseId) throws NoSuchEntityException;
 
     /**
      * Returns the private {@link TestCase}s of the {@link Exercise} with the given {@code exerciseId}.
@@ -173,8 +182,9 @@ public interface ExamService {
      * @param exerciseId The id of the {@link Exercise} whose private {@link TestCase}s are being requested.
      * @return A {@link List} containing the private {@link TestCase}s
      * of the {@link Exercise} with the given {@code exerciseId}.
+     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
      */
-    List<TestCase> getPrivateTestCases(final long exerciseId);
+    List<TestCase> getPrivateTestCases(final long exerciseId) throws NoSuchEntityException;
 
     /**
      * Lists all {@link ExerciseSolution}s for the {@link Exercise} with the given {@code exerciseId},
@@ -183,8 +193,10 @@ public interface ExamService {
      * @param exerciseId    The The id of the {@link Exercise} whose {@link ExerciseSolution}s are being requested.
      * @param pagingRequest The {@link PagingRequest} containing paging data.
      * @return The requested {@link Page} of {@link ExerciseSolution}.
+     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
      */
-    Page<ExerciseSolution> listSolutions(final long exerciseId, PagingRequest pagingRequest);
+    Page<ExerciseSolution> listSolutions(final long exerciseId, PagingRequest pagingRequest)
+            throws NoSuchEntityException;
 
 
     // ================================================================================================================
@@ -199,6 +211,7 @@ public interface ExamService {
      * @param inputs          The inputs of the {@link TestCase}.
      * @param expectedOutputs The expected outputs of the {@link TestCase}.
      * @return The created {@link TestCase}.
+     * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#UPCOMING} state.
      * @throws IllegalArgumentException    If any argument is not valid.
@@ -207,13 +220,14 @@ public interface ExamService {
      */
     TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility,
                             final List<String> inputs, final List<String> expectedOutputs)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the {@link TestCase.Visibility} to the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} whose {@code TestCase.Visibility} will be changed.
      * @param visibility The new {@link TestCase.Visibility} value.
+     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
@@ -222,13 +236,14 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the inputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which inputs will be replaced.
      * @param inputs     The {@link List} of inputs for the {@link TestCase}.
+     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
@@ -237,13 +252,14 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeInputs(final long testCaseId, final List<String> inputs)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Changes the expected outputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which expected outputs will be replaced.
      * @param outputs    The {@link List} of expected outputs for the {@link TestCase}.
+     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
@@ -252,31 +268,33 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Removes all the inputs for the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which inputs will be removed.
+     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void clearInputs(final long testCaseId) throws IllegalEntityStateException;
+    void clearInputs(final long testCaseId) throws NoSuchEntityException, IllegalEntityStateException;
 
     /**
      * Removes all the expected outputs for the {@link TestCase} with the given {@code testCaseId}.
      *
      * @param testCaseId The id of the {@link TestCase} to which expected outputs will be removed.
+     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
      *                                     is not in {@link Exam.State#UPCOMING} state.
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void clearOutputs(final long testCaseId) throws IllegalEntityStateException;
+    void clearOutputs(final long testCaseId) throws NoSuchEntityException, IllegalEntityStateException;
 
     /**
      * Deletes the {@link TestCase} with the given {@code testCaseId}.
@@ -300,6 +318,7 @@ public interface ExamService {
      *
      * @param exerciseId The id of the {@link Exercise} for which an {@link ExerciseSolution} will be created.
      * @param answer     The answer to the question of the {@link Exercise}.
+     * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#IN_PROGRESS} state.
      * @throws IllegalArgumentException    If any argument is not valid.
@@ -307,7 +326,7 @@ public interface ExamService {
      * is not in {@link Exam.State#IN_PROGRESS} state.
      */
     ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws IllegalEntityStateException, IllegalArgumentException;
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
 
     // ================================================================================================================
@@ -327,9 +346,11 @@ public interface ExamService {
      * @param exitCode   The execution's exit code.
      * @param stdOut     The standard output generated by the execution.
      * @param stdErr     The standard error output generated by the execution.
+     * @throws NoSuchEntityException    If there is no {@link ExerciseSolution} with the given {@code solutionId},
+     *                                  or if there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalArgumentException If any argument is not valid.
      */
     void processExecution(final long solutionId, final long testCaseId,
                           final int exitCode, final List<String> stdOut, final List<String> stdErr)
-            throws IllegalArgumentException;
+            throws NoSuchEntityException, IllegalArgumentException;
 }
