@@ -18,9 +18,19 @@ public class ExerciseUploadDto {
     /**
      * The question for the exercise.
      */
-    @NotNull(message = "The question is missing.", payload = MissingValue.class)
-    @Size(min = ValidationConstants.QUESTION_MIN_LENGTH,
-            message = "Question too short", payload = IllegalValue.class)
+    @NotNull(message = "The question is missing.", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    ChangeQuestion.class,
+            }
+    )
+    @Size(message = "Question too short", payload = IllegalValue.class,
+            min = ValidationConstants.QUESTION_MIN_LENGTH,
+            groups = {
+                    Create.class,
+                    ChangeQuestion.class,
+            }
+    )
     private final String question;
 
 
@@ -39,5 +49,22 @@ public class ExerciseUploadDto {
      */
     public String getQuestion() {
         return question;
+    }
+
+
+    // ================================================================================================================
+    // Validation groups
+    // ================================================================================================================
+
+    /**
+     * Validation group for the create operation.
+     */
+    public interface Create {
+    }
+
+    /**
+     * Validation group for the change question operation.
+     */
+    public interface ChangeQuestion {
     }
 }

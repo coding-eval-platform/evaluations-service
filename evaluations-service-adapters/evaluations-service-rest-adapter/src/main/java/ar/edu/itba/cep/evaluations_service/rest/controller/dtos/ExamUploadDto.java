@@ -24,24 +24,54 @@ public class ExamUploadDto {
     /**
      * The description for the exam (e.g mid-term exams, final exams, etc.).
      */
-    @NotNull(message = "The description is missing.", payload = MissingValue.class)
-    @Size(min = ValidationConstants.DESCRIPTION_MIN_LENGTH,
-            message = "Description too short", payload = IllegalValue.class)
-    @Size(max = ValidationConstants.DESCRIPTION_MAX_LENGTH,
-            message = "Description too long", payload = IllegalValue.class)
+    @NotNull(message = "The description is missing.", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
+    @Size(message = "Description too short", payload = IllegalValue.class,
+            min = ValidationConstants.DESCRIPTION_MIN_LENGTH,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
+    @Size(message = "Description too long", payload = IllegalValue.class,
+            max = ValidationConstants.DESCRIPTION_MAX_LENGTH,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
     private final String description;
 
     /**
      * {@link LocalDateTime} at which the exam starts.
      */
-    @NotNull(message = "The startingAt value is missing", payload = MissingValue.class)
-    @Future(message = "The starting moment must be in the future", payload = IllegalValue.class)
+    @NotNull(message = "The startingAt value is missing", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
+    @Future(message = "The starting moment must be in the future", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
     private final LocalDateTime startingAt;
 
     /**
      * {@link Duration} of the exam.
      */
-    @NotNull(message = "The duration is missing", payload = MissingValue.class)
+    @NotNull(message = "The duration is missing", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
     private final Duration duration;
 
 
@@ -84,5 +114,22 @@ public class ExamUploadDto {
      */
     public Duration getDuration() {
         return duration;
+    }
+
+
+    // ================================================================================================================
+    // Validation groups
+    // ================================================================================================================
+
+    /**
+     * Validation group for the create operation.
+     */
+    public interface Create {
+    }
+
+    /**
+     * Validation group for the update operation.
+     */
+    public interface Update {
     }
 }

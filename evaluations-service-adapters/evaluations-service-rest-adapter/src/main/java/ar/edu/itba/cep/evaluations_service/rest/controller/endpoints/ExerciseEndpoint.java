@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -70,7 +71,7 @@ public class ExerciseEndpoint {
     public Response createExerciseForExam(
             @Context final UriInfo uriInfo,
             @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId,
-            @Valid final ExerciseUploadDto dto) {
+            @Valid @ConvertGroup(to = ExerciseUploadDto.Create.class) final ExerciseUploadDto dto) {
         LOGGER.debug("Creating exercise for exam with id {}", examId);
         final var exercise = examService.createExercise(examId, dto.getQuestion());
         final var location = uriInfo.getAbsolutePathBuilder()
@@ -84,7 +85,7 @@ public class ExerciseEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response changeQuestion(
             @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
-            @Valid final ExerciseUploadDto dto) {
+            @Valid @ConvertGroup(to = ExerciseUploadDto.ChangeQuestion.class) final ExerciseUploadDto dto) {
         LOGGER.debug("Changing question for exercise with id {}", exerciseId);
         examService.changeExerciseQuestion(exerciseId, dto.getQuestion());
         return Response.noContent().build();
@@ -93,8 +94,7 @@ public class ExerciseEndpoint {
     @DELETE
     @Path(Routes.EXERCISE)
     public Response deleteExercise(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
-            @Valid final ExerciseUploadDto dto) {
+            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId) {
         LOGGER.debug("Deleting exercise with id {}", exerciseId);
         examService.deleteExercise(exerciseId);
         return Response.noContent().build();

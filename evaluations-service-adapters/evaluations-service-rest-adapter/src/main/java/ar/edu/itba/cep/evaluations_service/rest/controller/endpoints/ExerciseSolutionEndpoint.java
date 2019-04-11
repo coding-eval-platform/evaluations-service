@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -63,7 +64,7 @@ public class ExerciseSolutionEndpoint {
     public Response createSolution(
             @Context final UriInfo uriInfo,
             @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
-            @Valid final ExerciseSolutionUploadDto dto) {
+            @Valid @ConvertGroup(to = ExerciseSolutionUploadDto.Create.class) final ExerciseSolutionUploadDto dto) {
         LOGGER.debug("Creating a solution for exercise with id {}", exerciseId);
         final var solution = examService.createExerciseSolution(exerciseId, dto.getAnswer());
         final var location = uriInfo.getAbsolutePathBuilder()

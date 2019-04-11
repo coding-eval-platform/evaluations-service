@@ -2,6 +2,7 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.models.TestCase.Visibility;
+import ar.edu.itba.cep.evaluations_service.rest.controller.validation.NotNullsInIterable;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.IllegalValue;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.MissingValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,24 +20,47 @@ public class TestCaseUploadDto {
     /**
      * Indicates whether the test case is public or private.
      */
-    @NotNull(message = "The visibility is missing.", payload = MissingValue.class)
+    @NotNull(message = "The visibility is missing.", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    ChangeVisibility.class,
+            }
+    )
     private final TestCase.Visibility visibility;
 
     /**
      * The inputs of the test case.
      */
-    @NotNull(message = "The inputs list is missing.", payload = MissingValue.class)
-    @NotEmpty(message = "The inputs list is empty", payload = IllegalValue.class)
-    private final List<
-            @NotNull(message = "The inputs list contains nulls", payload = IllegalValue.class) String> inputs;
+    @NotEmpty(message = "The inputs list must not be null nor empty", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    ChangeInputs.class,
+            }
+    )
+    @NotNullsInIterable(message = "The inputs list contains nulls", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    ChangeInputs.class,
+            }
+    )
+    private final List<String> inputs;
 
     /**
      * The expected output.
      */
-    @NotNull(message = "The expected outputs list is missing.", payload = MissingValue.class)
-    @NotEmpty(message = "The expected outputs list is empty", payload = IllegalValue.class)
-    private final List<
-            @NotNull(message = "The expected outputs list contains nulls", payload = IllegalValue.class) String> outputs;
+    @NotEmpty(message = "The expected outputs list must not be null nor empty", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    ChangeExpectedOutputs.class
+            }
+    )
+    @NotNullsInIterable(message = "The expected outputs  list contains nulls", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    ChangeExpectedOutputs.class
+            }
+    )
+    private final List<String> outputs;
 
 
     /**
@@ -85,5 +109,34 @@ public class TestCaseUploadDto {
      */
     public List<String> getOutputs() {
         return outputs;
+    }
+
+
+    // ================================================================================================================
+    // Validation groups
+    // ================================================================================================================
+
+    /**
+     * Validation group for the create operation.
+     */
+    public interface Create {
+    }
+
+    /**
+     * Validation group for the change visibility operation.
+     */
+    public interface ChangeVisibility {
+    }
+
+    /**
+     * Validation group for the change inputs operation.
+     */
+    public interface ChangeInputs {
+    }
+
+    /**
+     * Validation group for the change expected outputs operation.
+     */
+    public interface ChangeExpectedOutputs {
     }
 }

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -74,7 +75,7 @@ public class TestCaseEndpoint {
     public Response createTestCaseForExercise(
             @Context final UriInfo uriInfo,
             @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
-            @Valid final TestCaseUploadDto dto) {
+            @Valid @ConvertGroup(to = TestCaseUploadDto.Create.class) final TestCaseUploadDto dto) {
         LOGGER.debug("Creating test case for exercise with id {}", exerciseId);
         final var testCase = examService.createTestCase(
                 exerciseId,
@@ -93,7 +94,7 @@ public class TestCaseEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response changeVisibility(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
-            @Valid final TestCaseUploadDto dto) {
+            @Valid @ConvertGroup(to = TestCaseUploadDto.ChangeVisibility.class) final TestCaseUploadDto dto) {
         LOGGER.debug("Changing visibility for test case with id {}", testCaseId);
         examService.changeVisibility(testCaseId, dto.getVisibility());
         return Response.noContent().build();
@@ -104,7 +105,7 @@ public class TestCaseEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response changeInputs(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
-            @Valid final TestCaseUploadDto dto) {
+            @Valid @ConvertGroup(to = TestCaseUploadDto.ChangeInputs.class) final TestCaseUploadDto dto) {
         LOGGER.debug("Changing inputs for test case with id {}", testCaseId);
         examService.changeInputs(testCaseId, dto.getInputs());
         return Response.noContent().build();
@@ -115,7 +116,7 @@ public class TestCaseEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response changeExpectedOutputs(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
-            @Valid final TestCaseUploadDto dto) {
+            @Valid @ConvertGroup(to = TestCaseUploadDto.ChangeExpectedOutputs.class) final TestCaseUploadDto dto) {
         LOGGER.debug("Changing expected outputs for test case with id {}", testCaseId);
         examService.changeExpectedOutputs(testCaseId, dto.getOutputs());
         return Response.noContent().build();
