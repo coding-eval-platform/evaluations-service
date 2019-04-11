@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings
+        xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_2.xsd"
+        version="2.2">
+
+    <package>ar.edu.itba.cep.evaluations_service.models</package>
+
+    <entity class="Exam" access="FIELD">
+        <table name="exams"/>
+        <attributes>
+            <id name="id">
+                <column name="id" nullable="false" updatable="false"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="description">
+                <column name="description" nullable="false" insertable="true" updatable="true"/>
+            </basic>
+            <basic name="startingAt">
+                <column name="starting_at" nullable="false" insertable="true" updatable="true"/>
+            </basic>
+            <basic name="duration">
+                <column name="duration" nullable="false" insertable="true" updatable="true"/>
+                <convert converter="ar.edu.itba.cep.evaluations_service.spring_data.jpa.converters.DurationConverter"/>
+            </basic>
+            <basic name="state">
+                <column name="state" nullable="false" insertable="true" updatable="true"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <basic name="actualStartingMoment">
+                <column name="actual_starting_moment" nullable="true" insertable="true" updatable="true"/>
+            </basic>
+            <basic name="actualDuration">
+                <column name="actual_duration" nullable="true" insertable="true" updatable="true"/>
+                <convert converter="ar.edu.itba.cep.evaluations_service.spring_data.jpa.converters.DurationConverter"/>
+            </basic>
+        </attributes>
+    </entity>
+
+    <entity class="Exercise" access="FIELD">
+        <table name="exercises"/>
+        <attributes>
+            <id name="id">
+                <column name="id" nullable="false" updatable="false"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="question">
+                <column name="question" nullable="false" insertable="true" updatable="true"/>
+            </basic>
+            <many-to-one name="exam" fetch="LAZY" optional="false">
+                <join-column name="belongs_to"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
+        </attributes>
+    </entity>
+
+    <entity class="TestCase" access="FIELD">
+        <table name="test_cases"/>
+        <attributes>
+            <id name="id">
+                <column name="id" nullable="false" updatable="false"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="visibility">
+                <column name="visibility" nullable="false" insertable="true" updatable="true"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <many-to-one name="exercise" fetch="LAZY" optional="false">
+                <join-column name="belongs_to"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
+            <element-collection name="inputs" fetch="LAZY">
+                <order-column name="input_order" nullable="false" insertable="true" updatable="false"/>
+                <column name="input" nullable="false" insertable="true" updatable="true"/>
+                <collection-table name="test_case_inputs">
+                    <join-column name="test_case_id"/>
+                </collection-table>
+            </element-collection>
+            <element-collection name="expectedOutputs" fetch="LAZY">
+                <order-column name="expected_output_order" nullable="false" insertable="true" updatable="false"/>
+                <column name="expected_output" nullable="false" insertable="true" updatable="true"/>
+                <collection-table name="test_case_expected_outputs">
+                    <join-column name="test_case_id"/>
+                </collection-table>
+            </element-collection>
+        </attributes>
+    </entity>
+
+    <entity class="ExerciseSolution" access="FIELD">
+        <table name="exercise_solutions"/>
+        <attributes>
+            <id name="id">
+                <column name="id" nullable="false" updatable="false"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="answer">
+                <column name="answer" nullable="false" insertable="true" updatable="false"/>
+            </basic>
+            <many-to-one name="exercise" fetch="LAZY" optional="false">
+                <join-column name="belongs_to"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
+        </attributes>
+    </entity>
+
+    <entity class="ExerciseSolutionResult" access="FIELD">
+        <table name="exercise_solution_results"/>
+        <attributes>
+            <id name="id">
+                <column name="id" nullable="false" updatable="false"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="result">
+                <column name="result" nullable="false" insertable="true" updatable="false"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <many-to-one name="solution" fetch="LAZY" optional="false">
+                <join-column name="solution_id"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
+            <many-to-one name="testCase" fetch="LAZY" optional="false">
+                <join-column name="test_case_id"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
+        </attributes>
+    </entity>
+</entity-mappings>

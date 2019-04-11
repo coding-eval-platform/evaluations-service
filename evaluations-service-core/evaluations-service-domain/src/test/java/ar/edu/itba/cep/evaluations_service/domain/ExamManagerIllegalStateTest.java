@@ -666,7 +666,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     private void testExerciseSolutionCreation(final Exam exam, final Exercise exercise, final Exam.State state) {
         final var exerciseId = TestHelper.validExerciseId();
         Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(exercise.belongsToExam()).thenReturn(exam);
+        Mockito.when(exercise.getExam()).thenReturn(exam);
         Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
@@ -675,7 +675,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                         " with " + state + " state is being allosed"
         );
         Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).belongsToExam();
+        Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
     }
 
@@ -748,7 +748,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
             final String message) {
         final var exerciseId = TestHelper.validExerciseId();
         Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(exercise.belongsToExam()).thenReturn(exam);
+        Mockito.when(exercise.getExam()).thenReturn(exam);
         Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
@@ -756,7 +756,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 message
         );
         Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).belongsToExam();
+        Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
     }
 
@@ -779,8 +779,8 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
             final String message) {
         final var testCaseId = TestHelper.validTestCaseId();
         Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(exercise.belongsToExam()).thenReturn(exam);
-        Mockito.when(testCase.belongsToExercise()).thenReturn(exercise);
+        Mockito.when(exercise.getExam()).thenReturn(exam);
+        Mockito.when(testCase.getExercise()).thenReturn(exercise);
         Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
@@ -788,8 +788,8 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 message
         );
         Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).belongsToExam();
-        Mockito.verify(testCase, Mockito.only()).belongsToExercise();
+        Mockito.verify(exercise, Mockito.only()).getExam();
+        Mockito.verify(testCase, Mockito.only()).getExercise();
         verifyOnlyTestCaseSearch(testCaseId);
     }
 }

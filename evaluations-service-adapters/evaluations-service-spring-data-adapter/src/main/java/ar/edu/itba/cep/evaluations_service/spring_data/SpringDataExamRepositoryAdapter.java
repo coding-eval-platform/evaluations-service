@@ -3,20 +3,20 @@ package ar.edu.itba.cep.evaluations_service.spring_data;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
-import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.BasicRepositoryAdapter;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.PagingRepositoryAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 /**
  * A concrete implementation of a {@link ExamRepository}
  * which acts as an adapter for a {@link SpringDataExamRepositoryAdapter}.
  */
 @Repository
-public class SpringDataExamRepositoryAdapter implements ExamRepository {
+public class SpringDataExamRepositoryAdapter
+        implements ExamRepository, BasicRepositoryAdapter<Exam, Long>, PagingRepositoryAdapter<Exam, Long> {
 
     /**
      * A {@link SpringDataExamRepository} to which all operations are delegated.
@@ -33,48 +33,18 @@ public class SpringDataExamRepositoryAdapter implements ExamRepository {
         this.repository = repository;
     }
 
+
+    // ================================================================================================================
+    // RepositoryAdapter
+    // ================================================================================================================
+
     @Override
-    public Page<Exam> findAll(final PagingRequest pagingRequest) {
-        throw new NotImplementedException();
+    public CrudRepository<Exam, Long> getCrudRepository() {
+        return repository;
     }
 
     @Override
-    public long count() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Optional<Exam> findById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Iterable<Exam> findAll() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends Exam> S save(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends Exam> void delete(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteAll() {
-        throw new NotImplementedException();
+    public PagingAndSortingRepository<Exam, Long> getPagingAndSortingRepository() {
+        return repository;
     }
 }

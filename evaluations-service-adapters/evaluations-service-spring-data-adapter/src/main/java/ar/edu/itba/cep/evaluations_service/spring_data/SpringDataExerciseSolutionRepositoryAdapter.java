@@ -5,20 +5,21 @@ import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionRepository;
-import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.paging_and_sorting.PagingMapper;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.BasicRepositoryAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 /**
  * A concrete implementation of a {@link ExerciseSolutionRepository}
  * which acts as an adapter for a {@link SpringDataExerciseSolutionRepository}.
  */
 @Repository
-public class SpringDataExerciseSolutionRepositoryAdapter implements ExerciseSolutionRepository {
+public class SpringDataExerciseSolutionRepositoryAdapter
+        implements ExerciseSolutionRepository, BasicRepositoryAdapter<ExerciseSolution, Long> {
 
     /**
      * A {@link SpringDataExamRepository} to which all operations are delegated.
@@ -36,48 +37,24 @@ public class SpringDataExerciseSolutionRepositoryAdapter implements ExerciseSolu
     }
 
 
+    // ================================================================================================================
+    // RepositoryAdapter
+    // ================================================================================================================
+
+    @Override
+    public CrudRepository<ExerciseSolution, Long> getCrudRepository() {
+        return repository;
+    }
+
+
+    // ================================================================================================================
+    // ExerciseSolutionRepository specific methods
+    // ================================================================================================================
+
     @Override
     public Page<ExerciseSolution> getExerciseSolutions(final Exercise exercise, final PagingRequest pagingRequest) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public long count() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Optional<ExerciseSolution> findById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Iterable<ExerciseSolution> findAll() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends ExerciseSolution> S save(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends ExerciseSolution> void delete(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteAll() {
-        throw new NotImplementedException();
+        final var pageable = PagingMapper.map(pagingRequest);
+        final var page = repository.getByExercise(exercise, pageable);
+        return PagingMapper.map(page);
     }
 }

@@ -2,6 +2,7 @@ package ar.edu.itba.cep.evaluations_service.spring_data.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
  * Configuration class for Spring Data Jpa Repositories.
@@ -10,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackages = {
         "ar.edu.itba.cep.evaluations_service.spring_data"
 })
-// TODO: add @EnableJpaRepositories
-// TODO: add @EntityScan
+@EnableJpaRepositories(basePackages = {
+        "ar.edu.itba.cep.evaluations_service.spring_data.interfaces"
+})
 public class SpringDataConfig {
 }

@@ -23,22 +23,31 @@ public class Exercise {
     /**
      * The {@link Exam} to which this exercise belongs to.
      */
-    private final Exam belongsTo;
+    private final Exam exam;
 
+
+    /**
+     * Default constructor.
+     */
+    /* package */ Exercise() {
+        // Initialize final fields with default values.
+        this.id = 0;
+        this.exam = null;
+    }
 
     /**
      * Constructor.
      *
-     * @param question  The question being asked.
-     * @param belongsTo The {@link Exam} to which this exercise belongs to.
+     * @param question The question being asked.
+     * @param exam     The {@link Exam} to which this exercise belongs to.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public Exercise(final String question, final Exam belongsTo) throws IllegalArgumentException {
+    public Exercise(final String question, final Exam exam) throws IllegalArgumentException {
         assertQuestion(question);
-        assertExam(belongsTo);
+        assertExam(exam);
         this.id = 0;
         this.question = question;
-        this.belongsTo = belongsTo;
+        this.exam = exam;
     }
 
 
@@ -59,8 +68,8 @@ public class Exercise {
     /**
      * @return The {@link Exam} to which this exercise belongs to.
      */
-    public Exam belongsToExam() {
-        return belongsTo;
+    public Exam getExam() {
+        return exam;
     }
 
 
@@ -102,7 +111,7 @@ public class Exercise {
         return "Exercise [" +
                 "ID: " + id + ", " +
                 "Question: '" + question + "', " +
-                "BelongsTo: " + belongsTo +
+                "Exam: " + exam +
                 "]";
     }
 

@@ -30,6 +30,17 @@ public class ExerciseSolutionResult {
 
 
     /**
+     * Default constructor.
+     */
+    /* package */ ExerciseSolutionResult() {
+        // Initialize final fields with default values.
+        this.id = 0;
+        this.solution = null;
+        this.testCase = null;
+        this.result = null;
+    }
+
+    /**
      * Constructor.
      *
      * @param solution The {@link ExerciseSolution} to which this result makes reference.

@@ -5,19 +5,20 @@ import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseRepository;
-import com.bellotapps.webapps_commons.exceptions.NotImplementedException;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.BasicRepositoryAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * A concrete implementation of a {@link ExerciseRepository}
  * which acts as an adapter for a {@link SpringDataExerciseRepository}.
  */
 @Repository
-public class SpringDataExerciseRepositoryAdapter implements ExerciseRepository {
+public class SpringDataExerciseRepositoryAdapter
+        implements ExerciseRepository, BasicRepositoryAdapter<Exercise, Long> {
 
     /**
      * A {@link SpringDataExamRepository} to which all operations are delegated.
@@ -35,53 +36,27 @@ public class SpringDataExerciseRepositoryAdapter implements ExerciseRepository {
     }
 
 
+    // ================================================================================================================
+    // RepositoryAdapter
+    // ================================================================================================================
+
+    @Override
+    public CrudRepository<Exercise, Long> getCrudRepository() {
+        return repository;
+    }
+
+
+    // ================================================================================================================
+    // ExerciseRepository specific methods
+    // ================================================================================================================
+
     @Override
     public List<Exercise> getExamExercises(final Exam exam) {
-        throw new NotImplementedException();
+        return repository.getByExam(exam);
     }
 
     @Override
     public void deleteExamExercises(final Exam exam) {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public long count() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public boolean existsById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Optional<Exercise> findById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Iterable<Exercise> findAll() {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends Exercise> S save(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public <S extends Exercise> void delete(final S entity) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteById(final Long aLong) throws IllegalArgumentException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void deleteAll() {
-        throw new NotImplementedException();
+        repository.deleteByExam(exam);
     }
 }
