@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -69,7 +70,9 @@ public class ExamEndpoint {
     @POST
     @Path(Routes.EXAMS)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createExam(@Context final UriInfo uriInfo, @Valid final ExamUploadDto dto) {
+    public Response createExam(
+            @Context final UriInfo uriInfo,
+            @Valid @ConvertGroup(to = ExamUploadDto.Create.class) final ExamUploadDto dto) {
         LOGGER.debug("Creating new exam");
         final var exam = examService.createExam(
                 dto.getDescription(),
@@ -87,7 +90,7 @@ public class ExamEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyExam(
             @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId,
-            @Valid final ExamUploadDto dto) {
+            @Valid @ConvertGroup(to = ExamUploadDto.Update.class) final ExamUploadDto dto) {
         LOGGER.debug("Updating exam with id {}", examId);
         examService.modifyExam(examId, dto.getDescription(), dto.getStartingAt(), dto.getDuration());
         return Response.noContent().build();
