@@ -59,6 +59,7 @@ public class ExerciseSolutionEndpoint {
 
     @POST
     @Path(Routes.EXERCISE_SOLUTIONS)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response createSolution(
             @Context final UriInfo uriInfo,
             @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,

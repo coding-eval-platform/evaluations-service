@@ -90,6 +90,7 @@ public class TestCaseEndpoint {
 
     @PUT
     @Path(Routes.TEST_CASE_VISIBILITY)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response changeVisibility(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
             @Valid final TestCaseUploadDto dto) {
@@ -100,6 +101,7 @@ public class TestCaseEndpoint {
 
     @PUT
     @Path(Routes.TEST_CASE_INPUTS)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response changeInputs(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
             @Valid final TestCaseUploadDto dto) {
@@ -110,6 +112,7 @@ public class TestCaseEndpoint {
 
     @PUT
     @Path(Routes.TEST_CASE_EXPECTED_OUTPUTS)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response changeExpectedOutputs(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
             @Valid final TestCaseUploadDto dto) {
@@ -118,7 +121,7 @@ public class TestCaseEndpoint {
         return Response.noContent().build();
     }
 
-    @PUT
+    @DELETE
     @Path(Routes.TEST_CASE_INPUTS)
     public Response clearInputs(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId) {
@@ -127,7 +130,7 @@ public class TestCaseEndpoint {
         return Response.noContent().build();
     }
 
-    @PUT
+    @DELETE
     @Path(Routes.TEST_CASE_EXPECTED_OUTPUTS)
     public Response clearExpectedOutputs(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId) {
