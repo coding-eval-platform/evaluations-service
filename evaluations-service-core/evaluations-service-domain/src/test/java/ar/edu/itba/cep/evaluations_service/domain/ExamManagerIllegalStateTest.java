@@ -1,9 +1,13 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.messages_sender.ExecutorServiceCommandProxy;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,23 +32,23 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
-     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
+     * @param examRepository              A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository          A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository          A mocked {@link TestCaseRepository} passed to super class.
+     * @param exerciseSolutionRepository  A mocked {@link ExamRepository} passed to super class.
+     * @param executorServiceCommandProxy A mocked {@link ExecutorServiceCommandProxy} passed to super class.
      */
     ExamManagerIllegalStateTest(
             @Mock(name = "examRep") final ExamRepository examRepository,
             @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
             @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
             @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep) {
+            @Mock(name = "executorServiceCommandProxy") final ExecutorServiceCommandProxy executorServiceCommandProxy) {
         super(examRepository,
                 exerciseRepository,
                 testCaseRepository,
                 exerciseSolutionRepository,
-                exerciseSolResultRep);
+                executorServiceCommandProxy);
     }
 
 
@@ -677,6 +681,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -705,6 +710,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         );
         examActionVerification.accept(Mockito.verify(exam));
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -729,6 +735,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 message
         );
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -758,6 +765,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -791,5 +799,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         Mockito.verify(exercise, Mockito.only()).getExam();
         Mockito.verify(testCase, Mockito.only()).getExercise();
         verifyOnlyTestCaseSearch(testCaseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 }

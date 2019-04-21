@@ -1,10 +1,14 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.messages_sender.ExecutorServiceCommandProxy;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,23 +28,23 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
-     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
+     * @param examRepository              A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository          A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository          A mocked {@link TestCaseRepository} passed to super class.
+     * @param exerciseSolutionRepository  A mocked {@link ExamRepository} passed to super class.
+     * @param executorServiceCommandProxy A mocked {@link ExecutorServiceCommandProxy} passed to super class.
      */
     ExamManagerIllegalArgumentsTest(
             @Mock(name = "examRep") final ExamRepository examRepository,
             @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
             @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
             @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep) {
+            @Mock(name = "executorServiceCommandProxy") final ExecutorServiceCommandProxy executorServiceCommandProxy) {
         super(examRepository,
                 exerciseRepository,
                 testCaseRepository,
                 exerciseSolutionRepository,
-                exerciseSolResultRep);
+                executorServiceCommandProxy);
     }
 
 
@@ -63,6 +67,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 "Using invalid arguments when creating an Exam did not throw an IllegalArgumentException"
         );
         verifyNoInteractionWithAnyMockedRepository();
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -86,6 +91,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         Mockito.verify(exam, Mockito.only()).update(newDescription, newStartingAt, newDuration);
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -113,6 +119,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         Mockito.verify(exam, Mockito.only()).getState();
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -142,6 +149,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         Mockito.verify(exercise, Mockito.times(1)).setQuestion(newQuestion);
         Mockito.verifyNoMoreInteractions(exercise);
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -176,6 +184,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -209,6 +218,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         Mockito.verify(testCase, Mockito.times(1)).setVisibility(newVisibility);
         Mockito.verifyNoMoreInteractions(testCase);
         verifyOnlyTestCaseSearch(testCaseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -242,6 +252,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         Mockito.verify(testCase, Mockito.times(1)).setInputs(newInputs);
         Mockito.verifyNoMoreInteractions(testCase);
         verifyOnlyTestCaseSearch(testCaseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -275,6 +286,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         Mockito.verify(testCase, Mockito.times(1)).setExpectedOutputs(newExpectedOutputs);
         Mockito.verifyNoMoreInteractions(testCase);
         verifyOnlyTestCaseSearch(testCaseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -309,6 +321,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -316,60 +329,66 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
     // Solution Results
     // ================================================================================================================
 
-    /**
-     * Tests the processing of an execution result when using {@code null} for both {@code stdOut} and {@code stdErr}.
-     */
-    @Test
-    void testProcessExecutionWithNullStdOutAndNullStdErr() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.processExecution(
-                        TestHelper.validExerciseSolutionId(),
-                        TestHelper.validTestCaseId(),
-                        TestHelper.validExerciseSolutionExitCode(),
-                        null,
-                        null
-                ),
-                "Using null stdOut or null stdErr is being allowed"
-        );
-        verifyNoInteractionWithAnyMockedRepository();
-    }
-
-    /**
-     * Tests the processing of an execution result when using {@code null} {@code stdOut}.
-     */
-    @Test
-    void testProcessExecutionWithNullStdOut() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.processExecution(
-                        TestHelper.validExerciseSolutionId(),
-                        TestHelper.validTestCaseId(),
-                        TestHelper.validExerciseSolutionExitCode(),
-                        null,
-                        TestHelper.validExerciseSolutionResultList()
-                ),
-                "Using null stdOut is being allowed"
-        );
-        verifyNoInteractionWithAnyMockedRepository();
-    }
-
-    /**
-     * Tests the processing of an execution result when using {@code null} {@code stdErr}.
-     */
-    @Test
-    void testProcessExecutionWithNullStdErr() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.processExecution(
-                        TestHelper.validExerciseSolutionId(),
-                        TestHelper.validTestCaseId(),
-                        TestHelper.validExerciseSolutionExitCode(),
-                        TestHelper.validExerciseSolutionResultList(),
-                        null
-                ),
-                "Using null stdOut is being allowed"
-        );
-        verifyNoInteractionWithAnyMockedRepository();
-    }
+    // TODO: move
+//    /**
+//     * Tests the processing of an execution result when using {@code null} for both {@code stdOut} and {@code stdErr}.
+//     */
+//    @Test
+//    void testProcessExecutionWithNullStdOutAndNullStdErr() {
+//        Assertions.assertThrows(
+//                IllegalArgumentException.class,
+//                () -> examManager.processExecution(
+//                        TestHelper.validExerciseSolutionId(),
+//                        TestHelper.validTestCaseId(),
+//                        TestHelper.validExerciseSolutionExitCode(),
+//                        null,
+//                        null
+//                ),
+//                "Using null stdOut or null stdErr is being allowed"
+//        );
+//        verifyNoInteractionWithAnyMockedRepository();
+//        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
+//    }
+//
+    // TODO: move
+//    /**
+//     * Tests the processing of an execution result when using {@code null} {@code stdOut}.
+//     */
+//    @Test
+//    void testProcessExecutionWithNullStdOut() {
+//        Assertions.assertThrows(
+//                IllegalArgumentException.class,
+//                () -> examManager.processExecution(
+//                        TestHelper.validExerciseSolutionId(),
+//                        TestHelper.validTestCaseId(),
+//                        TestHelper.validExerciseSolutionExitCode(),
+//                        null,
+//                        TestHelper.validExerciseSolutionResultList()
+//                ),
+//                "Using null stdOut is being allowed"
+//        );
+//        verifyNoInteractionWithAnyMockedRepository();
+//        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
+//    }
+//
+    // TODO: move
+//    /**
+//     * Tests the processing of an execution result when using {@code null} {@code stdErr}.
+//     */
+//    @Test
+//    void testProcessExecutionWithNullStdErr() {
+//        Assertions.assertThrows(
+//                IllegalArgumentException.class,
+//                () -> examManager.processExecution(
+//                        TestHelper.validExerciseSolutionId(),
+//                        TestHelper.validTestCaseId(),
+//                        TestHelper.validExerciseSolutionExitCode(),
+//                        TestHelper.validExerciseSolutionResultList(),
+//                        null
+//                ),
+//                "Using null stdOut is being allowed"
+//        );
+//        verifyNoInteractionWithAnyMockedRepository();
+//        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
+//    }
 }

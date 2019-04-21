@@ -1,4 +1,7 @@
-CREATE TABLE exams
+DROP SCHEMA IF EXISTS models;
+CREATE SCHEMA models;
+
+CREATE TABLE models.exams
 (
     id                     BIGSERIAL PRIMARY KEY NOT NULL,
     description            VARCHAR(64),
@@ -9,52 +12,52 @@ CREATE TABLE exams
     actual_duration        BIGINT
 );
 
-CREATE TABLE exercises
+CREATE TABLE models.exercises
 (
     id         BIGSERIAL PRIMARY KEY NOT NULL,
     question   TEXT,
     belongs_to BIGINT,
-    FOREIGN KEY (belongs_to) REFERENCES exams (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (belongs_to) REFERENCES models.exams (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE test_cases
+CREATE TABLE models.test_cases
 (
     id         BIGSERIAL PRIMARY KEY NOT NULL,
     visibility VARCHAR,
     belongs_to BIGINT,
-    FOREIGN KEY (belongs_to) REFERENCES exercises (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (belongs_to) REFERENCES models.exercises (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE test_case_inputs
+CREATE TABLE models.test_case_inputs
 (
     test_case_id BIGINT,
     input        VARCHAR,
     input_order  INT,
-    FOREIGN KEY (test_case_id) REFERENCES test_cases (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (test_case_id) REFERENCES models.test_cases (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE test_case_expected_outputs
+CREATE TABLE models.test_case_expected_outputs
 (
     test_case_id          BIGINT,
     expected_output       VARCHAR,
     expected_output_order INT,
-    FOREIGN KEY (test_case_id) REFERENCES test_cases (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (test_case_id) REFERENCES models.test_cases (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE exercise_solutions
+CREATE TABLE models.exercise_solutions
 (
     id         BIGSERIAL PRIMARY KEY NOT NULL,
     answer     TEXT,
     belongs_to BIGINT,
-    FOREIGN KEY (belongs_to) REFERENCES exercises (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (belongs_to) REFERENCES models.exercises (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE exercise_solution_results
+CREATE TABLE models.exercise_solution_results
 (
     id           BIGSERIAL PRIMARY KEY NOT NULL,
     solution_id  BIGINT,
     test_case_id BIGINT,
     result       VARCHAR,
-    FOREIGN KEY (solution_id) REFERENCES exercise_solutions (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (test_case_id) REFERENCES test_cases (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (solution_id) REFERENCES models.exercise_solutions (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (test_case_id) REFERENCES models.test_cases (id) ON DELETE CASCADE ON UPDATE CASCADE
 );

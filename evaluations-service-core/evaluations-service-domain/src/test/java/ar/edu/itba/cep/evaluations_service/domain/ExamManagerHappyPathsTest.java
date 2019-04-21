@@ -1,7 +1,14 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
-import ar.edu.itba.cep.evaluations_service.models.*;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.messages_sender.ExecutorServiceCommandProxy;
+import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.junit.jupiter.api.Assertions;
@@ -24,23 +31,23 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
-     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
+     * @param examRepository              A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository          A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository          A mocked {@link TestCaseRepository} passed to super class.
+     * @param exerciseSolutionRepository  A mocked {@link ExamRepository} passed to super class.
+     * @param executorServiceCommandProxy A mocked {@link ExecutorServiceCommandProxy} passed to super class.
      */
     ExamManagerHappyPathsTest(
             @Mock(name = "examRep") final ExamRepository examRepository,
             @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
             @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
             @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep) {
+            @Mock(name = "executorServiceCommandProxy") final ExecutorServiceCommandProxy executorServiceCommandProxy) {
         super(examRepository,
                 exerciseRepository,
                 testCaseRepository,
                 exerciseSolutionRepository,
-                exerciseSolResultRep);
+                executorServiceCommandProxy);
     }
 
 
@@ -71,6 +78,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 )
         );
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -105,7 +113,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -134,7 +142,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -160,7 +168,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -186,7 +194,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -210,7 +218,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).deleteExamExercises(exam);
         Mockito.verify(testCaseRepository, Mockito.only()).deleteExamTestCases(exam);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -236,7 +244,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).getExamExercises(exam);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -257,7 +265,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).deleteExamExercises(exam);
         Mockito.verify(testCaseRepository, Mockito.only()).deleteExamTestCases(exam);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -297,7 +305,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).save(Mockito.any(Exercise.class));
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -333,7 +341,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyNoMoreInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -363,7 +371,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyNoMoreInteractions(exerciseRepository);
         Mockito.verify(testCaseRepository, Mockito.only()).deleteExerciseTestCases(exercise);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -389,7 +397,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
         Mockito.verify(testCaseRepository, Mockito.only()).getExercisePrivateTestCases(exercise);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -415,7 +423,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
         Mockito.verify(testCaseRepository, Mockito.only()).getExercisePublicTestCases(exercise);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -448,7 +456,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verify(exerciseSolutionRepository, Mockito.only()).getExerciseSolutions(exercise, pagingRequest);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -505,7 +513,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
         Mockito.verify(testCaseRepository, Mockito.only()).save(Mockito.any(TestCase.class));
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -546,7 +554,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
         Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -587,7 +595,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
         Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -628,7 +636,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
         Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -668,7 +676,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
         Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
     /**
@@ -708,7 +716,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
         Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -743,7 +751,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(testCaseRepository, Mockito.times(1)).delete(testCase);
         Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
     }
 
 
@@ -769,6 +777,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito
                 .when(exerciseSolutionRepository.save(Mockito.any(ExerciseSolution.class)))
                 .then(invocation -> invocation.getArgument(0));
+        // TODO: mock private test cases
         final var solution = examManager.createExerciseSolution(exerciseId, answer);
         Assertions.assertAll("ExerciseSolution properties are not the expected",
                 () -> Assertions.assertEquals(
@@ -786,9 +795,10 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exercise, Mockito.only()).getExam();
         Mockito.verifyZeroInteractions(examRepository);
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
+        Mockito.verify(testCaseRepository, Mockito.only()).getExercisePrivateTestCases(exercise);
         Mockito.verifyZeroInteractions(testCaseRepository);
         Mockito.verify(exerciseSolutionRepository, Mockito.only()).save(Mockito.any(ExerciseSolution.class));
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+//        Mockito.verify(executorServiceCommandProxy, Mockito.only()).requestExecution(answer, testc); TODO: verify interaction with proxy
     }
 
 
@@ -796,115 +806,119 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     // Solution Results
     // ================================================================================================================
 
-    /**
-     * Tests the processing of an execution result when the exit code is zero and there is no standard error output.
-     *
-     * @param stderr           A mocked {@link List} of {@link String} to be used as standard error output
-     *                         (i.e used to verify that the stderr {@link List} is accessed
-     *                         only for checking if it is empty).
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     */
-    @Test
-    void testProcessExecutionWithZeroExitCodeAndEmptyStdErr(
-            @Mock(name = "stderr") List<String> stderr,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution) {
-        final var outputs = TestHelper.validExerciseSolutionResultList();
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-        Mockito.when(stderr.isEmpty()).thenReturn(true);
-        Mockito.when(testCase.getExpectedOutputs()).thenReturn(outputs);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, 0, outputs, stderr),
-                "An exception was thrown when processing an execution result"
-        );
-        Mockito.verify(stderr, Mockito.only()).isEmpty();
-        Mockito.verifyZeroInteractions(exerciseSolution);
-        Mockito.verify(testCase, Mockito.only()).getExpectedOutputs();
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
-        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
-        Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
-    }
+    // TODO: move
+//    /**
+//     * Tests the processing of an execution result when the exit code is zero and there is no standard error output.
+//     *
+//     * @param stderr           A mocked {@link List} of {@link String} to be used as standard error output
+//     *                         (i.e used to verify that the stderr {@link List} is accessed
+//     *                         only for checking if it is empty).
+//     * @param testCase         The {@link TestCase} used in the execution.
+//     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+//     */
+//    @Test
+//    void testProcessExecutionWithZeroExitCodeAndEmptyStdErr(
+//            @Mock(name = "stderr") List<String> stderr,
+//            @Mock(name = "testCase") final TestCase testCase,
+//            @Mock(name = "solution") final ExerciseSolution exerciseSolution) {
+//        final var outputs = TestHelper.validExerciseSolutionResultList();
+//        final var testCaseId = TestHelper.validTestCaseId();
+//        final var solutionId = TestHelper.validExerciseSolutionId();
+//        Mockito.when(stderr.isEmpty()).thenReturn(true);
+//        Mockito.when(testCase.getExpectedOutputs()).thenReturn(outputs);
+//        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+//        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+//        Mockito
+//                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
+//                .then(invocation -> invocation.getArgument(0));
+//        Assertions.assertDoesNotThrow(
+//                () -> examManager.processExecution(solutionId, testCaseId, 0, outputs, stderr),
+//                "An exception was thrown when processing an execution result"
+//        );
+//        Mockito.verify(stderr, Mockito.only()).isEmpty();
+//        Mockito.verifyZeroInteractions(exerciseSolution);
+//        Mockito.verify(testCase, Mockito.only()).getExpectedOutputs();
+//        Mockito.verifyZeroInteractions(examRepository);
+//        Mockito.verifyZeroInteractions(exerciseRepository);
+//        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+//        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+//        Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
+//        Mockito.verifyZeroInteractions(executorServiceCommandProxy);
+//    }
 
-    /**
-     * Tests the processing of an execution result when the exit code is zero but there is standard error output.
-     *
-     * @param stderr           A mocked {@link List} of {@link String} to be used as standard error output
-     *                         (i.e used to verify that the stderr {@link List} is accessed
-     *                         only for checking if it is empty).
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     */
-    @Test
-    void testProcessExecutionWithZeroExitCodeAndNonEmptyStdErr(
-            @Mock(name = "stderr") List<String> stderr,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution) {
-        final var outputs = TestHelper.validExerciseSolutionResultList();
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-        Mockito.when(stderr.isEmpty()).thenReturn(false);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, 0, outputs, stderr),
-                "An exception was thrown when processing an execution result"
-        );
-        Mockito.verify(stderr, Mockito.only()).isEmpty();
-        Mockito.verifyZeroInteractions(exerciseSolution);
-        Mockito.verifyZeroInteractions(testCase);
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
-        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
-        Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
-    }
+    // TODO: move
+//    /**
+//     * Tests the processing of an execution result when the exit code is zero but there is standard error output.
+//     *
+//     * @param stderr           A mocked {@link List} of {@link String} to be used as standard error output
+//     *                         (i.e used to verify that the stderr {@link List} is accessed
+//     *                         only for checking if it is empty).
+//     * @param testCase         The {@link TestCase} used in the execution.
+//     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+//     */
+//    @Test
+//    void testProcessExecutionWithZeroExitCodeAndNonEmptyStdErr(
+//            @Mock(name = "stderr") List<String> stderr,
+//            @Mock(name = "testCase") final TestCase testCase,
+//            @Mock(name = "solution") final ExerciseSolution exerciseSolution) {
+//        final var outputs = TestHelper.validExerciseSolutionResultList();
+//        final var testCaseId = TestHelper.validTestCaseId();
+//        final var solutionId = TestHelper.validExerciseSolutionId();
+//        Mockito.when(stderr.isEmpty()).thenReturn(false);
+//        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+//        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+//        Mockito
+//                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
+//                .then(invocation -> invocation.getArgument(0));
+//        Assertions.assertDoesNotThrow(
+//                () -> examManager.processExecution(solutionId, testCaseId, 0, outputs, stderr),
+//                "An exception was thrown when processing an execution result"
+//        );
+//        Mockito.verify(stderr, Mockito.only()).isEmpty();
+//        Mockito.verifyZeroInteractions(exerciseSolution);
+//        Mockito.verifyZeroInteractions(testCase);
+//        Mockito.verifyZeroInteractions(examRepository);
+//        Mockito.verifyZeroInteractions(exerciseRepository);
+//        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+//        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+//        Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
+//    }
 
-    /**
-     * Tests the processing of an execution result when the exit code is not zero.
-     *
-     * @param stderr           A mocked {@link List} of {@link String} to be used as standard error output
-     *                         (i.e used to verify that the stderr {@link List} is not accessed
-     *                         when the exit code is not zero).
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     */
-    @Test
-    void testProcessExecutionWithNonZeroExitCode(
-            @Mock(name = "stderr") List<String> stderr,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution) {
-        final var exitCode = TestHelper.validExerciseSolutionExitCode();
-        final var outputs = TestHelper.validExerciseSolutionResultList();
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, exitCode, outputs, stderr),
-                "An exception was thrown when processing an execution result"
-        );
-        Mockito.verifyZeroInteractions(stderr);
-        Mockito.verifyZeroInteractions(exerciseSolution);
-        Mockito.verifyZeroInteractions(testCase);
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
-        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
-        Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
-    }
+    // TODO: move
+//    /**
+//     * Tests the processing of an execution result when the exit code is not zero.
+//     *
+//     * @param stderr           A mocked {@link List} of {@link String} to be used as standard error output
+//     *                         (i.e used to verify that the stderr {@link List} is not accessed
+//     *                         when the exit code is not zero).
+//     * @param testCase         The {@link TestCase} used in the execution.
+//     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+//     */
+//    @Test
+//    void testProcessExecutionWithNonZeroExitCode(
+//            @Mock(name = "stderr") List<String> stderr,
+//            @Mock(name = "testCase") final TestCase testCase,
+//            @Mock(name = "solution") final ExerciseSolution exerciseSolution) {
+//        final var exitCode = TestHelper.validExerciseSolutionExitCode();
+//        final var outputs = TestHelper.validExerciseSolutionResultList();
+//        final var testCaseId = TestHelper.validTestCaseId();
+//        final var solutionId = TestHelper.validExerciseSolutionId();
+//        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+//        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+//        Mockito
+//                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
+//                .then(invocation -> invocation.getArgument(0));
+//        Assertions.assertDoesNotThrow(
+//                () -> examManager.processExecution(solutionId, testCaseId, exitCode, outputs, stderr),
+//                "An exception was thrown when processing an execution result"
+//        );
+//        Mockito.verifyZeroInteractions(stderr);
+//        Mockito.verifyZeroInteractions(exerciseSolution);
+//        Mockito.verifyZeroInteractions(testCase);
+//        Mockito.verifyZeroInteractions(examRepository);
+//        Mockito.verifyZeroInteractions(exerciseRepository);
+//        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+//        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+//        Mockito.verify(exerciseSolutionResultRepository, Mockito.only()).save(Mockito.any(ExerciseSolutionResult.class));
+//    }
 }

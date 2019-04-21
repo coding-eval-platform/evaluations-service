@@ -8,7 +8,7 @@
     <package>ar.edu.itba.cep.evaluations_service.models</package>
 
     <entity class="Exam" access="FIELD">
-        <table name="exams"/>
+        <table name="exams" schema="models"/>
         <attributes>
             <id name="id">
                 <column name="id" nullable="false" updatable="false"/>
@@ -39,7 +39,7 @@
     </entity>
 
     <entity class="Exercise" access="FIELD">
-        <table name="exercises"/>
+        <table name="exercises" schema="models"/>
         <attributes>
             <id name="id">
                 <column name="id" nullable="false" updatable="false"/>
@@ -56,7 +56,7 @@
     </entity>
 
     <entity class="TestCase" access="FIELD">
-        <table name="test_cases"/>
+        <table name="test_cases" schema="models"/>
         <attributes>
             <id name="id">
                 <column name="id" nullable="false" updatable="false"/>
@@ -88,7 +88,7 @@
     </entity>
 
     <entity class="ExerciseSolution" access="FIELD">
-        <table name="exercise_solutions"/>
+        <table name="exercise_solutions" schema="models"/>
         <attributes>
             <id name="id">
                 <column name="id" nullable="false" updatable="false"/>
@@ -105,7 +105,7 @@
     </entity>
 
     <entity class="ExerciseSolutionResult" access="FIELD">
-        <table name="exercise_solution_results"/>
+        <table name="exercise_solution_results" schema="models"/>
         <attributes>
             <id name="id">
                 <column name="id" nullable="false" updatable="false"/>
