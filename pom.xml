@@ -19,6 +19,9 @@
     <properties>
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Versions -->
+        <com.spotify.dockerfile-maven.version>1.4.10</com.spotify.dockerfile-maven.version>
     </properties>
 
     <modules>
@@ -56,7 +59,23 @@
         <profile>
             <id>travis-ci</id>
         </profile>
+
+        <profile>
+            <id>docker-build</id>
+        </profile>
     </profiles>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.spotify</groupId>
+                    <artifactId>dockerfile-maven-plugin</artifactId>
+                    <version>${com.spotify.dockerfile-maven.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
     <licenses>
         <license>
