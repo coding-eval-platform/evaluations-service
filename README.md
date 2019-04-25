@@ -216,17 +216,19 @@ You can do this by changing the ```<project-root>/evaluations-service-applicatio
 You can run the application using the following command:
 
 ```
-$ java [-Dkey=value properties] -jar <project-root>/evaluations-service-application/target/evaluations-service-application-0.0.1-SNAPSHOT.jar [--key=value properties]
+$ export EVAL_SERVICE_VERSION=<project-version>
+$ java [-Dkey=value properties] -jar <project-root>/evaluations-service-application/target/evaluations-service-application-$EVAL_SERVICE_VERSION.jar [--key=value properties]
 ```
 
 The following is a full example of how to run the application:
 
 ```
+export EVAL_SERVICE_VERSION=<project-version>
 java \
 	-Dspring.datasource.url=jdbc:postgresql://localhost:5432/coding-eval-platform__evaluations-service \
 	-Dspring.datasource.username=coding-eval-platform__evaluations-service \
 	-Dspring.datasource.password=coding-eval-platform__evaluations-service \
-	-jar <project-root>/evaluations-service-application/target/evaluations-service-application-0.0.1-SNAPSHOT.jar \
+	-jar <project-root>/evaluations-service-application/target/evaluations-service-application-$EVAL_SERVICE_VERSION.jar \
 	--spring.profiles.active=dev
 ```
 
@@ -254,6 +256,33 @@ java \
 	This configution file will let you use Flyway easier. It won't ask for credentials each time you want to use it.
 
 	**Note:** The ```.gitignore``` file declares the ```flyway.conf``` file, so this information should not leak into GitHub.
+
+
+## Use with Docker
+
+This project includes a ```Dockerfile``` in the ```evaluations-service-application``` module, together with the [Spotify's dockerfile maven plugin](https://github.com/spotify/dockerfile-maven). 
+
+
+### Build the image
+
+To create an image to run this project in Docker just package the application with maven, and set the ```docker-build``` profile.
+You just have to run the following command:
+
+```
+$ mvn clean package -P docker-build
+```
+
+### Run the project
+
+Once you have built the Docker image, just run the following command:
+
+```
+$ export EVAL_SERVICE_VERSION=<project-version>
+$ docker run -p 8000:8000 itbacep/eval-service:$EVAL_SERVICE_VERSION
+```
+
+Note that you will have to link the container with another container (or the host machine)
+in which a PostgreSQL server is running.
 
 
 ## License
