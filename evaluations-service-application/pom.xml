@@ -20,6 +20,10 @@
 
         <!-- Bootstrap class -->
         <bootstrapClass>ar.edu.itba.cep.evaluations_service.application.Application</bootstrapClass>
+
+        <!-- Docker -->
+        <docker.image.prefix>itbacep</docker.image.prefix>
+        <docker.image.name>${project.parent.artifactId}</docker.image.name>
     </properties>
 
     <dependencies>
@@ -91,7 +95,7 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <repository>itbacep/eval-service</repository>
+                        <repository>${docker.image.prefix}/${docker.image.name}</repository>
                         <tag>${project.parent.version}</tag>
                         <buildArgs>
                             <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
