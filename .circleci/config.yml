@@ -2,7 +2,7 @@ version: 2.1
 
 # First define some constants
 working_dir_name: &workingDirName ~/workspace
-java_docker_image: &javaMavenDockerImage circleci/openjdk:11-jdk #maven:3.5-jdk-11-slim
+java_docker_image: &javaMavenDockerImage maven:3.6-jdk-11-slim
 git_docker_image: &gitDockerImage alpine/git
 
 # Define some configuration
