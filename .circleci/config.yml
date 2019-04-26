@@ -2,7 +2,7 @@ version: 2.1
 
 # First define some constants
 working_dir_name: &workingDirName ~/workspace
-java_docker_image: &javaMavenDockerImage maven:3.6-jdk-11-slim
+java_docker_image: &javaMavenDockerImage circleci/openjdk:11.0.2-jdk # -stretch #maven:3.5-jdk-11-slim
 git_docker_image: &gitDockerImage alpine/git
 
 # Define some configuration
@@ -11,6 +11,17 @@ working_dir: &workingDirectory
 java_runtime: &javaRuntime
     docker:
         - image: *javaMavenDockerImage
+
+store_cache: &saveCache
+    save_cache:
+        key: maven-cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.SERVICE_NAME }}
+        paths:
+            - ~/.m2
+
+retrieve_cache: &restoreCache
+    restore_cache:
+        key: maven-cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.SERVICE_NAME }}
+
 
 
 jobs:
@@ -42,18 +53,14 @@ jobs:
             - attach_workspace:
                   at: *workingDirName
 
-            # Restore cache
-            - restore_cache:
-                key: evaluations-service
+            - <<: *restoreCache
 
             # Install modules. This will build the artifacts and download needed dependencies
             - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
 
-            # Save Maven's local repository in cache
-            - save_cache:
-                paths:
-                    - ~/.m2
-                key: evaluations-service
+            - run: export CACHE_VERSION=0.0.2
+
+            - <<: *saveCache # Save Maven's Local Repository
 
             # Persist the built artifacts
             - persist_to_workspace:
@@ -71,17 +78,10 @@ jobs:
             - attach_workspace:
                 at: *workingDirName
 
-            # Restore cache
-            - restore_cache:
-                key: evaluations-service
+            - <<: *restoreCache
 
             # Run tests! (Artifacts are already installed in the build job)
             - run: mvn test -P continuous-integration -B
-
-            - run: mkdir test-results
-            - run: shopt -s globstar
-            - run: cp **/target/surefire-reports/* test-results
-            - run: ls -la test-results
 
             # Generate aggregate reports
             - run: mvn surefire-report:report -DskipTests=true -Daggregate=true -DlinkXRef=false
@@ -90,13 +90,7 @@ jobs:
             - store_test_results:
                 path: target/site/surefire-report.html
 
-            # Save Maven's local repository in cache (to store plugins that were used in test job)
-            -   save_cache:
-                    paths:
-                        - ~/.m2
-                    key: evaluations-service
-
-
+            - <<: *saveCache # Save Maven's local repository in cache (to store plugins that were used in test job)
 
 
     # Build and test
