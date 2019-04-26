@@ -1,11 +1,94 @@
 version: 2.1
 
-defaults: &workdirAndImage
-    working_directory: ~/workspace
+# First define some constants
+working_dir_name: &workingDirName ~/workspace
+java_docker_image: &javaMavenDockerImage maven:3.5-jdk-11-slim
+git_docker_image: &gitDockerImage alpine/git
+
+# Define some configuration
+working_dir: &workingDirectory
+    working_directory: *workingDirName
+java_runtime: &javaRuntime
     docker:
-        - image: maven:3.6-jdk-11-slim
+        - image: *javaMavenDockerImage
+
 
 jobs:
+    checkout_code:
+        # For the checkout job only apply the working directory
+        <<: *workingDirectory
+
+        # Use the Alpine's Docker image to checkout code
+        docker:
+            - image: *gitDockerImage
+
+        steps:
+            # Download code from VCS
+            - checkout
+
+            # Persist the downloaded code into the workspace
+            - persist_to_workspace:
+                root: *workingDirName
+                paths:
+                    - ./
+
+    build:
+        # Apply working directory and docker image
+        <<: *workingDirectory
+        <<: *javaRuntime
+
+        steps:
+            # Restore workspace
+            - attach_workspace:
+                  at: *workingDirName
+
+            # Restore cache
+            - restore_cache:
+                key: evaluations-service
+
+            # Install modules. This will build the artifacts and download needed dependencies
+            - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
+
+            # Save Maven's local repository in cache
+            - save_cache:
+                paths:
+                    - ~/.m2
+                key: evaluations-service
+
+            # Persist the built artifacts
+            - persist_to_workspace:
+                root: *workingDirName
+                paths:
+                    - ./
+
+    test:
+        # Apply working directory and docker image
+        <<: *workingDirectory
+        <<: *javaRuntime
+
+        steps:
+            # Restore workspace
+            - attach_workspace:
+                at: *workingDirName
+
+            # Restore cache
+            - restore_cache:
+                key: evaluations-service
+
+            # Run tests! (Artifacts are already installed in the build job)
+            - run: mvn test -P continuous-integration -B
+
+            - run: mkdir test-results
+            - run: shopt -s globstar
+            - run: cp **/target/surefire-reports/* test-results
+            - run: ls -la test-results
+
+            # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+            - store_test_results:
+                path: test-results
+
+
+
 
     # Build and test
     build_and_test:
@@ -18,7 +101,7 @@ jobs:
 
             # Restore cache for this job
             - restore_cache:
-                  key: evaluations-service
+                key: evaluations-service
 
             # First install modules.
             - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
@@ -37,11 +120,19 @@ jobs:
                   path: target/surefire-reports
 
 
-    push_docker_image:
+#    push_docker_image:
 
 
 workflows:
     version: 2.1
     build_and_test:
         jobs:
-            - build_and_test
+            - checkout_code
+            - build:
+                requires:
+                    - checkout_code
+            - test:
+                requires:
+                    - build
+
+#            - build_and_test
