@@ -56,7 +56,7 @@ jobs:
             - <<: *restoreMavenLocalRepositoryInCache
 
             # Download all dependencies and plugins
-            - run: mvn dependency:resolve dependency:resolve-plugins
+            - run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
             # Store in cache the Maven's Local Repository
             - <<: *saveMavenLocalRepositoryInCache
