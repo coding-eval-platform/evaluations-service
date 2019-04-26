@@ -1,0 +1,47 @@
+version: 2.1
+
+defaults: &workdirAndImage
+    working_directory: ~/workspace
+    docker:
+        - image: maven:3.6-jdk-11-slim
+
+jobs:
+
+    # Build and test
+    build_and_test:
+        working_directory: ~/evaluations-service
+        docker:
+            - image: maven:3.6-jdk-11-slim
+        steps:
+
+            - checkout
+
+            # Restore cache for this job
+            - restore_cache:
+                  key: evaluations-service
+
+            # First install modules.
+            - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
+
+            # Save Maven's local repository in cache
+            - save_cache:
+                  paths:
+                      - ~/.m2
+                  key: evaluations-service
+
+            # Now yes, run tests!
+            - run: mvn test -P continuous-integration -B
+
+            - store_test_results:
+                  # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+                  path: target/surefire-reports
+
+
+    push_docker_image:
+
+
+workflows:
+    version: 2.1
+    build_and_test:
+        jobs:
+            - build_and_test
