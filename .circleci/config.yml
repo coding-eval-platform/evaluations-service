@@ -1,0 +1,38 @@
+version: 2.1
+jobs:
+    # Just run tests
+    build:
+        working_directory: ~/evaluations-service
+        docker:
+            - image: maven:3.6-jdk-11-slim
+        steps:
+
+            - checkout
+
+            - restore_cache:
+                  key: evaluations-service-{{ checksum "pom.xml" }}
+
+            - run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+
+            # First install submodules. This will download all dependencies and
+            - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
+
+            # Now yes run tests
+            - run: mvn test -P continuous-integration -B # run the actual tests
+
+            - save_cache: # saves the project dependencies
+                  paths:
+                      - ~/.m2
+                  key: evaluations-service-{{ checksum "pom.xml" }}
+
+#            - run: mvn package # run the actual tests
+
+
+            - store_test_results: # uploads the test metadata from the `target/surefire-reports` directory so that it can show up in the CircleCI dashboard.
+                  # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+                  path: target/surefire-reports
+
+#            - store_artifacts: # store the uberjar as an artifact
+#                  # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+#                  path: target/demo-java-spring-0.0.1-SNAPSHOT.jar
+#            # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
