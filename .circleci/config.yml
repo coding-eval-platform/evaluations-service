@@ -2,8 +2,8 @@ version: 2.1
 
 # First define some constants
 working_dir_name: &workingDirName ~/workspace
-java_docker_image: &javaMavenDockerImage circleci/openjdk:11.0.2-jdk # -stretch #maven:3.5-jdk-11-slim
 git_docker_image: &gitDockerImage alpine/git
+java_docker_image: &javaMavenDockerImage circleci/openjdk:11.0.2-jdk
 
 # Define some configuration
 working_dir: &workingDirectory
@@ -12,16 +12,15 @@ java_runtime: &javaRuntime
     docker:
         - image: *javaMavenDockerImage
 
-store_cache: &saveCache
+# Some cache steps...
+save_maven_local_repository_in_cache: &saveMavenLocalRepositoryInCache
     save_cache:
-        key: maven-cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.SERVICE_NAME }}
+        key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ .Environment.CACHE_VERSION }}
         paths:
             - ~/.m2
-
-retrieve_cache: &restoreCache
+retrieve_maven_local_repository_from_cache: &restoreMavenLocalRepositoryInCache
     restore_cache:
-        key: maven-cache-{{ .Environment.CACHE_VERSION }}-{{ .Environment.SERVICE_NAME }}
-
+        key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ .Environment.CACHE_VERSION }}
 
 
 jobs:
@@ -43,7 +42,7 @@ jobs:
                 paths:
                     - ./
 
-    build:
+    compile:
         # Apply working directory and docker image
         <<: *workingDirectory
         <<: *javaRuntime
@@ -53,16 +52,19 @@ jobs:
             - attach_workspace:
                   at: *workingDirName
 
-            - <<: *restoreCache
+            # Restore actual cache (Maven's Local Repository)
+            - <<: *restoreMavenLocalRepositoryInCache
 
-            # Install modules. This will build the artifacts and download needed dependencies
-            - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
+            # Download all dependencies and plugins
+            - run: mvn dependency:resolve dependency:resolve-plugins
 
-            - run: export CACHE_VERSION=0.0.2
+            # Store in cache the Maven's Local Repository
+            - <<: *saveMavenLocalRepositoryInCache
 
-            - <<: *saveCache # Save Maven's Local Repository
+            # Compile modules. This will download missing dependencies (not in cache)
+            - run: mvn clean compile -DskipTests=true -P continuous-integration -B -V
 
-            # Persist the built artifacts
+            # Persist the built stuff (compiled coded, artifacts, etc.)
             - persist_to_workspace:
                 root: *workingDirName
                 paths:
@@ -78,7 +80,7 @@ jobs:
             - attach_workspace:
                 at: *workingDirName
 
-            - <<: *restoreCache
+            - <<: *restoreMavenLocalRepositoryInCache
 
             # Run tests! (Artifacts are already installed in the build job)
             - run: mvn test -P continuous-integration -B
@@ -90,52 +92,15 @@ jobs:
             - store_test_results:
                 path: target/site/surefire-report.html
 
-            - <<: *saveCache # Save Maven's local repository in cache (to store plugins that were used in test job)
-
-
-    # Build and test
-    build_and_test:
-        working_directory: ~/evaluations-service
-        docker:
-            - image: maven:3.6-jdk-11-slim
-        steps:
-
-            - checkout
-
-            # Restore cache for this job
-            - restore_cache:
-                key: evaluations-service
-
-            # First install modules.
-            - run: mvn clean install -DskipTests=true -P continuous-integration -B -V
-
-            # Save Maven's local repository in cache
-            - save_cache:
-                  paths:
-                      - ~/.m2
-                  key: evaluations-service
-
-            # Now yes, run tests!
-            - run: mvn test -P continuous-integration -B
-
-            - store_test_results:
-                  # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-                  path: target/surefire-reports
-
-
-#    push_docker_image:
-
 
 workflows:
     version: 2.1
-    build_and_test:
+    compile_and_test:
         jobs:
             - checkout_code
-            - build:
+            - compile:
                 requires:
                     - checkout_code
             - test:
                 requires:
-                    - build
-
-#            - build_and_test
+                    - compile
