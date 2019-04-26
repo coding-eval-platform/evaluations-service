@@ -23,6 +23,31 @@ retrieve_maven_local_repository_from_cache: &restoreMavenLocalRepositoryInCache
         key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ .Environment.CACHE_VERSION }}
 
 
+
+
+
+concatenate_poms: &concatenatePoms
+    run:
+        name: Calculate digest
+        command: |
+            rm -f all-poms
+            find . -type f -regex ".*/pom.xml" | sort -n | xargs cat >> all-poms ;
+
+
+
+save_maven_local_repository_in_cache2: &saveMavenLocalRepositoryInCache2
+    save_cache:
+        key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ checksum "all-poms" }}
+        paths:
+            - ~/.m2
+
+retrieve_maven_local_repository_from_cache2: &restoreMavenLocalRepositoryInCache2
+    restore_cache:
+        keys:
+            - maven-cache-{{ .Environment.SERVICE_NAME }}-{{ checksum "all-poms" }} # First try actual version
+            - maven-cache-{{ .Environment.SERVICE_NAME }}-                          # Then, most recent cache
+
+
 jobs:
     checkout_code:
         # For the checkout job only apply the working directory
@@ -42,6 +67,9 @@ jobs:
                 paths:
                     - ./
 
+#    prepare_maven_local_repository:
+
+
     compile:
         # Apply working directory and docker image
         <<: *workingDirectory
@@ -53,16 +81,24 @@ jobs:
                   at: *workingDirName
 
             # Restore actual cache (Maven's Local Repository)
-            - <<: *restoreMavenLocalRepositoryInCache
+#            - <<: *restoreMavenLocalRepositoryInCache
+
+            - <<: *concatenatePoms
+            - <<: *restoreMavenLocalRepositoryInCache2
 
             # Download all dependencies and plugins
-            - run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+            - run:
+                name: Download required dependencies and plugins
+                command: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
             # Store in cache the Maven's Local Repository
-            - <<: *saveMavenLocalRepositoryInCache
+#            - <<: *saveMavenLocalRepositoryInCache
+            - <<: *saveMavenLocalRepositoryInCache2
 
             # Compile modules. This will download missing dependencies (not in cache)
-            - run: mvn clean compile -DskipTests=true -P continuous-integration -B -V
+            - run:
+                name: Compile source code
+                command: mvn clean compile -DskipTests=true -P continuous-integration -B -V
 
             # Persist the built stuff (compiled coded, artifacts, etc.)
             - persist_to_workspace:
@@ -80,17 +116,29 @@ jobs:
             - attach_workspace:
                 at: *workingDirName
 
-            - <<: *restoreMavenLocalRepositoryInCache
+#            - <<: *restoreMavenLocalRepositoryInCache
+            - <<: *concatenatePoms
+            - <<: *restoreMavenLocalRepositoryInCache2
 
             # Run tests! (Artifacts are already installed in the build job)
-            - run: mvn test -P continuous-integration -B
+            - run:
+                name: Run tests
+                command: mvn test -P continuous-integration -B --fail-at-end
 
-            # Generate aggregate reports
-            - run: mvn surefire-report:report -DskipTests=true -Daggregate=true -DlinkXRef=false
+            # Move all tests results into a single directory
+            - run:
+                name: Save tests results
+                command: |
+                    mkdir -p ~/test-results/junit/
+                    find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+                when: always
 
-            # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+            # Store test results
             - store_test_results:
-                path: target/site/surefire-report.html
+                path: ~/test-results
+
+            - store_artifacts:
+                path: ~/test-results/junit
 
 
 workflows:
