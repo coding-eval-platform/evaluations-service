@@ -59,6 +59,36 @@ test_code: &testCode
 
 
 commands:
+    retrieve_maven_local_repository_from_cache:
+        description: "Retrieve the Maven's Local Repository from Cache, based on poms' checksum"
+        steps:
+            - run:
+                name: Aggregate poms in a single file
+                command: |
+                    rm -f all-poms
+                    find . -type f -regex ".*/pom.xml" | sort -n | xargs cat >> all-poms ;
+            - restore_cache:
+                keys:
+                    - maven-cache-{{ .Environment.SERVICE_NAME }}-{{ checksum "all-poms" }} # First try actual version
+                    - maven-cache-{{ .Environment.SERVICE_NAME }}-                          # Then, most recent cache
+            - run:
+                name: Remove pom aggregate
+                command: |
+                    rm -f all-poms
+
+
+    generate_new_maven_local_repository:
+        description: "Generates a new Maven local repository (when checksum is different only)"
+        steps:
+            - retrieve_maven_local_repository_from_cache
+            - run:
+                name: Download required dependencies and plugins
+                command: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+            - save_cache:
+                key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ checksum "all-poms" }}
+                paths:
+                    - ~/.m2
+
     test_results:
         description: "Aggregates the test results and stores them."
         steps:
@@ -93,31 +123,31 @@ jobs:
                 paths:
                     - ./
 
-    prepare_cache:
-        # Apply working directory and docker image
-        <<: *workingDirectory
-#        <<: *javaRuntime
-
-        # Use the Alpine's Docker image to checkout code
-        docker:
-            - image: maven:3.6-jdk-8-alpine
-
-        steps:
-            # Restore workspace
-            - attach_workspace:
-                at: *workingDirName
-
-            # Restore actual cache (Maven's Local Repository)
-            - <<: *concatenatePoms
-            - <<: *restoreMavenLocalRepositoryInCache
-
-            # Download all dependencies and plugins
-            - run:
-                name: Download required dependencies and plugins
-                command: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
-
-            # Store in cache the Maven's Local Repository
-            - <<: *saveMavenLocalRepositoryInCache
+#    prepare_cache:
+#        # Apply working directory and docker image
+#        <<: *workingDirectory
+##        <<: *javaRuntime
+#
+#        # Use the Alpine's Docker image to checkout code
+#        docker:
+#            - image: maven:3.6-jdk-8-alpine
+#
+#        steps:
+#            # Restore workspace
+#            - attach_workspace:
+#                at: *workingDirName
+#
+#            # Restore actual cache (Maven's Local Repository)
+#            - <<: *concatenatePoms
+#            - <<: *restoreMavenLocalRepositoryInCache
+#
+#            # Download all dependencies and plugins
+#            - run:
+#                name: Download required dependencies and plugins
+#                command: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+#
+#            # Store in cache the Maven's Local Repository
+#            - <<: *saveMavenLocalRepositoryInCache
 
 
     compile_and_test:
@@ -130,9 +160,10 @@ jobs:
             - attach_workspace:
                 at: *workingDirName
 
-            # Restore actual cache (Maven's Local Repository)
-            - <<: *concatenatePoms
-            - <<: *restoreMavenLocalRepositoryInCache
+#            # Restore actual cache (Maven's Local Repository)
+#            - <<: *concatenatePoms
+#            - <<: *restoreMavenLocalRepositoryInCache
+            - retrieve_maven_local_repository_from_cache
 
             # Compile code. Even though it should not happen, this will download missing dependencies (not in cache).
             - <<: *compileCode
@@ -222,9 +253,10 @@ jobs:
             - attach_workspace:
                 at: *workingDirName
 
-            # Restore cache
-            - <<: *concatenatePoms
-            - <<: *restoreMavenLocalRepositoryInCache
+#            # Restore cache
+#            - <<: *concatenatePoms
+#            - <<: *restoreMavenLocalRepositoryInCache
+            - retrieve_maven_local_repository_from_cache
 
             # Start Docker daemon
             - setup_remote_docker
@@ -248,12 +280,9 @@ workflows:
     continuous_integration:
         jobs:
             - checkout_code
-            - prepare_cache:
-                requires:
-                    - checkout_code
             - compile_and_test:
                 requires:
-                    - prepare_cache
+                    - checkout_code
 
 #            - compile:
 #                requires:
@@ -262,12 +291,12 @@ workflows:
 #                requires:
 #                    - compile
 
-    continuous_delivery:
-        jobs:
-            - checkout_code
-            - prepare_cache:
-                requires:
-                    - checkout_code
-            - build_and_push_docker_image:
-                requires:
-                    - prepare_cache
+#    continuous_delivery:
+#        jobs:
+#            - checkout_code
+#            - prepare_cache:
+#                requires:
+#                    - checkout_code
+#            - build_and_push_docker_image:
+#                requires:
+#                    - prepare_cache
