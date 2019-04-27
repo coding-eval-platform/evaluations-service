@@ -44,18 +44,34 @@ test_code: &testCode
         name: Run tests
         command: mvn test -P continuous-integration -B --fail-at-end
 
-# Produce test results
-produce_test_results: &produceTestResults
-    - run:
-        name: Save tests results
-        command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-        when: always
-    - store_test_results:
-            path: ~/test-results
-    - store_artifacts:
-            path: ~/test-results/junit
+## Produce test results
+#produce_test_results: &produceTestResults
+#    - run:
+#        name: Save tests results
+#        command: |
+#            mkdir -p ~/test-results/junit/
+#            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+#        when: always
+#    - store_test_results:
+#            path: ~/test-results
+#    - store_artifacts:
+#            path: ~/test-results/junit
+
+
+commands:
+    test_results:
+        description: "Aggregates the test results and stores them."
+        steps:
+            - run:
+                name: Save tests results
+                command: |
+                    mkdir -p ~/test-results/junit/
+                    find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+                when: always
+            - store_test_results:
+                    path: ~/test-results
+            - store_artifacts:
+                    path: ~/test-results/junit
 
 
 jobs:
@@ -124,7 +140,7 @@ jobs:
             # Run tests.
             - <<: *testCode
 
-            - <<: *produceTestResults
+            - test_results
 
 
 
@@ -224,7 +240,7 @@ jobs:
                 name: Compile, test and create Docker Image
                 command: mvn package -DskipTests=true -P continuous-integration -P docker-build -B --fail-at-end
 
-            - <<: *produceTestResults
+            - test_results
 
 
 workflows:
