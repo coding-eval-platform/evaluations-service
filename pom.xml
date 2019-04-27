@@ -56,7 +56,7 @@
         </profile>
 
         <profile>
-            <id>continuous-integration</id>
+            <id>ci</id>
         </profile>
 
         <profile>

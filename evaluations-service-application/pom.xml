@@ -20,10 +20,6 @@
 
         <!-- Bootstrap class -->
         <bootstrapClass>ar.edu.itba.cep.evaluations_service.application.Application</bootstrapClass>
-
-        <!-- Docker -->
-        <docker.image.prefix>itbacep</docker.image.prefix>
-        <docker.image.name>${project.parent.artifactId}</docker.image.name>
     </properties>
 
     <dependencies>
@@ -67,11 +63,34 @@
     <profiles>
         <profile>
             <id>docker-build</id>
+            <properties>
+                <!-- Timestamp format to be included in Docker image's tag -->
+                <maven.build.timestamp.format>yyyy-MM-dd'T'HH-mm-ss</maven.build.timestamp.format>
+                <!-- Docker Image name -->
+                <docker.image.prefix>itbacep</docker.image.prefix>
+                <docker.image.name>${project.parent.artifactId}</docker.image.name>
+                <docker.image.tag-id>${maven.build.timestamp}</docker.image.tag-id>
+                <docker.image.tag>${project.parent.version}-${docker.image.tag-id}</docker.image.tag>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>com.spotify</groupId>
                         <artifactId>dockerfile-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-dockerfile</id>
+                                <goals>
+                                    <goal>build</goal>
+                                    <goal>tag</goal>
+                                    <goal>push</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <repository>${docker.image.prefix}/${docker.image.name}</repository>
+                            <tag>${docker.image.tag}</tag>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -84,19 +103,7 @@
                 <plugin>
                     <groupId>com.spotify</groupId>
                     <artifactId>dockerfile-maven-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>default-dockerfile</id>
-                            <goals>
-                                <goal>build</goal>
-                                <goal>tag</goal>
-                                <goal>push</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                     <configuration>
-                        <repository>${docker.image.prefix}/${docker.image.name}</repository>
-                        <tag>${project.parent.version}</tag>
                         <buildArgs>
                             <JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
                         </buildArgs>
@@ -104,7 +111,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
