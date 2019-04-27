@@ -13,19 +13,6 @@ java_runtime: &javaRuntime
         - image: *javaMavenDockerImage
 
 # Some cache steps...
-save_maven_local_repository_in_cache: &saveMavenLocalRepositoryInCache
-    save_cache:
-        key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ .Environment.CACHE_VERSION }}
-        paths:
-            - ~/.m2
-retrieve_maven_local_repository_from_cache: &restoreMavenLocalRepositoryInCache
-    restore_cache:
-        key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ .Environment.CACHE_VERSION }}
-
-
-
-
-
 concatenate_poms: &concatenatePoms
     run:
         name: Calculate digest
@@ -33,19 +20,42 @@ concatenate_poms: &concatenatePoms
             rm -f all-poms
             find . -type f -regex ".*/pom.xml" | sort -n | xargs cat >> all-poms ;
 
-
-
-save_maven_local_repository_in_cache2: &saveMavenLocalRepositoryInCache2
+save_maven_local_repository_in_cache: &saveMavenLocalRepositoryInCache
     save_cache:
         key: maven-cache-{{ .Environment.SERVICE_NAME }}-{{ checksum "all-poms" }}
         paths:
             - ~/.m2
 
-retrieve_maven_local_repository_from_cache2: &restoreMavenLocalRepositoryInCache2
+retrieve_maven_local_repository_from_cache: &restoreMavenLocalRepositoryInCache
     restore_cache:
         keys:
             - maven-cache-{{ .Environment.SERVICE_NAME }}-{{ checksum "all-poms" }} # First try actual version
             - maven-cache-{{ .Environment.SERVICE_NAME }}-                          # Then, most recent cache
+
+
+# Compile and test
+compile_code: &compileCode
+    run:
+        name: Compile source code
+        command: mvn clean compile -P continuous-integration -B -V
+
+test_code: &testCode
+    run:
+        name: Run tests
+        command: mvn test -P continuous-integration -B --fail-at-end
+
+# Produce test results
+produce_test_results: &produceTestResults
+    - run:
+        name: Save tests results
+        command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+        when: always
+    - store_test_results:
+            path: ~/test-results
+    - store_artifacts:
+            path: ~/test-results/junit
 
 
 jobs:
@@ -67,24 +77,23 @@ jobs:
                 paths:
                     - ./
 
-#    prepare_maven_local_repository:
-
-
-    compile:
+    prepare_cache:
         # Apply working directory and docker image
         <<: *workingDirectory
-        <<: *javaRuntime
+#        <<: *javaRuntime
+
+        # Use the Alpine's Docker image to checkout code
+        docker:
+            - image: maven:3.6-jdk-8-alpine
 
         steps:
             # Restore workspace
             - attach_workspace:
-                  at: *workingDirName
+                at: *workingDirName
 
             # Restore actual cache (Maven's Local Repository)
-#            - <<: *restoreMavenLocalRepositoryInCache
-
             - <<: *concatenatePoms
-            - <<: *restoreMavenLocalRepositoryInCache2
+            - <<: *restoreMavenLocalRepositoryInCache
 
             # Download all dependencies and plugins
             - run:
@@ -92,21 +101,10 @@ jobs:
                 command: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
             # Store in cache the Maven's Local Repository
-#            - <<: *saveMavenLocalRepositoryInCache
-            - <<: *saveMavenLocalRepositoryInCache2
+            - <<: *saveMavenLocalRepositoryInCache
 
-            # Compile modules. This will download missing dependencies (not in cache)
-            - run:
-                name: Compile source code
-                command: mvn clean compile -DskipTests=true -P continuous-integration -B -V
 
-            # Persist the built stuff (compiled coded, artifacts, etc.)
-            - persist_to_workspace:
-                root: *workingDirName
-                paths:
-                    - ./
-
-    test:
+    compile_and_test:
         # Apply working directory and docker image
         <<: *workingDirectory
         <<: *javaRuntime
@@ -116,39 +114,144 @@ jobs:
             - attach_workspace:
                 at: *workingDirName
 
-#            - <<: *restoreMavenLocalRepositoryInCache
+            # Restore actual cache (Maven's Local Repository)
             - <<: *concatenatePoms
-            - <<: *restoreMavenLocalRepositoryInCache2
+            - <<: *restoreMavenLocalRepositoryInCache
 
-            # Run tests! (Artifacts are already installed in the build job)
+            # Compile code. Even though it should not happen, this will download missing dependencies (not in cache).
+            - <<: *compileCode
+
+            # Run tests.
+            - <<: *testCode
+
+            - <<: *produceTestResults
+
+
+
+#    compile:
+#        # Apply working directory and docker image
+#        <<: *workingDirectory
+#        <<: *javaRuntime
+#
+#        steps:
+#            # Restore workspace
+#            - attach_workspace:
+#                  at: *workingDirName
+#
+#            # Restore actual cache (Maven's Local Repository)
+#            - <<: *concatenatePoms
+#            - <<: *restoreMavenLocalRepositoryInCache
+#
+#            # Download all dependencies and plugins
+#            - run:
+#                name: Download required dependencies and plugins
+#                command: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+#
+#            # Store in cache the Maven's Local Repository
+#            - <<: *saveMavenLocalRepositoryInCache
+#
+#            # Compile modules. This will download missing dependencies (not in cache)
+#            - run:
+#                name: Compile source code
+#                command: mvn clean compile -DskipTests=true -P continuous-integration -B -V
+#
+#            # Persist the built stuff (compiled coded, artifacts, etc.)
+#            - persist_to_workspace:
+#                root: *workingDirName
+#                paths:
+#                    - ./
+#
+#    test:
+#        # Apply working directory and docker image
+#        <<: *workingDirectory
+#        <<: *javaRuntime
+#
+#        steps:
+#            # Restore workspace
+#            - attach_workspace:
+#                at: *workingDirName
+#
+#            # Restore cache
+#            - <<: *concatenatePoms
+#            - <<: *restoreMavenLocalRepositoryInCache
+#
+#            # Run tests! (Artifacts are already installed in the build job)
+#            - run:
+#                name: Run tests
+#                command: mvn test -P continuous-integration -B --fail-at-end
+#
+#            # Move all tests results into a single directory
+#            - run:
+#                name: Save tests results
+#                command: |
+#                    mkdir -p ~/test-results/junit/
+#                    find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+#                when: always
+#
+#            # Store test results
+#            - store_test_results:
+#                path: ~/test-results
+#
+#            - store_artifacts:
+#                path: ~/test-results/junit
+
+
+    build_and_push_docker_image:
+        # Apply working directory and docker image
+        <<: *workingDirectory
+        <<: *javaRuntime
+
+        steps:
+            # Restore workspace
+            - attach_workspace:
+                at: *workingDirName
+
+            # Restore cache
+            - <<: *concatenatePoms
+            - <<: *restoreMavenLocalRepositoryInCache
+
+            # Start Docker daemon
+            - setup_remote_docker
+
+            # Compile code. Even though it should not happen, this will download missing dependencies (not in cache).
+            -   <<: *compileCode
+
+            # Run tests.
+            -   <<: *testCode
+
+            # Build Artifacts and Docker Image with Maven
             - run:
-                name: Run tests
-                command: mvn test -P continuous-integration -B --fail-at-end
+                name: Compile, test and create Docker Image
+                command: mvn package -DskipTests=true -P continuous-integration -P docker-build -B --fail-at-end
 
-            # Move all tests results into a single directory
-            - run:
-                name: Save tests results
-                command: |
-                    mkdir -p ~/test-results/junit/
-                    find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-                when: always
-
-            # Store test results
-            - store_test_results:
-                path: ~/test-results
-
-            - store_artifacts:
-                path: ~/test-results/junit
+            - <<: *produceTestResults
 
 
 workflows:
     version: 2.1
-    compile_and_test:
+    continuous_integration:
         jobs:
             - checkout_code
-            - compile:
+            - prepare_cache:
                 requires:
                     - checkout_code
-            - test:
+            - compile_and_test:
                 requires:
-                    - compile
+                    - prepare_cache
+
+#            - compile:
+#                requires:
+#                    - checkout_code
+#            - test:
+#                requires:
+#                    - compile
+
+    continuous_delivery:
+        jobs:
+            - checkout_code
+            - prepare_cache:
+                requires:
+                    - checkout_code
+            - build_and_push_docker_image:
+                requires:
+                    - prepare_cache
