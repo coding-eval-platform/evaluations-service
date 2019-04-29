@@ -132,8 +132,8 @@ jobs:
         steps:
             - checkout
             - generate_new_maven_local_repository
-#            - compile_code
-#            - test_code
+            - compile_code
+            - test_code
             - save_test_results
             - save_workspace
 
