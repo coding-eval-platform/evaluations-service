@@ -1,9 +1,8 @@
 version: 2.1
 
-# First define some constants
+# Define some constants
 working_dir_name: &workingDirName ~/workspace
 java_docker_image: &javaMavenDockerImage circleci/openjdk:11.0.3-stretch
-git_docker_image: &gitDockerImage alpine/git
 
 # Define some configuration
 working_dir: &workingDirectory
@@ -11,6 +10,43 @@ working_dir: &workingDirectory
 java_runtime: &javaRuntime
     docker:
         - image: *javaMavenDockerImage
+
+# Define some reusable parameters names and types
+docker_checksum_parameter_definition: &dockerChecksumParameterDefinition
+    checksum:
+        type: string
+docker_tag_parameter_definition: &dockerTagParameterDefinition
+    tag:
+        type: string
+docker_username_parameter_definition: &dockerUsernameParameterDefinition
+    username:
+        type: string
+docker_password_parameter_definition: &dockerPasswordParameterDefinition
+    password:
+        type: string
+
+#
+#
+#snapshot_parameters_definition: &snapshotParametersDefinition
+#    parameters:
+#        checksum:
+#            type: string
+#release_parameters_definition: &releaseParametersDefinition
+#    parameters:
+#        tag:
+#            type: string
+
+# Define some reusable parameter values
+snapshot_opts_parameter_value: &snapshotOptsParameterValue
+    opts: -Ddocker.image.tag-id=<<parameters.checksum>>
+release_opts_parameter_value: &releaseOptsParameterValue
+    opts: -Ddocker.image.tag=<<parameters.tag>>
+
+username_parameter_value: &usernameParameterValue
+    username: <<parameters.username>>
+password_parameter_value: &passwordParameterValue
+    password: <<parameters.password>>
+
 
 commands:
     retrieve_workspace:
@@ -99,23 +135,74 @@ commands:
                 name: Creating Docker Image
                 command: mvn package -DskipTests -P ci -P docker-build -B <<parameters.opts>>
 
+    push_docker_image:
+        description: "Pushes the Docker Image to DockerHub."
+        parameters:
+            <<: *dockerUsernameParameterDefinition
+            <<: *dockerPasswordParameterDefinition
+            opts:
+        steps:
+            - echo <<parameters.password>> | docker login -u <<parameters.username>> --password-stdin
+            # - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_LOGIN} --password-stdin
+            - run:
+                name: Pushing Docker Image
+                command: mvn dockerfile:push -DskipTests -P docker-build <<parameters.opts>> # <<parameters.login_opts>>
+
+#    push_docker_image_with_credentials:
+#        description:
+#        parameters:
+#            opts:
+#            user:
+#            pass:
+#        steps:
+#            - push_docker_image:
+#                - opts: <<parameters.opts>>
+#                - login_opts: -Ddockerfile.username=<<parameters.user>> -Ddockerfile:password=<<parameters.pass>>
+
+
+
+
     create_snapshot_docker_image:
         description: "Creates a Docker Image using Maven, overriding the tag-id property. Use it for snapshot images"
         parameters:
-            checksum:
-                type: string
+            <<: *dockerChecksumParameterDefinition
         steps:
             - create_docker_image:
-                  opts: -Ddocker.image.tag-id=<<parameters.checksum>>
+                  <<: *snapshotOptsParameterValue
 
     create_release_docker_image:
         description: "Creates a Docker Image using Maven, overriding the tag. Use it for release images"
         parameters:
-            tag:
-                type: string
+            <<: *dockerTagParameterDefinition
         steps:
             - create_docker_image:
-                opts: -Ddocker.image.tag=<<parameters.tag>>
+                  <<: *releaseOptsParameterValue
+
+    push_snapshot_docker_image:
+        description: "Pushes the Docker Image using Maven, overriding the tag-id property. Use it for snapshot images"
+        parameters:
+            <<: *dockerChecksumParameterDefinition
+            <<: *dockerUsernameParameterDefinition
+            <<: *dockerPasswordParameterDefinition
+        steps:
+            - push_docker_image:
+                <<: *snapshotOptsParameterValue
+                <<: *usernameParameterValue
+                <<: *passwordParameterValue
+
+
+    push_release_docker_image:
+        description: "Pushes the Docker Image using Maven, overriding the tag. Use it for release images"
+        parameters:
+            <<: *dockerTagParameterDefinition
+            <<: *dockerUsernameParameterDefinition
+            <<: *dockerPasswordParameterDefinition
+        steps:
+            - push_docker_image:
+                  <<: *releaseOptsParameterValue
+                  <<: *usernameParameterValue
+                  <<: *passwordParameterValue
+
 
 
 
@@ -143,6 +230,10 @@ jobs:
             - docker_job
             - create_snapshot_docker_image:
                 checksum: ${CIRCLE_SHA1}
+            - push_release_docker_image:
+                checksum: ${CIRCLE_SHA1}
+                username: ${DOCKER_USERNAME}
+                password: ${DOCKER_PASSWORD}
 
     build_and_push_release_docker_image:
         # Apply working directory and docker image
@@ -153,6 +244,10 @@ jobs:
             - docker_job
             - create_release_docker_image:
                 tag: ${CIRCLE_TAG}
+            - push_release_docker_image:
+                tag: ${CIRCLE_TAG}
+                username: ${DOCKER_USERNAME}
+                password: ${DOCKER_PASSWORD}
 
 
 workflows:

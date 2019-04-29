@@ -90,6 +90,7 @@
                         <configuration>
                             <repository>${docker.image.prefix}/${docker.image.name}</repository>
                             <tag>${docker.image.tag}</tag>
+                            <skip>false</skip>
                         </configuration>
                     </plugin>
                 </plugins>
