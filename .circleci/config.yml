@@ -239,7 +239,8 @@ workflows:
                 requires:
                     - compile_and_test
                 filters:
-                    only: master
+                    branches:
+                        only: master
 
     releases:
         jobs:
