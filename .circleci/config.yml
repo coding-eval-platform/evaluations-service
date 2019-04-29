@@ -230,7 +230,7 @@ jobs:
             - docker_job
             - create_snapshot_docker_image:
                 checksum: ${CIRCLE_SHA1}
-            - push_release_docker_image:
+            - push_snapshot_docker_image:
                 checksum: ${CIRCLE_SHA1}
                 username: ${DOCKER_USERNAME}
                 password: ${DOCKER_PASSWORD}
