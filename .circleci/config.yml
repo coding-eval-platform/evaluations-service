@@ -12,13 +12,6 @@ java_runtime: &javaRuntime
         - image: *javaMavenDockerImage
 
 # Define some reusable parameters names and types
-maven_opts_parameter_definition: &mavenOptsParameterDefinition
-    opts:
-        type: string
-        default: ""
-docker_checksum_parameter_definition: &dockerChecksumParameterDefinition
-    checksum:
-        type: string
 docker_tag_parameter_definition: &dockerTagParameterDefinition
     tag:
         type: string
@@ -28,28 +21,6 @@ docker_username_parameter_definition: &dockerUsernameParameterDefinition
 docker_password_parameter_definition: &dockerPasswordParameterDefinition
     password:
         type: string
-
-#
-#
-#snapshot_parameters_definition: &snapshotParametersDefinition
-#    parameters:
-#        checksum:
-#            type: string
-#release_parameters_definition: &releaseParametersDefinition
-#    parameters:
-#        tag:
-#            type: string
-
-# Define some reusable parameter values
-snapshot_opts_parameter_value: &snapshotOptsParameterValue
-    opts: -Ddocker.image.tag-id=<<parameters.checksum>>
-release_opts_parameter_value: &releaseOptsParameterValue
-    opts: -Ddocker.image.tag=<<parameters.tag>>
-
-username_parameter_value: &usernameParameterValue
-    username: <<parameters.username>>
-password_parameter_value: &passwordParameterValue
-    password: <<parameters.password>>
 
 
 commands:
@@ -131,84 +102,25 @@ commands:
     create_docker_image:
         description: "Creates a Docker Image using Maven"
         parameters:
-            <<: *mavenOptsParameterDefinition
+            <<: *dockerTagParameterDefinition
         steps:
             - run:
                 name: Creating Docker Image
-                command: mvn package -DskipTests -P ci -P docker-build -B <<parameters.opts>>
+                command: mvn package -DskipTests -P ci -P docker-build -B -Ddocker.image.tag=<<parameters.tag>>
 
     push_docker_image:
         description: "Pushes the Docker Image to DockerHub."
         parameters:
             <<: *dockerUsernameParameterDefinition
             <<: *dockerPasswordParameterDefinition
-            <<: *mavenOptsParameterDefinition
+            <<: *dockerTagParameterDefinition
         steps:
             - run:
                 name: Performing login to DockerHub
                 command: echo <<parameters.password>> | docker login -u <<parameters.username>> --password-stdin
-            # - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_LOGIN} --password-stdin
             - run:
                 name: Pushing Docker Image
-                command: mvn dockerfile:push -DskipTests -P docker-build <<parameters.opts>> # <<parameters.login_opts>>
-
-#    push_docker_image_with_credentials:
-#        description:
-#        parameters:
-#            opts:
-#            user:
-#            pass:
-#        steps:
-#            - push_docker_image:
-#                - opts: <<parameters.opts>>
-#                - login_opts: -Ddockerfile.username=<<parameters.user>> -Ddockerfile:password=<<parameters.pass>>
-
-
-
-
-    create_snapshot_docker_image:
-        description: "Creates a Docker Image using Maven, overriding the tag-id property. Use it for snapshot images"
-        parameters:
-            <<: *dockerChecksumParameterDefinition
-        steps:
-            - create_docker_image:
-                  <<: *snapshotOptsParameterValue
-
-    create_release_docker_image:
-        description: "Creates a Docker Image using Maven, overriding the tag. Use it for release images"
-        parameters:
-            <<: *dockerTagParameterDefinition
-        steps:
-            - create_docker_image:
-                  <<: *releaseOptsParameterValue
-
-    push_snapshot_docker_image:
-        description: "Pushes the Docker Image using Maven, overriding the tag-id property. Use it for snapshot images"
-        parameters:
-            <<: *dockerChecksumParameterDefinition
-            <<: *dockerUsernameParameterDefinition
-            <<: *dockerPasswordParameterDefinition
-        steps:
-            - push_docker_image:
-                <<: *snapshotOptsParameterValue
-                <<: *usernameParameterValue
-                <<: *passwordParameterValue
-
-
-    push_release_docker_image:
-        description: "Pushes the Docker Image using Maven, overriding the tag. Use it for release images"
-        parameters:
-            <<: *dockerTagParameterDefinition
-            <<: *dockerUsernameParameterDefinition
-            <<: *dockerPasswordParameterDefinition
-        steps:
-            - push_docker_image:
-                  <<: *releaseOptsParameterValue
-                  <<: *usernameParameterValue
-                  <<: *passwordParameterValue
-
-
-
+                command: mvn dockerfile:push -DskipTests -P docker-build -Ddocker.image.tag=<<parameters.tag>>
 
 
 jobs:
@@ -220,9 +132,9 @@ jobs:
         steps:
             - checkout
             - generate_new_maven_local_repository
-            - compile_code
+#            - compile_code
 #            - test_code
-#            - save_test_results
+            - save_test_results
             - save_workspace
 
     build_and_push_snapshot_docker_image:
@@ -232,10 +144,10 @@ jobs:
 
         steps:
             - docker_job
-            - create_snapshot_docker_image:
-                checksum: ${CIRCLE_SHA1}
-            - push_snapshot_docker_image:
-                checksum: ${CIRCLE_SHA1}
+            - create_docker_image:
+                tag: ${CIRCLE_SHA1}
+            - push_docker_image:
+                tag: ${CIRCLE_SHA1}
                 username: ${DOCKER_USERNAME}
                 password: ${DOCKER_PASSWORD}
 
@@ -246,9 +158,9 @@ jobs:
 
         steps:
             - docker_job
-            - create_release_docker_image:
+            - create_docker_image:
                 tag: ${CIRCLE_TAG}
-            - push_release_docker_image:
+            - push_docker_image:
                 tag: ${CIRCLE_TAG}
                 username: ${DOCKER_USERNAME}
                 password: ${DOCKER_PASSWORD}
