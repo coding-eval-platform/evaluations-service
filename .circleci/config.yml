@@ -12,6 +12,10 @@ java_runtime: &javaRuntime
         - image: *javaMavenDockerImage
 
 # Define some reusable parameters names and types
+maven_opts_parameter_definition: &mavenOptsParameterDefinition
+    opts:
+        type: string
+        default: ""
 docker_checksum_parameter_definition: &dockerChecksumParameterDefinition
     checksum:
         type: string
@@ -127,9 +131,7 @@ commands:
     create_docker_image:
         description: "Creates a Docker Image using Maven"
         parameters:
-            opts:
-                type: string
-                default: ""
+            <<: *mavenOptsParameterDefinition
         steps:
             - run:
                 name: Creating Docker Image
@@ -140,9 +142,11 @@ commands:
         parameters:
             <<: *dockerUsernameParameterDefinition
             <<: *dockerPasswordParameterDefinition
-            opts:
+            <<: *mavenOptsParameterDefinition
         steps:
-            - echo <<parameters.password>> | docker login -u <<parameters.username>> --password-stdin
+            - run:
+                name: Performing login to DockerHub
+                command: echo <<parameters.password>> | docker login -u <<parameters.username>> --password-stdin
             # - echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_LOGIN} --password-stdin
             - run:
                 name: Pushing Docker Image
