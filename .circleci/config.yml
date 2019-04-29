@@ -12,6 +12,12 @@ java_runtime: &javaRuntime
         - image: *javaMavenDockerImage
 
 # Define some reusable parameters names and types
+docker_namespace_parameter_definition: &dockerNamespaceParameterDefinition
+    namespace:
+        type: string
+docker_repository_parameter_definition: &dockerRepositoryParameterDefinition
+    repository:
+        type: string
 docker_tag_parameter_definition: &dockerTagParameterDefinition
     tag:
         type: string
@@ -21,6 +27,15 @@ docker_username_parameter_definition: &dockerUsernameParameterDefinition
 docker_password_parameter_definition: &dockerPasswordParameterDefinition
     password:
         type: string
+
+# Composition of parameters
+docker_image_stuff_parameters: &dockerImageStuffParametersDefinitions
+    <<: *dockerNamespaceParameterDefinition
+    <<: *dockerRepositoryParameterDefinition
+    <<: *dockerTagParameterDefinition
+docker_login_stuff_parameters: &dockerLoginStuffParametersDefinitions
+    <<: *dockerUsernameParameterDefinition
+    <<: *dockerPasswordParameterDefinition
 
 
 commands:
@@ -102,25 +117,53 @@ commands:
     create_docker_image:
         description: "Creates a Docker Image using Maven"
         parameters:
-            <<: *dockerTagParameterDefinition
+            <<: *dockerImageStuffParametersDefinitions
         steps:
             - run:
                 name: Creating Docker Image
-                command: mvn package -DskipTests -P ci -P docker-build -B -Ddocker.image.tag=<<parameters.tag>>
+                command: |
+                  mvn package -DskipTests -P ci -P docker-build -B \
+                    -Ddocker.image.prefix=<<parameters.namespace>> \
+                    -Ddocker.image.name=<<parameters.repository>> \
+                    -Ddocker.image.tag=<<parameters.tag>>
 
     push_docker_image:
         description: "Pushes the Docker Image to DockerHub."
         parameters:
-            <<: *dockerUsernameParameterDefinition
-            <<: *dockerPasswordParameterDefinition
-            <<: *dockerTagParameterDefinition
+            <<: *dockerImageStuffParametersDefinitions
+            <<: *dockerLoginStuffParametersDefinitions
         steps:
             - run:
                 name: Performing login to DockerHub
                 command: echo <<parameters.password>> | docker login -u <<parameters.username>> --password-stdin
             - run:
                 name: Pushing Docker Image
-                command: mvn dockerfile:push -DskipTests -P docker-build -Ddocker.image.tag=<<parameters.tag>>
+                command: |
+                  mvn dockerfile:push -DskipTests -P ci -P docker-build \
+                    -Ddocker.image.prefix=<<parameters.namespace>> \
+                    -Ddocker.image.name=<<parameters.repository>> \
+                    -Ddocker.image.tag=<<parameters.tag>>
+
+    notify_docker_build_via_slack:
+        description: "Sends a notification via Slack indicating that a Docker image has being built"
+        parameters:
+            <<: *dockerImageStuffParametersDefinitions
+            webhook:
+                type: string
+        steps:
+            - slack/notify:
+                author_name: "CircleCI Robot"
+                title: A new Docker image is available!
+                title_link: "https://hub.docker.com/r/<<parameters.namespace>>/<<parameters.repository>>"
+                message: >
+                    A new docker image for
+                    <<parameters.namespace>>/<<parameters.repository>> is available with tag <<parameters.tag>>.\n
+                    Check https://hub.docker.com/r/<<parameters.namespace>>/<<parameters.repository>>
+                color: "#30cc30"
+                include_visit_job_action: false
+                include_project_field: false
+                include_job_number_field: false
+                webhook: <<parameters.webhook>>
 
 
 jobs:
@@ -145,11 +188,20 @@ jobs:
         steps:
             - docker_job
             - create_docker_image:
+                namespace: ${DOCKER_NAMESPACE}
+                repository: ${SERVICE_NAME}
                 tag: ${CIRCLE_SHA1}
             - push_docker_image:
+                namespace: ${DOCKER_NAMESPACE}
+                repository: ${SERVICE_NAME}
                 tag: ${CIRCLE_SHA1}
                 username: ${DOCKER_USERNAME}
                 password: ${DOCKER_PASSWORD}
+            - notify_docker_build_via_slack:
+                namespace: ${DOCKER_NAMESPACE}
+                repository: ${SERVICE_NAME}
+                tag: ${CIRCLE_SHA1}
+                webhook: ${SLACK_SNAPSHOT_BUILD_WEBHOOK}
 
     build_and_push_release_docker_image:
         # Apply working directory and docker image
@@ -159,11 +211,22 @@ jobs:
         steps:
             - docker_job
             - create_docker_image:
+                namespace: ${DOCKER_NAMESPACE}
+                repository: ${SERVICE_NAME}
                 tag: ${CIRCLE_TAG}
             - push_docker_image:
+                namespace: ${DOCKER_NAMESPACE}
+                repository: ${SERVICE_NAME}
                 tag: ${CIRCLE_TAG}
                 username: ${DOCKER_USERNAME}
                 password: ${DOCKER_PASSWORD}
+            - notify_docker_build_via_slack:
+                namespace: ${DOCKER_NAMESPACE}
+                repository: ${SERVICE_NAME}
+                tag: ${CIRCLE_TAG}
+                webhook: ${SLACK_RELEASE_BUILD_WEBHOOK}
+
+
 
 
 workflows:
@@ -172,9 +235,11 @@ workflows:
         jobs:
             - compile_and_test
             - build_and_push_snapshot_docker_image:
-                context: docker-hub
+                context: itbacep
                 requires:
                     - compile_and_test
+                filters:
+                    only: master
 
     releases:
         jobs:
@@ -185,9 +250,12 @@ workflows:
                     branches:
                         ignore: /.*/
             - build_and_push_release_docker_image:
-                context: docker-hub
+                context: itbacep
                 requires:
                     - compile_and_test
                 filters:
                     tags:
                         only: /.*/
+
+orbs:
+    slack: circleci/slack@2.5.0
