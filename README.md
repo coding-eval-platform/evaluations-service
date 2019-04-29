@@ -1,5 +1,5 @@
 
-# Evaluations Service [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://travis-ci.org/coding-eval-platform/evaluations-service.svg?branch=master)](https://travis-ci.org/coding-eval-platform/evaluations-service)
+# Evaluations Service [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://img.shields.io/circleci/project/github/coding-eval-platform/evaluations-service/master.svg)](https://circleci.com/gh/coding-eval-platform/evaluations-service/tree/master) ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/coding-eval-platform/evaluations-service.svg)
 
 Service in charge of evaluations management
 
@@ -283,6 +283,21 @@ $ docker run -p 8000:8000 itbacep/eval-service:$EVAL_SERVICE_VERSION
 
 Note that you will have to link the container with another container (or the host machine)
 in which a PostgreSQL server is running.
+
+## CI/CD Workflow
+
+This project is integrated with [CircleCI](https://circleci.com/).
+
+### Pull requests
+
+When a pull request is created, a build will be triggered in CircleCI, which must succeed in order to merge the pull request. This build will just **compile the source code and run tests**.
+Note that if still committing to a branch with an open pull request, each push to the said branch will trigger a build.
+
+### Pushes and merges into master
+Pushing or merging into ```master``` will also trigger the **compile** and **test** build in CircleCI. If the build succeeds, this will be followed by a Docker phase: it will build a Docker image and push it into DockerHub. This images will be tagged with the commit's hash.
+
+### Releases
+A release is performed by tagging in git. Pushing a tag will also trigger the **compile** and **test** build in CircleCI. If the build succeeds, this will be followed by a Docker phase: it will build a Docker image and push it into DockerHub. This images will be tagged with the git's tag.
 
 
 ## License
