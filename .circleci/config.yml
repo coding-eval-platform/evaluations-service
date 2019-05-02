@@ -227,8 +227,6 @@ jobs:
                 webhook: ${SLACK_RELEASE_BUILD_WEBHOOK}
 
 
-
-
 workflows:
     version: 2.1
     snapshots:
