@@ -29,5 +29,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.bellotapps.messaging</groupId>
+            <artifactId>outbox-debezium-producer-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bellotapps.messaging</groupId>
+            <artifactId>outbox-debezium-producer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -318,6 +318,7 @@ public interface ExamService {
      *
      * @param exerciseId The id of the {@link Exercise} for which an {@link ExerciseSolution} will be created.
      * @param answer     The answer to the question of the {@link Exercise}.
+     * @return The created {@link ExerciseSolution}.
      * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#IN_PROGRESS} state.

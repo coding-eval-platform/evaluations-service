@@ -6,7 +6,7 @@ CREATE TABLE transactional_messaging.outbox
     id        VARCHAR PRIMARY KEY NOT NULL,
     sender    VARCHAR(128)        NOT NULL,
     recipient VARCHAR(128)        NOT NULL,
-    timestamp BIGINT              NOT NULL,
+    timestamp TIMESTAMP           NOT NULL,
     headers   TEXT,
     payload   TEXT
 );

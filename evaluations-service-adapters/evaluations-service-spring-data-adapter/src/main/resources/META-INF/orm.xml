@@ -73,14 +73,14 @@
             <element-collection name="inputs" fetch="LAZY">
                 <order-column name="input_order" nullable="false" insertable="true" updatable="false"/>
                 <column name="input" nullable="false" insertable="true" updatable="true"/>
-                <collection-table name="test_case_inputs">
+                <collection-table name="test_case_inputs" schema="models">
                     <join-column name="test_case_id"/>
                 </collection-table>
             </element-collection>
             <element-collection name="expectedOutputs" fetch="LAZY">
                 <order-column name="expected_output_order" nullable="false" insertable="true" updatable="false"/>
                 <column name="expected_output" nullable="false" insertable="true" updatable="true"/>
-                <collection-table name="test_case_expected_outputs">
+                <collection-table name="test_case_expected_outputs" schema="models">
                     <join-column name="test_case_id"/>
                 </collection-table>
             </element-collection>
