@@ -26,6 +26,26 @@ spring:
                         non_contextual_creation: true
         open-in-view: false
 
+    # TODO: check this stuff
+    kafka:
+        consumer:
+            group-id: "evaluations_service"
+            auto-offset-reset: earliest
+            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+            properties:
+                spring:
+                    json:
+                        use.type.headers: false
+                        value.default.type: com.bellotapps.the_messenger.transport.json.jackson.JacksonMessage
+        producer:
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+            properties:
+                spring:
+                    json:
+                        add.type.headers: false
+
 server:
     port: 8000
     error:
@@ -57,6 +77,10 @@ spring:
             hibernate:
                 format_sql: true
                 show_sql: true
+
+    # TODO: check this stuff
+    kafka:
+        bootstrap-servers: localhost:9092
 
 ---
 # Configuration for Staging Environment

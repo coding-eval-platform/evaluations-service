@@ -6,21 +6,23 @@
 
     <parent>
         <groupId>ar.edu.itba.cep</groupId>
-        <artifactId>evaluations-service</artifactId>
+        <artifactId>evaluations-service-ports</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>evaluations-service-adapters</artifactId>
+    <artifactId>evaluations-service-command-messages-senders</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <modules>
-        <module>evaluations-service-rest-adapter</module>
-        <module>evaluations-service-spring-data-adapter</module>
-        <module>evaluations-service-kafka-commands-senders</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>evaluations-service-models</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
 </project>
