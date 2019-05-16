@@ -48,8 +48,11 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
      * Repository for {@link ExerciseSolutionResult}s.
      */
     private final ExerciseSolutionResultRepository exerciseSolutionResultRepository;
-
+    /**
+     * A proxy for the executor service.
+     */
     private final ExecutorServiceCommandMessageProxy executorService;
+
 
     /**
      * Constructor.
@@ -59,6 +62,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
      * @param testCaseRepository               Repository for {@link TestCase}s.
      * @param exerciseSolutionRepository       Repository for {@link ExerciseSolution}s.
      * @param exerciseSolutionResultRepository Repository for {@link ExerciseSolutionResult}s.
+     * @param executorService                  A proxy for the executor service.
      */
     @Autowired
     public ExamManager(final ExamRepository examRepository,
