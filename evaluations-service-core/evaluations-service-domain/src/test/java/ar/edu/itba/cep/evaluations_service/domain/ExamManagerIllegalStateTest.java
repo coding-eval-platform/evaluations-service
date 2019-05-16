@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
@@ -33,18 +34,21 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
      * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
      * @param exerciseSolutionRepository A mocked {@link ExamRepository} passed to super class.
      * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
+     * @param executorServiceProxy       A mocked {@link ExecutorServiceCommandMessageProxy} passed to super class.
      */
     ExamManagerIllegalStateTest(
             @Mock(name = "examRep") final ExamRepository examRepository,
             @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
             @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
             @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep) {
+            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep,
+            @Mock(name = "executorServiceProxy") final ExecutorServiceCommandMessageProxy executorServiceProxy) {
         super(examRepository,
                 exerciseRepository,
                 testCaseRepository,
                 exerciseSolutionRepository,
-                exerciseSolResultRep);
+                exerciseSolResultRep,
+                executorServiceProxy);
     }
 
 
@@ -161,29 +165,29 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     }
 
     /**
-     * Tests that changing the question of an exercise belonging to an in progress exam is not allowed.
+     * Tests that modifying an exercise belonging to an in progress exam is not allowed.
      *
      * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the one whose question is being changed).
+     * @param exercise A mocked {@link Exercise} (the one whose being modified).
      */
     @Test
-    void testChangeExerciseQuestionForInProgressExam(
+    void testModifyExerciseForInProgressExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise) {
-        testChangeExerciseQuestion(exam, exercise, Exam.State.IN_PROGRESS);
+        testModifyExercise(exam, exercise, Exam.State.IN_PROGRESS);
     }
 
     /**
-     * Tests that changing the question of an exercise belonging to an finished exam is not allowed.
+     * Tests that modifying an exercise belonging to an finished exam is not allowed.
      *
      * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the one whose question is being changed).
+     * @param exercise A mocked {@link Exercise} (the one being modified).
      */
     @Test
-    void testChangeExerciseQuestionForFinishedExam(
+    void testModifyExerciseForFinishedExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise) {
-        testChangeExerciseQuestion(exam, exercise, Exam.State.FINISHED);
+        testModifyExercise(exam, exercise, Exam.State.FINISHED);
     }
 
     /**
@@ -497,22 +501,32 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
      */
     private void testCreateExercise(final Exam exam, final Exam.State state) {
         testManagerForExam(exam, state,
-                (manager, id) -> manager.createExercise(id, TestHelper.validExerciseQuestion()),
+                (manager, id) -> manager.createExercise(
+                        id,
+                        TestHelper.validExerciseQuestion(),
+                        TestHelper.validLanguage(),
+                        TestHelper.validSolutionTemplate()
+                ),
                 "Creating an exercise for an exam with " + state + " state is being allowed");
     }
 
     /**
-     * Tests that changing the question of an exercise belonging to an exam with the given {@code state}
+     * Tests that modifying an exercise belonging to an exam with the given {@code state}
      * is not allowed.
      *
      * @param exam     The {@link Exam} owning the exercise.
-     * @param exercise The {@link Exercise} whose question is being tried to be changed.
+     * @param exercise The {@link Exercise} being tried to be modified.
      * @param state    The {@link Exam.State} being tested.
      */
-    private void testChangeExerciseQuestion(final Exam exam, final Exercise exercise, final Exam.State state) {
+    private void testModifyExercise(final Exam exam, final Exercise exercise, final Exam.State state) {
         testManagerExercise(exam, state, exercise,
-                (manager, id) -> manager.changeExerciseQuestion(id, TestHelper.validExerciseQuestion()),
-                "Changing the question for an exercise belonging to an exam with " + state + " state" +
+                (manager, id) -> manager.modifyExercise(
+                        id,
+                        TestHelper.validExerciseQuestion(),
+                        TestHelper.validLanguage(),
+                        TestHelper.validSolutionTemplate()
+                ),
+                "Modifying an exercise belonging to an exam with " + state + " state" +
                         " is being allowed.");
     }
 
@@ -670,13 +684,17 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
-                () -> examManager.createExerciseSolution(exerciseId, TestHelper.validExerciseSolutionAnswer()),
+                () -> examManager.createExerciseSolution(
+                        exerciseId,
+                        TestHelper.validExerciseSolutionAnswer()
+                ),
                 "Creating a solution for an exercise that belongs to an exam" +
                         " with " + state + " state is being allosed"
         );
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -705,6 +723,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         );
         examActionVerification.accept(Mockito.verify(exam));
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -729,6 +748,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 message
         );
         verifyOnlyExamSearch(examId);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -758,6 +778,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -791,5 +812,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         Mockito.verify(exercise, Mockito.only()).getExam();
         Mockito.verify(testCase, Mockito.only()).getExercise();
         verifyOnlyTestCaseSearch(testCaseId);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 }

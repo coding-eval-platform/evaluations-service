@@ -48,6 +48,13 @@
             <basic name="question">
                 <column name="question" nullable="false" insertable="true" updatable="true"/>
             </basic>
+            <basic name="language">
+                <column name="language" nullable="false" insertable="true" updatable="true"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <basic name="solutionTemplate">
+                <column name="solution_template" nullable="true" insertable="true" updatable="true"/>
+            </basic>
             <many-to-one name="exam" fetch="LAZY" optional="false">
                 <join-column name="belongs_to"
                              referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>

@@ -73,7 +73,12 @@ public class ExerciseEndpoint {
             @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId,
             @Valid @ConvertGroup(to = ExerciseUploadDto.Create.class) final ExerciseUploadDto dto) {
         LOGGER.debug("Creating exercise for exam with id {}", examId);
-        final var exercise = examService.createExercise(examId, dto.getQuestion());
+        final var exercise = examService.createExercise(
+                examId,
+                dto.getQuestion(),
+                dto.getLanguage(),
+                dto.getSolutionTemplate()
+        );
         final var location = uriInfo.getAbsolutePathBuilder()
                 .path(Long.toString(exercise.getId()))
                 .build();
@@ -81,13 +86,13 @@ public class ExerciseEndpoint {
     }
 
     @PUT
-    @Path(Routes.EXERCISE_QUESTION)
+    @Path(Routes.EXERCISE)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeQuestion(
+    public Response modifyExercise(
             @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
-            @Valid @ConvertGroup(to = ExerciseUploadDto.ChangeQuestion.class) final ExerciseUploadDto dto) {
-        LOGGER.debug("Changing question for exercise with id {}", exerciseId);
-        examService.changeExerciseQuestion(exerciseId, dto.getQuestion());
+            @Valid @ConvertGroup(to = ExerciseUploadDto.Update.class) final ExerciseUploadDto dto) {
+        LOGGER.debug("Updating exercise with id {}", exerciseId);
+        examService.modifyExercise(exerciseId, dto.getQuestion(), dto.getLanguage(), dto.getSolutionTemplate());
         return Response.noContent().build();
     }
 

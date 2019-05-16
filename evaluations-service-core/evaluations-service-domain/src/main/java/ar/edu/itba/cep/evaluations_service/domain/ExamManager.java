@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 
 /**
@@ -24,7 +26,7 @@ import java.util.Optional;
  */
 @Service
 @Transactional(readOnly = true)
-public class ExamManager implements ExamService {
+public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     /**
      * Repository for {@link Exam}s.
@@ -47,6 +49,8 @@ public class ExamManager implements ExamService {
      */
     private final ExerciseSolutionResultRepository exerciseSolutionResultRepository;
 
+    private final ExecutorServiceCommandMessageProxy executorService;
+
     /**
      * Constructor.
      *
@@ -61,12 +65,14 @@ public class ExamManager implements ExamService {
                        final ExerciseRepository exerciseRepository,
                        final TestCaseRepository testCaseRepository,
                        final ExerciseSolutionRepository exerciseSolutionRepository,
-                       final ExerciseSolutionResultRepository exerciseSolutionResultRepository) {
+                       final ExerciseSolutionResultRepository exerciseSolutionResultRepository,
+                       final ExecutorServiceCommandMessageProxy executorService) {
         this.examRepository = examRepository;
         this.exerciseRepository = exerciseRepository;
         this.testCaseRepository = testCaseRepository;
         this.exerciseSolutionRepository = exerciseSolutionRepository;
         this.exerciseSolutionResultRepository = exerciseSolutionResultRepository;
+        this.executorService = executorService;
     }
 
 
@@ -152,21 +158,23 @@ public class ExamManager implements ExamService {
 
     @Override
     @Transactional
-    public Exercise createExercise(final long examId, final String question)
+    public Exercise createExercise(final long examId,
+                                   final String question, final Language language, final String solutionTemplate)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
-        final var exercise = new Exercise(question, exam);
+        final var exercise = new Exercise(question, language, solutionTemplate, exam);
         return exerciseRepository.save(exercise);
     }
 
     @Override
     @Transactional
-    public void changeExerciseQuestion(final long exerciseId, final String question)
+    public void modifyExercise(final long exerciseId,
+                               final String question, final Language language, final String solutionTemplate)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
-        exercise.setQuestion(question);
+        exercise.update(question, language, solutionTemplate);
         exerciseRepository.save(exercise);
     }
 
@@ -290,10 +298,12 @@ public class ExamManager implements ExamService {
         if (exercise.getExam().getState() != Exam.State.IN_PROGRESS) {
             throw new IllegalEntityStateException(EXAM_IS_NOT_IN_PROGRESS);
         }
-        final var solution = new ExerciseSolution(exercise, answer);
-        return exerciseSolutionRepository.save(solution);
+        final var solution = exerciseSolutionRepository.save(new ExerciseSolution(exercise, answer));
+        // TODO: send all
+        final var testCases = testCaseRepository.getExercisePrivateTestCases(exercise);
+        testCases.forEach(testCase -> sendToRun(solution, testCase));
 
-        // TODO: send code to run!
+        return solution;
         // TODO: when authoring becomes available, check that the student did not send a solution already.
     }
 
@@ -305,11 +315,11 @@ public class ExamManager implements ExamService {
     @Override
     @Transactional
     public void processExecution(final long solutionId, final long testCaseId,
-                                 final int exitCode, final List<String> stdOut, final List<String> stdErr)
+                                 final int exitCode, final List<String> stdout, final List<String> stderr)
             throws IllegalArgumentException {
         // First, validate arguments
-        Assert.notNull(stdOut, "The stdout list cannot be null");
-        Assert.notNull(stdErr, "The stderr list cannot be null");
+        Assert.notNull(stdout, "The stdout list cannot be null");
+        Assert.notNull(stderr, "The stderr list cannot be null");
 
         // Load solution and test case (checking if they exist)
         final var solution = loadSolution(solutionId);
@@ -318,13 +328,20 @@ public class ExamManager implements ExamService {
         // State validation is not needed because the existence of a solution proves state validity
 
         // Check if exit code is zero, if there is no error output and if outputs match the expected outputs
-        final var result = exitCode == 0 && stdErr.isEmpty() && testCase.getExpectedOutputs().equals(stdOut) ?
+        final var result = exitCode == 0 && stderr.isEmpty() && testCase.getExpectedOutputs().equals(stdout) ?
                 ExerciseSolutionResult.Result.APPROVED :
                 ExerciseSolutionResult.Result.FAILED;
 
         // Execution processing is finished. Now the result can be saved.
         final var solutionResult = new ExerciseSolutionResult(solution, testCase, result);
         exerciseSolutionResultRepository.save(solutionResult);
+    }
+
+    @Override
+    public void processExecution(final long solutionId, final long testCaseId, final ExecutionResult executionResult)
+            throws NoSuchEntityException, IllegalArgumentException {
+        System.out.println("Not implemented yet!");
+        // TODO: implement
     }
 
     // ================================================================================================================
@@ -339,7 +356,7 @@ public class ExamManager implements ExamService {
      * @throws NoSuchEntityException If there is no {@link Exam} with the given {@code id}.
      */
     private Exam loadExam(final long id) throws NoSuchEntityException {
-        return examRepository.findById(id).orElseThrow(NoSuchEntityException::new);
+        return loadEntity(examRepository::findById, id);
     }
 
     /**
@@ -350,7 +367,7 @@ public class ExamManager implements ExamService {
      * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code id}.
      */
     private Exercise loadExercise(final long id) throws NoSuchEntityException {
-        return exerciseRepository.findById(id).orElseThrow(NoSuchEntityException::new);
+        return loadEntity(exerciseRepository::findById, id);
     }
 
     /**
@@ -361,7 +378,7 @@ public class ExamManager implements ExamService {
      * @throws NoSuchEntityException If there is no {@link TestCase} with the given {@code id}.
      */
     private TestCase loadTestCase(final long id) throws NoSuchEntityException {
-        return testCaseRepository.findById(id).orElseThrow(NoSuchEntityException::new);
+        return loadEntity(testCaseRepository::findById, id);
     }
 
     /**
@@ -372,7 +389,40 @@ public class ExamManager implements ExamService {
      * @throws NoSuchEntityException If there is no {@link ExerciseSolution} with the given {@code id}.
      */
     private ExerciseSolution loadSolution(final long id) throws NoSuchEntityException {
-        return exerciseSolutionRepository.findById(id).orElseThrow(NoSuchEntityException::new);
+        return loadEntity(exerciseSolutionRepository::findById, id);
+    }
+
+    /**
+     * Loads the entity if type {@code T} with the given {@code id},
+     * retrieving it with the given {@code entityRetriever}.
+     *
+     * @param entityRetriever A {@link Function} that given an {@code id} of type {@code ID}
+     *                        retrieves an {@link Optional} of the entity to be loaded.
+     * @param id              The id of the entity.
+     * @param <T>             The concrete type of the entity.
+     * @param <ID>            The concrete type of the entity's id.
+     * @return The entity of type {@code T} with the given {@code id}.
+     * @throws NoSuchEntityException IF there is no entity of type {@code T} with the given {@code id}.
+     */
+    private static <T, ID> T loadEntity(final Function<ID, Optional<T>> entityRetriever, final ID id)
+            throws NoSuchEntityException {
+        return entityRetriever.apply(id).orElseThrow(NoSuchEntityException::new);
+    }
+
+    /**
+     * Sends to run the given {@code solution}, using the given {@code testCase}.
+     *
+     * @param solution The {@link ExerciseSolution} to be sent to run.
+     * @param testCase The {@link TestCase} with the inputs to be used as running arguments.
+     */
+    private void sendToRun(final ExerciseSolution solution, final TestCase testCase) {
+        final var request = new ExecutionRequest(
+                solution.getAnswer(),
+                testCase.getInputs(),
+                null,
+                solution.getExercise().getLanguage());
+        final var replyData = new ExecutionResultReplyData(solution.getId(), testCase.getId());
+        executorService.requestExecution(request, replyData);
     }
 
     /**
@@ -388,6 +438,7 @@ public class ExamManager implements ExamService {
             throw new IllegalEntityStateException(EXAM_IS_NOT_UPCOMING);
         }
     }
+
 
     /**
      * An {@link IllegalEntityStateError} that indicates that a certain action that involves an {@link Exam}

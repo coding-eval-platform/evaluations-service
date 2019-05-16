@@ -1,6 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.Language;
 import ar.edu.itba.cep.evaluations_service.models.ValidationConstants;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.IllegalValue;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.MissingValue;
@@ -21,26 +22,59 @@ public class ExerciseUploadDto {
     @NotNull(message = "The question is missing.", payload = MissingValue.class,
             groups = {
                     Create.class,
-                    ChangeQuestion.class,
+                    Update.class,
             }
     )
     @Size(message = "Question too short", payload = IllegalValue.class,
             min = ValidationConstants.QUESTION_MIN_LENGTH,
             groups = {
                     Create.class,
-                    ChangeQuestion.class,
+                    Update.class,
             }
     )
     private final String question;
 
+    /**
+     * The {@link Language} for the exercise.
+     */
+    @NotNull(message = "The language is missing.", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
+    private final Language language;
+
+    /**
+     * The solution template for the exercise.
+     */
+    private final String solutionTemplate;
+
 
     /**
      * Constructor.
+     *
+     * @param question         The question for the exercise.
+     * @param language         The {@link Language} for the exercise.
+     * @param solutionTemplate The solution template for the exercise.
      */
     @JsonCreator
     public ExerciseUploadDto(
-            @JsonProperty(value = "question", access = JsonProperty.Access.WRITE_ONLY) final String question) {
+            @JsonProperty(
+                    value = "question",
+                    access = JsonProperty.Access.WRITE_ONLY
+            ) final String question,
+            @JsonProperty(
+                    value = "language",
+                    access = JsonProperty.Access.WRITE_ONLY
+            ) final Language language,
+            @JsonProperty(
+                    value = "solutionTemplate",
+                    access = JsonProperty.Access.WRITE_ONLY
+            ) final String solutionTemplate) {
         this.question = question;
+        this.language = language;
+        this.solutionTemplate = solutionTemplate;
     }
 
 
@@ -51,6 +85,19 @@ public class ExerciseUploadDto {
         return question;
     }
 
+    /**
+     * @return The {@link Language} for the exercise.
+     */
+    public Language getLanguage() {
+        return language;
+    }
+
+    /**
+     * @return The solution template for the exercise.
+     */
+    public String getSolutionTemplate() {
+        return solutionTemplate;
+    }
 
     // ================================================================================================================
     // Validation groups
@@ -63,8 +110,8 @@ public class ExerciseUploadDto {
     }
 
     /**
-     * Validation group for the change question operation.
+     * Validation group for the update operation.
      */
-    public interface ChangeQuestion {
+    public interface Update {
     }
 }

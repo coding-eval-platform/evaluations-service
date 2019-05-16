@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -46,6 +48,47 @@ class ExerciseTest {
         Mockito.verifyZeroInteractions(mockedExam);
     }
 
+    /**
+     * Tests that updating an {@link Exercise} with valid values works as expected.
+     */
+    @Test
+    void testValidArgumentsUpdate() {
+        Assertions.assertAll("Updating with acceptable arguments is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExercise().update(validQuestion(), validLanguage(), validSolutionTemplate()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exercise = createExercise();
+                    final var question = validQuestion();
+                    final var language = validLanguage();
+                    final var solutionTemplate = validSolutionTemplate();
+                    exercise.update(question, language, solutionTemplate);
+                    Assertions.assertAll("Is not being set (does not change the Exercise value)",
+                            () -> Assertions.assertEquals(
+                                    question,
+                                    exercise.getQuestion(),
+                                    "Question mismatch"
+                            ),
+                            () -> Assertions.assertEquals(
+                                    language,
+                                    exercise.getLanguage(),
+                                    "Language mismatch"
+                            ),
+                            () -> Assertions.assertEquals(
+                                    solutionTemplate,
+                                    exercise.getSolutionTemplate(),
+                                    "Solution template mismatch"
+                            )
+                    );
+                }
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    /**
+     * Tests that setting a valid question to an {@link Exercise} works as expected.
+     */
     @Test
     void testSetValidQuestion() {
         Assertions.assertAll("Setting a valid question is not working as expected",
@@ -64,6 +107,55 @@ class ExerciseTest {
                     );
                 }
         );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    /**
+     * Tests that setting a valid {@link Language} to an {@link Exercise} works as expected.
+     */
+    @Test
+    void testSetValidLanguage() {
+        Assertions.assertAll("Setting a valid language is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExercise().setLanguage(validLanguage()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exercise = createExercise();
+                    final var language = validLanguage();
+                    exercise.setLanguage(language);
+                    Assertions.assertEquals(
+                            language,
+                            exercise.getLanguage(),
+                            "Is not being set (does not change the Exercise value)"
+                    );
+                }
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    /**
+     * Tests that setting a valid solution template to an {@link Exercise} works as expected.
+     */
+    @Test
+    void testSetValidSolutionTemplate() {
+        Assertions.assertAll("Setting a valid solution template is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExercise().setSolutionTemplate(validSolutionTemplate()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exercise = createExercise();
+                    final var solutionTemplate = validSolutionTemplate();
+                    exercise.setSolutionTemplate(solutionTemplate);
+                    Assertions.assertEquals(
+                            solutionTemplate,
+                            exercise.getSolutionTemplate(),
+                            "Is not being set (does not change the Exercise value)"
+                    );
+                }
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
     }
 
     // ================================================================================================================
@@ -82,7 +174,7 @@ class ExerciseTest {
     void testNullQuestionOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exercise(null, mockedExam),
+                () -> new Exercise(null, validLanguage(), validSolutionTemplate(), mockedExam),
                 "Creating an exercise with a null question is being allowed."
         );
         Mockito.verifyZeroInteractions(mockedExam);
@@ -97,12 +189,28 @@ class ExerciseTest {
         shortQuestion().ifPresent(
                 shortQuestion -> Assertions.assertThrows(
                         IllegalArgumentException.class,
-                        () -> new Exercise(shortQuestion, mockedExam),
+                        () -> new Exercise(shortQuestion, validLanguage(), validSolutionTemplate(), mockedExam),
                         "Creating an exercise with a too short question is being allowed."
                 )
         );
         Mockito.verifyZeroInteractions(mockedExam);
     }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating an {@link Exercise} with a null {@link Language}.
+     */
+    @Test
+    void testNullLanguageOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new Exercise(validQuestion(), null, validSolutionTemplate(), mockedExam),
+                "Creating an exercise with a null language is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    // No test for solution template as it can be null or any string
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
@@ -112,10 +220,64 @@ class ExerciseTest {
     void testNullExamOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exercise(validQuestion(), null),
+                () -> new Exercise(validQuestion(), validLanguage(), validSolutionTemplate(), null),
                 "Creating an exercise with a null exam is being allowed."
         );
     }
+
+
+    // ================================
+    // Update
+    // ================================
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating an {@link Exercise} with a null question.
+     */
+    @Test
+    void testNullQuestionOnUpdate() {
+        final var exercise = createExercise();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> exercise.update(null, validLanguage(), validSolutionTemplate()),
+                "Updating an exercise with a null question is being allowed."
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating an {@link Exercise} with a too short question.
+     */
+    @Test
+    void testShortQuestionOnUpdate() {
+        final var exercise = createExercise();
+        shortQuestion().ifPresent(
+                shortQuestion -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> exercise.update(shortQuestion, validLanguage(), validSolutionTemplate()),
+                        "Updating an exercise with a too short question is being allowed."
+                )
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating an {@link Exercise} with a null {@link Language}.
+     */
+    @Test
+    void testNullLanguageOnUpdate() {
+        final var exercise = createExercise();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> exercise.update(validQuestion(), null, validSolutionTemplate()),
+                "Updating an exercise with a null language is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    // No test for solution template as it can be null or any string
 
 
     // ================================
@@ -132,7 +294,7 @@ class ExerciseTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> exercise.setQuestion(null),
-                "Updating an exercise with a null question is being allowed."
+                "Setting a null question is being allowed."
         );
         Mockito.verifyZeroInteractions(mockedExam);
     }
@@ -148,11 +310,29 @@ class ExerciseTest {
                 shortQuestion -> Assertions.assertThrows(
                         IllegalArgumentException.class,
                         () -> exercise.setQuestion(shortQuestion),
-                        "Updating an exercise with a too short question is being allowed."
+                        "Setting a short question is being allowed."
                 )
         );
         Mockito.verifyZeroInteractions(mockedExam);
     }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when setting a null {@link Language} to an {@link Exercise}.
+     */
+    @Test
+    void testSetNullLanguage() {
+        final var exercise = createExercise();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> exercise.setLanguage(null),
+                "Setting a null language is being allowed."
+
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
+
+    // No test for solution template as it can be null or any string
 
 
     // ================================================================================================================
@@ -171,6 +351,8 @@ class ExerciseTest {
     private Exercise createExercise() {
         return new Exercise(
                 validQuestion(),
+                validLanguage(),
+                validSolutionTemplate(),
                 mockedExam
         );
     }
@@ -189,6 +371,32 @@ class ExerciseTest {
         return Faker.instance()
                 .lorem()
                 .characters(ValidationConstants.QUESTION_MIN_LENGTH, maxLength);
+    }
+
+    /**
+     * @return A random valid {@link Language}.
+     */
+    private static Language validLanguage() {
+        final var languages = Language.values();
+        final var randomIndex = Faker.instance().number().numberBetween(0, languages.length);
+        return languages[randomIndex];
+    }
+
+    /**
+     * @return A random valid solution template.
+     */
+    private static String validSolutionTemplate() {
+        // Can be null or any string
+        final List<String> possibleSolutionTemplates = new LinkedList<>();
+        possibleSolutionTemplates.add(null);
+        possibleSolutionTemplates.add(
+                Faker.instance()
+                        .lorem()
+                        .characters(ValidationConstants.ANSWER_MIN_LENGTH, Short.MAX_VALUE)
+        );
+
+        final var index = Faker.instance().number().numberBetween(0, possibleSolutionTemplates.size());
+        return possibleSolutionTemplates.get(index);
     }
 
 
