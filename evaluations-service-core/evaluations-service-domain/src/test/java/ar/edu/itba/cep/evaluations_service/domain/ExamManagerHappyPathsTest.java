@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Test class for {@link ExamManager}, containing tests for the happy paths
@@ -816,12 +817,14 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito
                 .when(exerciseSolutionRepository.save(Mockito.any(ExerciseSolution.class)))
                 .then(invocation -> invocation.getArgument(0));
-        final var testCases = TestHelper
-                .randomLengthStream(ignored -> Mockito.mock(TestCase.class))
-                .peek(mock -> Mockito.when(mock.getId()).thenReturn(TestHelper.validTestCaseId()))
-                .peek(mock -> Mockito.when(mock.getInputs()).thenReturn(TestHelper.validTestCaseList()))
-                .collect(Collectors.toList());
-        Mockito.when(testCaseRepository.getExercisePrivateTestCases(exercise)).thenReturn(testCases);
+        final var privateTestCases = mockTestCases();
+        final var publicTestCases = mockTestCases();
+        final var allTestCases = Stream.concat(
+                privateTestCases.stream(),
+                publicTestCases.stream()
+        ).collect(Collectors.toList());
+        Mockito.when(testCaseRepository.getExercisePrivateTestCases(exercise)).thenReturn(privateTestCases);
+        Mockito.when(testCaseRepository.getExercisePublicTestCases(exercise)).thenReturn(publicTestCases);
         final var solution = examManager.createExerciseSolution(exerciseId, answer);
         Assertions.assertAll("ExerciseSolution properties are not the expected",
                 () -> Assertions.assertEquals(
@@ -838,14 +841,16 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         );
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.times(1)).getExam();
-        Mockito.verify(exercise, Mockito.times(testCases.size())).getLanguage(); // Call per test case to be sent to run
+        Mockito.verify(exercise, Mockito.times(allTestCases.size())).getLanguage(); // Call per test case to be sent to run
         Mockito.verifyNoMoreInteractions(exercise);
         Mockito.verifyZeroInteractions(examRepository);
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
-        Mockito.verify(testCaseRepository, Mockito.only()).getExercisePrivateTestCases(exercise);
+        Mockito.verify(testCaseRepository, Mockito.times(1)).getExercisePrivateTestCases(exercise);
+        Mockito.verify(testCaseRepository, Mockito.times(1)).getExercisePublicTestCases(exercise);
+        Mockito.verifyNoMoreInteractions(testCaseRepository);
         Mockito.verify(exerciseSolutionRepository, Mockito.only()).save(Mockito.any(ExerciseSolution.class));
         Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        testCases.forEach(testCase -> {
+        allTestCases.forEach(testCase -> {
             final var request = new ExecutionRequest(answer, testCase.getInputs(), null, language);
             final var replyData = new ExecutionResultReplyData(solution.getId(), testCase.getId());
             Mockito
@@ -1065,6 +1070,23 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
+
+    // ================================================================================================================
+    // Helpers
+    // ================================================================================================================
+
+    /**
+     * Creates a {@link List} of mocked {@link TestCase}s.
+     *
+     * @return A {@link List} of mocked {@link TestCase}s.
+     */
+    private static List<TestCase> mockTestCases() {
+        return TestHelper
+                .randomLengthStream(ignored -> Mockito.mock(TestCase.class))
+                .peek(mock -> Mockito.when(mock.getId()).thenReturn(TestHelper.validTestCaseId()))
+                .peek(mock -> Mockito.when(mock.getInputs()).thenReturn(TestHelper.validTestCaseList()))
+                .collect(Collectors.toList());
+    }
 
     /**
      * Creates an {@link ArgumentMatcher} of {@link ExerciseSolutionResult} that expects the

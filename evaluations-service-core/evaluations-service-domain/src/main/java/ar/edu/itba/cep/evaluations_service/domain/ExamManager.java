@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 
 /**
@@ -304,9 +305,12 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
             throw new IllegalEntityStateException(EXAM_IS_NOT_IN_PROGRESS);
         }
         final var solution = exerciseSolutionRepository.save(new ExerciseSolution(exercise, answer));
-        // TODO: send all
-        final var testCases = testCaseRepository.getExercisePrivateTestCases(exercise);
-        testCases.forEach(testCase -> sendToRun(solution, testCase));
+        final var privateTestCases = testCaseRepository.getExercisePrivateTestCases(exercise);
+        final var publicTestCases = testCaseRepository.getExercisePublicTestCases(exercise);
+        Stream.concat(
+                privateTestCases.stream(),
+                publicTestCases.stream()
+        ).forEach(testCase -> sendToRun(solution, testCase));
 
         return solution;
         // TODO: when authoring becomes available, check that the student did not send a solution already.
