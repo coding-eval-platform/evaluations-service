@@ -22,7 +22,7 @@ public class ExamDownloadDto {
     private final long id;
 
     /**
-     * The description for the exam (e.g mid-term exams, final exams, etc.).
+     * The description of the exam (e.g mid-term exams, final exams, etc.).
      */
     private final String description;
 

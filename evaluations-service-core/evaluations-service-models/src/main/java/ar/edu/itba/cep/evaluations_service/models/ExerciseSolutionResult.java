@@ -126,7 +126,7 @@ public class ExerciseSolutionResult {
     // ================================
 
     /**
-     * An enum indicating whether the result is "approved" or "failed".
+     * An enum with values describing the result.
      */
     public enum Result {
         /**
