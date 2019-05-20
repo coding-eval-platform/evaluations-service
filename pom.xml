@@ -69,7 +69,7 @@
         </profile>
 
         <profile>
-            <id>ci</id>
+            <id>ci-cd</id>
         </profile>
 
         <profile>
