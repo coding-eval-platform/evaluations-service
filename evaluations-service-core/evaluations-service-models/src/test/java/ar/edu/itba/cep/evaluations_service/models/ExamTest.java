@@ -37,6 +37,9 @@ class ExamTest {
                 "An exam is not being created with acceptable arguments.");
     }
 
+    /**
+     * Tests that updating an {@link Exam} with valid values works as expected.
+     */
     @Test
     void testValidArgumentsUpdate() {
         Assertions.assertAll("Updating with acceptable arguments is not working as expected",
@@ -49,9 +52,7 @@ class ExamTest {
                     final var description = validDescription();
                     final var startingAt = validStartingMoment();
                     final var duration = validDuration();
-                    exam.setDescription(description);
-                    exam.setStartingAt(startingAt);
-                    exam.setDuration(duration);
+                    exam.update(description, startingAt, duration);
                     Assertions.assertAll("Is not being set (does not change the Exam value)",
                             () -> Assertions.assertEquals(
                                     description,
@@ -70,6 +71,9 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that setting a valid description to an {@link Exam} works as expected.
+     */
     @Test
     void testSetValidDescription() {
         Assertions.assertAll("Setting a valid description is not working as expected",
@@ -90,6 +94,9 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that setting a valid starting at moment to an {@link Exam} works as expected.
+     */
     @Test
     void testSetValidStartingAt() {
         Assertions.assertAll("Setting a valid starting at moment is not working as expected",
@@ -110,6 +117,9 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests that setting a valid duration to an {@link Exam} works as expected.
+     */
     @Test
     void testSetValidDuration() {
         Assertions.assertAll("Setting a valid duration is not working as expected",
@@ -547,7 +557,7 @@ class ExamTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> exam.setDescription(null),
-                "Updating an exam with a null description is being allowed."
+                "Setting a null description is being allowed."
         );
     }
 
@@ -562,7 +572,7 @@ class ExamTest {
                 shortDescription -> Assertions.assertThrows(
                         IllegalArgumentException.class,
                         () -> exam.setDescription(shortDescription),
-                        "Updating an exam with a too short description is being allowed."
+                        "Setting a too short description is being allowed."
                 )
         );
     }
@@ -577,7 +587,7 @@ class ExamTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> exam.setDescription(longDescription()),
-                "Updating an exam with a too long description is being allowed."
+                "Setting a too long description is being allowed."
         );
     }
 
@@ -591,7 +601,7 @@ class ExamTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> exam.setStartingAt(null),
-                "Updating an exam with a null starting at local date time is being allowed."
+                "Setting a null starting at local date time is being allowed."
         );
     }
 
@@ -605,7 +615,7 @@ class ExamTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> exam.setStartingAt(pastStartingMoment()),
-                "Updating an exam with a past starting at local date time is being allowed."
+                "Setting a past starting at local date time is being allowed."
         );
     }
 
@@ -619,7 +629,7 @@ class ExamTest {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> exam.setDuration(null),
-                "Updating an exam with a null duration is being allowed."
+                "Setting a null duration is being allowed."
         );
     }
 
