@@ -1,11 +1,11 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8ISOLocalDateTimeSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.DurationSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -88,7 +88,7 @@ public class ExamDownloadDto {
      * @return {@link LocalDateTime} at which the exam starts.
      */
     @JsonProperty(value = "startingAt", access = JsonProperty.Access.READ_ONLY)
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonSerialize(using = Java8ISOLocalDateTimeSerializer.class)
     public LocalDateTime getStartingAt() {
         return startingAt;
     }
