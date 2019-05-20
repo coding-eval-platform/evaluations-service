@@ -248,8 +248,11 @@ public class Exam {
                 "ID: " + id + ", " +
                 "Description: '" + description + "', " +
                 "StartingAt: " + startingAt + ", " +
-                "Duration: " + duration +
-                "]";
+                "Duration: " + duration + ", " +
+                "State:" + state + ", " +
+                "ActualStartingMoment:" + actualStartingMoment + ", " +
+                "ActualDuration:" + actualDuration +
+                ']';
     }
 
 
