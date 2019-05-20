@@ -197,11 +197,23 @@ class TestHelper {
     }
 
     /**
-     * @return A valid {@link ExerciseSolution} id.
+     * @return A valid {@link ExerciseSolution} exit code.
      */
     /* package */
     static int validExerciseSolutionExitCode() {
         return Faker.instance().number().numberBetween(Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    /**
+     * @return A valid {@link ExerciseSolution} exit code.
+     */
+    /* package */
+    static int validNonZeroExerciseSolutionExitCode() {
+        final var negatives = Faker.instance().number().numberBetween(Integer.MIN_VALUE, 0);
+        final var positives = Faker.instance().number().numberBetween(1, Integer.MAX_VALUE);
+        final var values = List.of(negatives, positives);
+        final var index = Faker.instance().number().numberBetween(0, values.size());
+        return values.get(index);
     }
 
     /**

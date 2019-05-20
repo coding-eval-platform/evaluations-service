@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
@@ -373,7 +374,9 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
      * @param testCase A mocked {@link TestCase} (the one from which the inputs were taken for the execution).
      */
     @Test
-    void testProcessExecutionForNonExistenceSolution(@Mock(name = "testCase") final TestCase testCase) {
+    void testProcessExecutionForNonExistenceSolution(
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "executionResult") final ExecutionResult executionResult) {
         final var solutionId = TestHelper.validExerciseId();
         Mockito
                 .when(testCaseRepository.findById(solutionId))
@@ -388,9 +391,7 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         examManager.processExecution(
                                 solutionId,
                                 TestHelper.validTestCaseId(),
-                                TestHelper.validExerciseSolutionExitCode(),
-                                TestHelper.validExerciseSolutionResultList(),
-                                TestHelper.validExerciseSolutionResultList()
+                                executionResult
                         ),
                 "Trying to process an execution for a solution that does not exist" +
                         " does not throw a NoSuchEntityException"
@@ -412,7 +413,9 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
      * @param solution A mocked {@link ExerciseSolution} (the one from which the executed code was taken).
      */
     @Test
-    void testProcessExecutionForNonExistenceTestCase(@Mock(name = "solution") final ExerciseSolution solution) {
+    void testProcessExecutionForNonExistenceTestCase(
+            @Mock(name = "solution") final ExerciseSolution solution,
+            @Mock(name = "executionResult") final ExecutionResult executionResult) {
         final var testCaseId = TestHelper.validExerciseId();
         Mockito
                 .when(exerciseSolutionRepository.findById(testCaseId))
@@ -427,9 +430,7 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         examManager.processExecution(
                                 TestHelper.validExerciseSolutionId(),
                                 testCaseId,
-                                TestHelper.validExerciseSolutionExitCode(),
-                                TestHelper.validExerciseSolutionResultList(),
-                                TestHelper.validExerciseSolutionResultList()
+                                executionResult
                         ),
                 "Trying to process an execution for a test case that does not exist" +
                         " does not throw a NoSuchEntityException"

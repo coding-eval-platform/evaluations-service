@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 
@@ -318,12 +319,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    public void processExecution(final long solutionId, final long testCaseId,
-                                 final int exitCode, final List<String> stdout, final List<String> stderr)
-            throws IllegalArgumentException {
+    public void processExecution(final long solutionId, final long testCaseId, final ExecutionResult executionResult)
+            throws NoSuchEntityException, IllegalArgumentException {
         // First, validate arguments
-        Assert.notNull(stdout, "The stdout list cannot be null");
-        Assert.notNull(stderr, "The stderr list cannot be null");
+        Assert.notNull(executionResult, "The execution result must not be null");
 
         // Load solution and test case (checking if they exist)
         final var solution = loadSolution(solutionId);
@@ -331,22 +330,14 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
         // State validation is not needed because the existence of a solution proves state validity
 
-        // Check if exit code is zero, if there is no error output and if outputs match the expected outputs
-        final var result = exitCode == 0 && stderr.isEmpty() && testCase.getExpectedOutputs().equals(stdout) ?
-                ExerciseSolutionResult.Result.APPROVED :
-                ExerciseSolutionResult.Result.FAILED;
+        // Get the ExerciseSolutionResultCreator corresponding to the given executionResult,
+        // and the create the ExerciseSolutionResult
+        final var solutionResult = getResultCreator(executionResult).apply(solution, testCase);
 
-        // Execution processing is finished. Now the result can be saved.
-        final var solutionResult = new ExerciseSolutionResult(solution, testCase, result);
+        // Save the created ExerciseSolutionResult
         exerciseSolutionResultRepository.save(solutionResult);
     }
 
-    @Override
-    public void processExecution(final long solutionId, final long testCaseId, final ExecutionResult executionResult)
-            throws NoSuchEntityException, IllegalArgumentException {
-        System.out.println("Not implemented yet!");
-        // TODO: implement
-    }
 
     // ================================================================================================================
     // Helpers
@@ -443,6 +434,62 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         }
     }
 
+    /**
+     * Gets the {@link ExerciseSolutionResultCreator} corresponding to the given {@link ExecutionResult}.
+     *
+     * @param executionResult The {@link ExecutionResult} to be analyzed in order to know which
+     *                        {@link ExerciseSolutionResultCreator} must be returned.
+     * @return The {@link ExerciseSolutionResultCreator} corresponding to the given {@link ExecutionResult}.
+     */
+    private static ExerciseSolutionResultCreator getResultCreator(final ExecutionResult executionResult) {
+        if (executionResult instanceof TimedOutExecutionResult) {
+            return ExamManager::createForTimedOut;
+        }
+        if (executionResult instanceof FinishedExecutionResult) {
+            return (s, t) -> createForFinished(s, t, (FinishedExecutionResult) executionResult);
+        }
+        throw new IllegalArgumentException("Unknown subtype");
+    }
+
+    /**
+     * Creates an {@link ExerciseSolutionResult} for a {@link TimedOutExecutionResult}.
+     *
+     * @param solution The {@link ExerciseSolution} corresponding to the created {@link ExerciseSolutionResult}.
+     * @param testCase The {@link TestCase} corresponding to the created {@link ExerciseSolutionResult}.
+     * @return The created {@link ExerciseSolutionResult} for a {@link TimedOutExecutionResult}.
+     */
+    private static ExerciseSolutionResult createForTimedOut(final ExerciseSolution solution, final TestCase testCase) {
+        return new ExerciseSolutionResult(solution, testCase, ExerciseSolutionResult.Result.FAILED);
+    }
+
+    /**
+     * Creates an {@link ExerciseSolutionResult} for a {@link FinishedExecutionResult}.
+     *
+     * @param solution        The {@link ExerciseSolution} corresponding to the created {@link ExerciseSolutionResult}.
+     * @param testCase        The {@link TestCase} corresponding to the created {@link ExerciseSolutionResult}.
+     * @param executionResult The {@link FinishedExecutionResult} from where execution stuff is taken.
+     * @return The created {@link ExerciseSolutionResult} for a {@link FinishedExecutionResult}.
+     */
+    private static ExerciseSolutionResult createForFinished(
+            final ExerciseSolution solution,
+            final TestCase testCase,
+            final FinishedExecutionResult executionResult) {
+
+        if (executionResult.getExitCode() == 0
+                && executionResult.getStderr().isEmpty()
+                && testCase.getExpectedOutputs().equals(executionResult.getStdout())) {
+            return new ExerciseSolutionResult(solution, testCase, ExerciseSolutionResult.Result.APPROVED);
+        }
+        return new ExerciseSolutionResult(solution, testCase, ExerciseSolutionResult.Result.FAILED);
+    }
+
+    /**
+     * Defines behaviour for an object that can create an {@link ExerciseSolutionResult}
+     * from an {@link ExerciseSolution} and a {@link TestCase}.
+     */
+    private interface ExerciseSolutionResultCreator
+            extends BiFunction<ExerciseSolution, TestCase, ExerciseSolutionResult> {
+    }
 
     /**
      * An {@link IllegalEntityStateError} that indicates that a certain action that involves an {@link Exam}

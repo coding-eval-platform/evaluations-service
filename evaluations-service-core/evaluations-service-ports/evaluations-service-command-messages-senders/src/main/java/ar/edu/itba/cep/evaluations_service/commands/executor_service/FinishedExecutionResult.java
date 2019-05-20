@@ -8,7 +8,7 @@ import java.util.Objects;
 /**
  * An {@link ExecutionResult} that corresponds to a finished execution (i.e has exit code, stdout and stderr).
  */
-public class FinishedExecutionResult implements ExecutionResult {
+public final class FinishedExecutionResult implements ExecutionResult {
 
     /**
      * The execution's exit code.

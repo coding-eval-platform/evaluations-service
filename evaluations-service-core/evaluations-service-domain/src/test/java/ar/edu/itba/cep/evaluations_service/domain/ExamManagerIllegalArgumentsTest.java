@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain;
 
+import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
@@ -335,58 +336,18 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
     // ================================================================================================================
 
     /**
-     * Tests the processing of an execution result when using {@code null} for both {@code stdout} and {@code stderr}.
+     * Tests the processing of an execution result when using a {@code null} {@link ExecutionResult}.
      */
     @Test
-    void testProcessExecutionWithNullStdOutAndNullStdErr() {
+    void testProcessExecutionWithNullExecutionResult() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.processExecution(
                         TestHelper.validExerciseSolutionId(),
                         TestHelper.validTestCaseId(),
-                        TestHelper.validExerciseSolutionExitCode(),
-                        null,
                         null
                 ),
                 "Using null stdout or null stderr is being allowed"
-        );
-        verifyNoInteractionWithAnyMockedRepository();
-    }
-
-    /**
-     * Tests the processing of an execution result when using {@code null} {@code stdout}.
-     */
-    @Test
-    void testProcessExecutionWithNullStdOut() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.processExecution(
-                        TestHelper.validExerciseSolutionId(),
-                        TestHelper.validTestCaseId(),
-                        TestHelper.validExerciseSolutionExitCode(),
-                        null,
-                        TestHelper.validExerciseSolutionResultList()
-                ),
-                "Using null stdout is being allowed"
-        );
-        verifyNoInteractionWithAnyMockedRepository();
-    }
-
-    /**
-     * Tests the processing of an execution result when using {@code null} {@code stderr}.
-     */
-    @Test
-    void testProcessExecutionWithNullStdErr() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.processExecution(
-                        TestHelper.validExerciseSolutionId(),
-                        TestHelper.validTestCaseId(),
-                        TestHelper.validExerciseSolutionExitCode(),
-                        TestHelper.validExerciseSolutionResultList(),
-                        null
-                ),
-                "Using null stdout is being allowed"
         );
         verifyNoInteractionWithAnyMockedRepository();
     }
