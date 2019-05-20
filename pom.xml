@@ -20,6 +20,7 @@
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
+        <com.bellotapps.the-messenger.version>0.0.1-RELEASE</com.bellotapps.the-messenger.version>
         <com.spotify.dockerfile-maven.version>1.4.10</com.spotify.dockerfile-maven.version>
     </properties>
 
@@ -28,6 +29,18 @@
         <module>evaluations-service-core</module>
         <module>evaluations-service-adapters</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.bellotapps.the-messenger</groupId>
+                <artifactId>bill-of-materials</artifactId>
+                <version>${com.bellotapps.the-messenger.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <profiles>
         <profile>

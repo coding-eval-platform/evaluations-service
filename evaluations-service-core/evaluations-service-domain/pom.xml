@@ -37,6 +37,11 @@
             <artifactId>evaluations-service-services</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>evaluations-service-command-messages-senders</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!-- Third party libraries-->
         <dependency>
@@ -73,6 +78,11 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
