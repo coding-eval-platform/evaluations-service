@@ -14,7 +14,7 @@ public class ExerciseSolutionDownloadDto {
     private final long id;
 
     /**
-     * The answer for the exercise's question.
+     * The answer to the exercise's question.
      */
     private final String answer;
 
