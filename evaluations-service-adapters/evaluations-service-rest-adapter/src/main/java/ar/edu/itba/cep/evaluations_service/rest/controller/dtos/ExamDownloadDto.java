@@ -1,11 +1,11 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8DurationToMinutesSerializer;
 import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8ISOLocalDateTimeSerializer;
+import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8InstantToEpochTimeSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.DurationSerializer;
-import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -97,7 +97,7 @@ public class ExamDownloadDto {
      * @return {@link Duration} of the exam.
      */
     @JsonProperty(value = "duration", access = JsonProperty.Access.READ_ONLY)
-    @JsonSerialize(using = DurationSerializer.class)
+    @JsonSerialize(using = Java8DurationToMinutesSerializer.class)
     public Duration getDuration() {
         return duration;
     }
@@ -114,7 +114,7 @@ public class ExamDownloadDto {
      * @return The actual {@link Instant} at which the exam really started.
      */
     @JsonProperty(value = "actualStartingMoment", access = JsonProperty.Access.READ_ONLY)
-    @JsonSerialize(using = InstantSerializer.class)
+    @JsonSerialize(using = Java8InstantToEpochTimeSerializer.class)
     public Instant getActualStartingMoment() {
         return actualStartingMoment;
     }
@@ -123,7 +123,7 @@ public class ExamDownloadDto {
      * @return The actual {@link Duration} of the exam.
      */
     @JsonProperty(value = "actualDuration", access = JsonProperty.Access.READ_ONLY)
-    @JsonSerialize(using = DurationSerializer.class)
+    @JsonSerialize(using = Java8DurationToMinutesSerializer.class)
     public Duration getActualDuration() {
         return actualDuration;
     }
