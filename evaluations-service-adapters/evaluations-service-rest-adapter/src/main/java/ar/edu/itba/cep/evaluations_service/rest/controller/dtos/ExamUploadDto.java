@@ -2,13 +2,13 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.ValidationConstants;
+import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8DurationToMinutesDeserializer;
+import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8ISOLocalDateTimeDeserializer;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.IllegalValue;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.MissingValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.DurationDeserializer;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
@@ -86,9 +86,9 @@ public class ExamUploadDto {
     public ExamUploadDto(
             @JsonProperty(value = "description", access = JsonProperty.Access.WRITE_ONLY) final String description,
             @JsonProperty(value = "startingAt", access = JsonProperty.Access.WRITE_ONLY)
-            @JsonDeserialize(using = LocalDateTimeDeserializer.class) final LocalDateTime startingAt,
+            @JsonDeserialize(using = Java8ISOLocalDateTimeDeserializer.class) final LocalDateTime startingAt,
             @JsonProperty(value = "duration", access = JsonProperty.Access.WRITE_ONLY)
-            @JsonDeserialize(using = DurationDeserializer.class) final Duration duration) {
+            @JsonDeserialize(using = Java8DurationToMinutesDeserializer.class) final Duration duration) {
         this.description = description;
         this.startingAt = startingAt;
         this.duration = duration;
