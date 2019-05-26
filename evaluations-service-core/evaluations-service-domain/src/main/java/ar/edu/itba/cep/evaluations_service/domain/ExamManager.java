@@ -385,7 +385,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         final var request = new ExecutionRequest(
                 solution.getAnswer(),
                 testCase.getInputs(),
-                null,
+                testCase.getTimeout(),
                 solution.getExercise().getLanguage());
         final var replyData = new ExecutionResultReplyData(solution.getId(), testCase.getId());
         executorService.requestExecution(request, replyData);

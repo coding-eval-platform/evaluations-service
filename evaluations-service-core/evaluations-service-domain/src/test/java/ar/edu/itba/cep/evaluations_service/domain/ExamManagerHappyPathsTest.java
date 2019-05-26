@@ -690,7 +690,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verify(exerciseSolutionRepository, Mockito.only()).save(Mockito.any(ExerciseSolution.class));
         Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
         allTestCases.forEach(testCase -> {
-            final var request = new ExecutionRequest(answer, testCase.getInputs(), null, language);
+            final var request = new ExecutionRequest(answer, testCase.getInputs(), testCase.getTimeout(), language);
             final var replyData = new ExecutionResultReplyData(solution.getId(), testCase.getId());
             Mockito
                     .verify(executorServiceCommandMessageProxy, Mockito.times(1))
@@ -923,6 +923,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         return TestHelper
                 .randomLengthStream(ignored -> Mockito.mock(TestCase.class))
                 .peek(mock -> Mockito.when(mock.getId()).thenReturn(TestHelper.validTestCaseId()))
+                .peek(mock -> Mockito.when(mock.getTimeout()).thenReturn(TestHelper.validTestCaseTimeout()))
                 .peek(mock -> Mockito.when(mock.getInputs()).thenReturn(TestHelper.validTestCaseList()))
                 .collect(Collectors.toList());
     }
