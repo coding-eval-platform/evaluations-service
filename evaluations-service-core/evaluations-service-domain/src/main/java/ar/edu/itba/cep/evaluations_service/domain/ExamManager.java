@@ -108,7 +108,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @Transactional
     public void modifyExam(final long examId,
                            final String description, final LocalDateTime startingAt, final Duration duration)
-            throws IllegalEntityStateException, IllegalArgumentException {
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exam = loadExam(examId);
         exam.update(description, startingAt, duration); // The Exam verifies state by its own.
         examRepository.save(exam);
@@ -116,7 +116,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    public void startExam(final long examId) throws IllegalEntityStateException {
+    public void startExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
         exam.startExam(); // The Exam verifies state by its own.
         examRepository.save(exam);
@@ -124,7 +124,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    public void finishExam(final long examId) throws IllegalEntityStateException {
+    public void finishExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
         exam.finishExam(); // The Exam verifies state by its own.
         examRepository.save(exam);
@@ -143,14 +143,14 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    public List<Exercise> getExercises(final long examId) {
+    public List<Exercise> getExercises(final long examId) throws NoSuchEntityException {
         final var exam = loadExam(examId);
         return exerciseRepository.getExamExercises(exam);
     }
 
     @Override
     @Transactional
-    public void clearExercises(final long examId) throws IllegalEntityStateException {
+    public void clearExercises(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
         testCaseRepository.deleteExamTestCases(exam);
@@ -166,7 +166,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @Transactional
     public Exercise createExercise(final long examId,
                                    final String question, final Language language, final String solutionTemplate)
-            throws IllegalEntityStateException, IllegalArgumentException {
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
         final var exercise = new Exercise(question, language, solutionTemplate, exam);
@@ -177,7 +177,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @Transactional
     public void modifyExercise(final long exerciseId,
                                final String question, final Language language, final String solutionTemplate)
-            throws IllegalEntityStateException, IllegalArgumentException {
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
         exercise.update(question, language, solutionTemplate);
@@ -196,19 +196,20 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    public List<TestCase> getPublicTestCases(final long exerciseId) {
+    public List<TestCase> getPublicTestCases(final long exerciseId) throws NoSuchEntityException {
         final var exercise = loadExercise(exerciseId);
         return testCaseRepository.getExercisePublicTestCases(exercise);
     }
 
     @Override
-    public List<TestCase> getPrivateTestCases(final long exerciseId) {
+    public List<TestCase> getPrivateTestCases(final long exerciseId) throws NoSuchEntityException {
         final var exercise = loadExercise(exerciseId);
         return testCaseRepository.getExercisePrivateTestCases(exercise);
     }
 
     @Override
-    public Page<ExerciseSolution> listSolutions(final long exerciseId, final PagingRequest pagingRequest) {
+    public Page<ExerciseSolution> listSolutions(final long exerciseId, final PagingRequest pagingRequest)
+            throws NoSuchEntityException {
         final var exercise = loadExercise(exerciseId);
         return exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest);
 
@@ -227,7 +228,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
             final Long timeout,
             final List<String> inputs,
             final List<String> expectedOutputs)
-            throws IllegalEntityStateException, IllegalArgumentException {
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
         return testCaseRepository.save(new TestCase(visibility, timeout, inputs, expectedOutputs, exercise));
@@ -240,7 +241,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
                                final Long timeout,
                                final List<String> inputs,
                                final List<String> expectedOutputs)
-            throws IllegalEntityStateException, IllegalArgumentException {
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.getExercise().getExam());
         testCase.update(visibility, timeout, inputs, expectedOutputs);
@@ -265,7 +266,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @Override
     @Transactional
     public ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws IllegalEntityStateException, IllegalArgumentException {
+            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         // Verify that the exam is in progress in order to create solutions for exercises owned by it.
         if (exercise.getExam().getState() != Exam.State.IN_PROGRESS) {
