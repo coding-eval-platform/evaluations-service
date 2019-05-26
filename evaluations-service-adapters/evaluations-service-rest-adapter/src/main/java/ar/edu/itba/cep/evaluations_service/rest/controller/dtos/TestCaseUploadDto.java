@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -23,10 +24,21 @@ public class TestCaseUploadDto {
     @NotNull(message = "The visibility is missing.", payload = MissingValue.class,
             groups = {
                     Create.class,
-                    ChangeVisibility.class,
+                    Update.class,
             }
     )
     private final TestCase.Visibility visibility;
+
+    /**
+     * The timeout of the test case.
+     */
+    @Positive(message = "The timeout must be positive", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    Update.class
+            }
+    )
+    private final Long timeout;
 
     /**
      * The inputs of the test case.
@@ -34,13 +46,13 @@ public class TestCaseUploadDto {
     @NotEmpty(message = "The inputs list must not be null nor empty", payload = IllegalValue.class,
             groups = {
                     Create.class,
-                    ChangeInputs.class,
+                    Update.class,
             }
     )
     @NotNullsInIterable(message = "The inputs list contains nulls", payload = IllegalValue.class,
             groups = {
                     Create.class,
-                    ChangeInputs.class,
+                    Update.class,
             }
     )
     private final List<String> inputs;
@@ -51,24 +63,25 @@ public class TestCaseUploadDto {
     @NotEmpty(message = "The expected outputs list must not be null nor empty", payload = IllegalValue.class,
             groups = {
                     Create.class,
-                    ChangeExpectedOutputs.class
+                    Update.class,
             }
     )
     @NotNullsInIterable(message = "The expected outputs  list contains nulls", payload = IllegalValue.class,
             groups = {
                     Create.class,
-                    ChangeExpectedOutputs.class
+                    Update.class,
             }
     )
-    private final List<String> outputs;
+    private final List<String> expectedOutputs;
 
 
     /**
      * Constructor.
      *
-     * @param visibility Indicates whether the test case is public or private.
-     * @param inputs     The inputs of the test case.
-     * @param outputs    The expected output.
+     * @param visibility      Indicates whether the test case is public or private.
+     * @param timeout         The timeout of the test case.
+     * @param inputs          The inputs of the test case.
+     * @param expectedOutputs The expected output.
      */
     @JsonCreator
     public TestCaseUploadDto(
@@ -77,16 +90,21 @@ public class TestCaseUploadDto {
                     access = JsonProperty.Access.WRITE_ONLY
             ) final Visibility visibility,
             @JsonProperty(
+                    value = "timeout",
+                    access = JsonProperty.Access.WRITE_ONLY
+            ) final Long timeout,
+            @JsonProperty(
                     value = "inputs",
                     access = JsonProperty.Access.WRITE_ONLY
             ) final List<String> inputs,
             @JsonProperty(
                     value = "expectedOutputs",
                     access = JsonProperty.Access.WRITE_ONLY
-            ) final List<String> outputs) {
+            ) final List<String> expectedOutputs) {
         this.visibility = visibility;
+        this.timeout = timeout;
         this.inputs = inputs;
-        this.outputs = outputs;
+        this.expectedOutputs = expectedOutputs;
     }
 
 
@@ -95,6 +113,13 @@ public class TestCaseUploadDto {
      */
     public Visibility getVisibility() {
         return visibility;
+    }
+
+    /**
+     * @return The timeout of the test case.
+     */
+    public Long getTimeout() {
+        return timeout;
     }
 
     /**
@@ -107,8 +132,8 @@ public class TestCaseUploadDto {
     /**
      * @return The expected output.
      */
-    public List<String> getOutputs() {
-        return outputs;
+    public List<String> getExpectedOutputs() {
+        return expectedOutputs;
     }
 
 
@@ -123,20 +148,9 @@ public class TestCaseUploadDto {
     }
 
     /**
-     * Validation group for the change visibility operation.
+     * Validation group for the update operation.
      */
-    public interface ChangeVisibility {
-    }
+    public interface Update {
 
-    /**
-     * Validation group for the change inputs operation.
-     */
-    public interface ChangeInputs {
-    }
-
-    /**
-     * Validation group for the change expected outputs operation.
-     */
-    public interface ChangeExpectedOutputs {
     }
 }

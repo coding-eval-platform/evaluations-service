@@ -165,6 +165,18 @@ class TestHelper {
     }
 
     /**
+     * @return A random valid timeout.
+     */
+    /* package */
+    static Long validTestCaseTimeout() {
+        final List<Long> validValues = new LinkedList<>();
+        validValues.add(Faker.instance().number().numberBetween(1, Long.MAX_VALUE));
+        validValues.add(null);
+        final var index = Faker.instance().number().numberBetween(0, validValues.size());
+        return validValues.get(index);
+    }
+
+    /**
      * Creates a valid {@link List} of {@link String} to be used as inputs or expected outputs.
      *
      * @return A valid {@link List}.
@@ -328,6 +340,14 @@ class TestHelper {
     /* package */
     static TestCase.Visibility invalidTestCaseVisibility() {
         return null;
+    }
+
+    /**
+     * @return An invalid {@link TestCase} output.
+     */
+    /* package */
+    static long invalidTestCaseTimeout() {
+        return Faker.instance().number().numberBetween(Long.MIN_VALUE, 1);
     }
 
     /**

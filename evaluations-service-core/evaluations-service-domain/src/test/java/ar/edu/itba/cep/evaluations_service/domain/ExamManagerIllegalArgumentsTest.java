@@ -183,6 +183,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 () -> examManager.createTestCase(
                         exerciseId,
                         TestHelper.invalidTestCaseVisibility(),
+                        TestHelper.invalidTestCaseTimeout(),
                         TestHelper.invalidTestCaseList(),
                         TestHelper.invalidTestCaseList()
                 ),
@@ -195,102 +196,51 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
     }
 
     /**
-     * Tests that changing the visibility of a test case with an invalid value is not performed.
+     * Tests that modifying a test case with an invalid value is not performed.
      *
      * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose visibility is being changed).
+     * @param exercise A mocked {@link Exercise} (the owner of the test case).
+     * @param testCase A mocked {@link TestCase} (the one being modified).
      */
     @Test
-    void testChangeVisibilityWithInvalidValueForExerciseOfUpcomingExam(
+    void testModifyExerciseWithInvalidArgumentsForUpcomingExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise,
             @Mock(name = "testCase") final TestCase testCase) {
+
         final var testCaseId = TestHelper.validTestCaseId();
+
         final var newVisibility = TestHelper.invalidTestCaseVisibility();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doThrow(IllegalArgumentException.class).when(testCase).setVisibility(newVisibility);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.changeVisibility(testCaseId, newVisibility),
-                "Using an invalid value when changing a TestCase's visibility" +
-                        " did not throw an IllegalArgumentException"
-        );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).setVisibility(newVisibility);
-        Mockito.verifyNoMoreInteractions(testCase);
-        verifyOnlyTestCaseSearch(testCaseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests that changing the inputs of a test case with an invalid value is not performed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being changed).
-     */
-    @Test
-    void testChangeInputsWithInvalidValueForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        final var testCaseId = TestHelper.validTestCaseId();
+        final var newTimeout = TestHelper.validTestCaseTimeout();
         final var newInputs = TestHelper.invalidTestCaseList();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doThrow(IllegalArgumentException.class).when(testCase).setInputs(newInputs);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.changeInputs(testCaseId, newInputs),
-                "Using an invalid value when changing a TestCase's inputs" +
-                        " did not throw an IllegalArgumentException"
-        );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).setInputs(newInputs);
-        Mockito.verifyNoMoreInteractions(testCase);
-        verifyOnlyTestCaseSearch(testCaseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests that changing the expected outputs of a test case with an invalid value is not performed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being changed).
-     */
-    @Test
-    void testChangeExpectedOutputsWithInvalidValueForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        final var testCaseId = TestHelper.validTestCaseId();
         final var newExpectedOutputs = TestHelper.invalidTestCaseList();
+
         Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         Mockito.when(exercise.getExam()).thenReturn(exam);
         Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doThrow(IllegalArgumentException.class).when(testCase).setExpectedOutputs(newExpectedOutputs);
+        Mockito.doThrow(IllegalArgumentException.class).when(testCase).update(
+                newVisibility,
+                newTimeout,
+                newInputs,
+                newExpectedOutputs
+        );
         Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+
+
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> examManager.changeExpectedOutputs(testCaseId, newExpectedOutputs),
-                "Using an invalid value when changing a TestCase's expected outputs" +
-                        " did not throw an IllegalArgumentException"
+                () -> examManager.modifyTestCase(testCaseId, newVisibility, newTimeout, newInputs, newExpectedOutputs),
+                "Using an invalid value when modifying a TestCase did not throw an IllegalArgumentException"
         );
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).setExpectedOutputs(newExpectedOutputs);
+        Mockito.verify(testCase, Mockito.times(1)).update(
+                newVisibility,
+                newTimeout,
+                newInputs,
+                newExpectedOutputs
+        );
         Mockito.verifyNoMoreInteractions(testCase);
         verifyOnlyTestCaseSearch(testCaseId);
         Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);

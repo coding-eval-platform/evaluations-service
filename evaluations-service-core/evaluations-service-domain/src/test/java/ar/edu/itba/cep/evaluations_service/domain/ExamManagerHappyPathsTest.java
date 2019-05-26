@@ -506,6 +506,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise) {
         final var visibility = TestHelper.validTestCaseVisibility();
+        final var timeout = TestHelper.validTestCaseTimeout();
         final var inputs = TestHelper.validTestCaseList();
         final var expectedOutputs = TestHelper.validTestCaseList();
         final var exerciseId = TestHelper.validExerciseId();
@@ -515,12 +516,17 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito
                 .when(testCaseRepository.save(Mockito.any(TestCase.class)))
                 .then(invocation -> invocation.getArgument(0));
-        final var testCase = examManager.createTestCase(exerciseId, visibility, inputs, expectedOutputs);
+        final var testCase = examManager.createTestCase(exerciseId, visibility, timeout, inputs, expectedOutputs);
         Assertions.assertAll("TestCase properties are not the expected",
                 () -> Assertions.assertEquals(
                         visibility,
                         testCase.getVisibility(),
                         "There is a mismatch in the visibility"
+                ),
+                () -> Assertions.assertEquals(
+                        timeout,
+                        testCase.getTimeout(),
+                        "There is a mismatch in the timeout"
                 ),
                 () -> Assertions.assertEquals(
                         inputs,
@@ -549,120 +555,36 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     }
 
     /**
-     * Tests that changing the visibility of a test case belonging to an exercise
-     * of upcoming exam is performed as expected.
+     * Tests that modifying a test case belonging to an exercise of an upcoming exam is performed as expected.
      *
      * @param exam     A mocked {@link Exam} (the owner of the exercise).
      * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose visibility is being changed).
+     * @param testCase A mocked {@link TestCase} (the one being modified).
      */
     @Test
-    void testChangeVisibilityWithValidValueForExerciseOfUpcomingExam(
+    void testModifyTestCaseWithValidValuesForExerciseOfUpcomingExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise,
             @Mock(name = "testCase") final TestCase testCase) {
         final var testCaseId = TestHelper.validTestCaseId();
         final var newVisibility = TestHelper.validTestCaseVisibility();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doNothing().when(testCase).setVisibility(newVisibility);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito
-                .when(testCaseRepository.save(Mockito.any(TestCase.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.changeVisibility(testCaseId, newVisibility),
-                "An unexpected exception was thrown"
-        );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).setVisibility(newVisibility);
-        Mockito.verifyNoMoreInteractions(testCase);
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).findById(testCaseId);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
-        Mockito.verifyNoMoreInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests that changing the inputs of a test case belonging to an exercise
-     * of upcoming exam is performed as expected.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being changed).
-     */
-    @Test
-    void testChangeInputsWithValidValueForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        final var testCaseId = TestHelper.validTestCaseId();
+        final var newTimeout = TestHelper.validTestCaseTimeout();
         final var newInputs = TestHelper.validTestCaseList();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doNothing().when(testCase).setInputs(newInputs);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito
-                .when(testCaseRepository.save(Mockito.any(TestCase.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.changeInputs(testCaseId, newInputs),
-                "An unexpected exception was thrown"
-        );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).setInputs(newInputs);
-        Mockito.verifyNoMoreInteractions(testCase);
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).findById(testCaseId);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
-        Mockito.verifyNoMoreInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests that changing the expected outputs of a test case belonging to an exercise
-     * of upcoming exam is performed as expected.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being changed).
-     */
-    @Test
-    void testChangeExpectedOutputsWithValidValueForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        final var testCaseId = TestHelper.validTestCaseId();
         final var newExpectedOutputs = TestHelper.validTestCaseList();
         Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         Mockito.when(exercise.getExam()).thenReturn(exam);
         Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doNothing().when(testCase).setExpectedOutputs(newExpectedOutputs);
+        Mockito.doNothing().when(testCase).update(newVisibility, newTimeout, newInputs, newExpectedOutputs);
         Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito
-                .when(testCaseRepository.save(Mockito.any(TestCase.class)))
-                .then(invocation -> invocation.getArgument(0));
+        Mockito.when(testCaseRepository.save(Mockito.any(TestCase.class))).then(inv -> inv.getArgument(0));
         Assertions.assertDoesNotThrow(
-                () -> examManager.changeExpectedOutputs(testCaseId, newExpectedOutputs),
+                () -> examManager.modifyTestCase(testCaseId, newVisibility, newTimeout, newInputs, newExpectedOutputs),
                 "An unexpected exception was thrown"
         );
         Mockito.verify(exam, Mockito.only()).getState();
         Mockito.verify(exercise, Mockito.only()).getExam();
         Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).setExpectedOutputs(newExpectedOutputs);
+        Mockito.verify(testCase, Mockito.times(1)).update(newVisibility, newTimeout, newInputs, newExpectedOutputs);
         Mockito.verifyNoMoreInteractions(testCase);
         Mockito.verifyZeroInteractions(examRepository);
         Mockito.verifyZeroInteractions(exerciseRepository);
@@ -673,89 +595,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
         Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
-
-    /**
-     * Tests that clearing the inputs of a test case belonging to an exercise
-     * of upcoming exam is performed as expected.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being cleared).
-     */
-    @Test
-    void testClearInputsWithValidValueForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doNothing().when(testCase).removeAllInputs();
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito
-                .when(testCaseRepository.save(Mockito.any(TestCase.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.clearInputs(testCaseId),
-                "An unexpected exception was thrown"
-        );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).removeAllInputs();
-        Mockito.verifyNoMoreInteractions(testCase);
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).findById(testCaseId);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
-        Mockito.verifyNoMoreInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests that clearing the expected outputs of a test case belonging to an exercise
-     * of upcoming exam is performed as expected.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case)
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being cleared).
-     */
-    @Test
-    void testClearExpectedOutputsWithValidValueForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doNothing().when(testCase).removeAllExpectedOutputs();
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito
-                .when(testCaseRepository.save(Mockito.any(TestCase.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.clearOutputs(testCaseId),
-                "An unexpected exception was thrown"
-        );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).removeAllExpectedOutputs();
-        Mockito.verifyNoMoreInteractions(testCase);
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).findById(testCaseId);
-        Mockito.verify(testCaseRepository, Mockito.times(1)).save(testCase);
-        Mockito.verifyNoMoreInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
 
     /**
      * Tests that deleting a test case of an exercise belonging to an upcoming exam is performed as expected.

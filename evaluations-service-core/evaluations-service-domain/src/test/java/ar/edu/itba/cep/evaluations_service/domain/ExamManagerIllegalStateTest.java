@@ -248,157 +248,33 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     }
 
     /**
-     * Tests that changing the visibility of a test case belonging to an exercise of an in progress exam is not allowed.
+     * Tests that modifying a test case belonging to an exercise of an in progress exam is not allowed.
      *
      * @param exam     A mocked {@link Exam} (the owner of the exercise).
      * @param exercise A mocked {@link Exercise} (the owner of the test case).
      * @param testCase A mocked {@link TestCase} (the one whose visibility is being tried to be changed).
      */
     @Test
-    void testChangeVisibilityForTestCaseOfExerciseOfInProgressExam(
+    void testModifyTestCaseOfExerciseOfInProgressExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise,
             @Mock(name = "testCase") final TestCase testCase) {
-        testChangeVisibility(exam, exercise, testCase, Exam.State.IN_PROGRESS);
+        testModifyTestCase(exam, exercise, testCase, Exam.State.IN_PROGRESS);
     }
 
     /**
-     * Tests that changing the visibility of a test case belonging to an exercise of a finished exam is not allowed.
+     * Tests that modifying a test case belonging to an exercise of a finished exam is not allowed.
      *
      * @param exam     A mocked {@link Exam} (the owner of the exercise).
      * @param exercise A mocked {@link Exercise} (the owner of the test case).
      * @param testCase A mocked {@link TestCase} (the one whose visibility is being tried to be changed).
      */
     @Test
-    void testChangeVisibilityForTestCaseOfExerciseOfFinishedExam(
+    void testModifyTestCaseOfExerciseOfFinishedExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise,
             @Mock(name = "testCase") final TestCase testCase) {
-        testChangeVisibility(exam, exercise, testCase, Exam.State.FINISHED);
-    }
-
-    /**
-     * Tests that changing the inputs of a test case belonging to an exercise of an in progress exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being tried to be changed).
-     */
-    @Test
-    void testChangeInputsForTestCaseOfExerciseOfInProgressExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testChangeInputs(exam, exercise, testCase, Exam.State.IN_PROGRESS);
-    }
-
-    /**
-     * Tests that changing the inputs of a test case belonging to an exercise of a finished exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being tried to be changed).
-     */
-    @Test
-    void testChangeInputsForTestCaseOfExerciseOfFinishedExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testChangeInputs(exam, exercise, testCase, Exam.State.FINISHED);
-    }
-
-    /**
-     * Tests that changing the expected outputs
-     * of a test case belonging to an exercise of an in progress exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being tried to be changed).
-     */
-    @Test
-    void testChangeExpectedOutputsForTestCaseOfExerciseOfInProgressExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testChangeExpectedOutputs(exam, exercise, testCase, Exam.State.IN_PROGRESS);
-    }
-
-    /**
-     * Tests that changing the expected outputs
-     * of a test case belonging to an exercise of a finished exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being tried to be changed).
-     */
-    @Test
-    void testChangeExpectedOutputsForTestCaseOfExerciseOfFinishedExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testChangeExpectedOutputs(exam, exercise, testCase, Exam.State.FINISHED);
-    }
-
-    /**
-     * Tests that clearing the inputs of a test case belonging to an exercise of an in progress exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being tried to be cleared).
-     */
-    @Test
-    void testClearInputsForTestCaseOfExerciseOfInProgressExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testClearInputs(exam, exercise, testCase, Exam.State.IN_PROGRESS);
-    }
-
-    /**
-     * Tests that clearing the inputs of a test case belonging to an exercise of a finished exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose inputs are being tried to be cleared).
-     */
-    @Test
-    void testClearInputsForTestCaseOfExerciseOfFinishedExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testClearInputs(exam, exercise, testCase, Exam.State.FINISHED);
-    }
-
-    /**
-     * Tests that clearing the expected outputs
-     * of a test case belonging to an exercise of an in progress exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being tried to be cleared).
-     */
-    @Test
-    void testClearExpectedOutputsForTestCaseOfExerciseOfInProgressExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testClearExpectedOutputs(exam, exercise, testCase, Exam.State.IN_PROGRESS);
-    }
-
-    /**
-     * Tests that clearing the expected outputs
-     * of a test case belonging to an exercise of a finished exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the owner of the test case).
-     * @param testCase A mocked {@link TestCase} (the one whose expected outputs are being tried to be cleared).
-     */
-    @Test
-    void testClearExpectedOutputsForTestCaseOfExerciseOfFinishedExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testClearExpectedOutputs(exam, exercise, testCase, Exam.State.FINISHED);
+        testModifyTestCase(exam, exercise, testCase, Exam.State.FINISHED);
     }
 
     /**
@@ -558,6 +434,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 (manager, id) -> manager.createTestCase(
                         id,
                         TestHelper.validTestCaseVisibility(),
+                        TestHelper.validTestCaseTimeout(),
                         TestHelper.validTestCaseList(),
                         TestHelper.validTestCaseList()
                 ),
@@ -565,9 +442,8 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                         " is being allowed.");
     }
 
-
     /**
-     * Tests that changing the visibility of a test case belonging to an exercise
+     * Tests that modifying a test case belonging to an exercise
      * of an exam with the given {@code state} is not allowed.
      *
      * @param exam     The {@link Exam} owning the exercise.
@@ -575,82 +451,19 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
      * @param testCase The {@link TestCase} whose visibility is being tried to be changed.
      * @param state    The {@link Exam.State} being tested.
      */
-    private void testChangeVisibility(final Exam exam, final Exercise exercise, final TestCase testCase,
-                                      final Exam.State state) {
+    private void testModifyTestCase(final Exam exam, final Exercise exercise, final TestCase testCase,
+                                    final Exam.State state) {
         testManagerTestCase(exam, state, exercise, testCase,
-                (manager, id) -> manager.changeVisibility(id, TestHelper.validTestCaseVisibility()),
-                "Changing the visibility of a test case that belongs to an exercise" +
+                (manager, id) -> manager.modifyTestCase(
+                        id,
+                        TestHelper.validTestCaseVisibility(),
+                        TestHelper.validTestCaseTimeout(),
+                        TestHelper.validTestCaseList(),
+                        TestHelper.validTestCaseList()
+                ),
+                "Modifying a test case that belongs to an exercise" +
                         " of an exam with " + state + " state is being allowed");
     }
-
-    /**
-     * Tests that changing the inputs of a test case belonging to an exercise
-     * of an exam with the given {@code state} is not allowed.
-     *
-     * @param exam     The {@link Exam} owning the exercise.
-     * @param exercise The {@link Exercise} owning the test case.
-     * @param testCase The {@link TestCase} whose inputs are being tried to be changed.
-     * @param state    The {@link Exam.State} being tested.
-     */
-    private void testChangeInputs(final Exam exam, final Exercise exercise, final TestCase testCase,
-                                  final Exam.State state) {
-        testManagerTestCase(exam, state, exercise, testCase,
-                (manager, id) -> manager.changeInputs(id, TestHelper.validTestCaseList()),
-                "Changing the inputs of a test case that belongs to an exercise" +
-                        " of an exam with " + state + " state is being allowed");
-    }
-
-    /**
-     * Tests that changing the expected outputs of a test case belonging to an exercise
-     * of an exam with the given {@code state} is not allowed.
-     *
-     * @param exam     The {@link Exam} owning the exercise.
-     * @param exercise The {@link Exercise} owning the test case.
-     * @param testCase The {@link TestCase} whose expected outputs are being tried to be changed.
-     * @param state    The {@link Exam.State} being tested.
-     */
-    private void testChangeExpectedOutputs(final Exam exam, final Exercise exercise, final TestCase testCase,
-                                           final Exam.State state) {
-        testManagerTestCase(exam, state, exercise, testCase,
-                (manager, id) -> manager.changeExpectedOutputs(id, TestHelper.validTestCaseList()),
-                "Changing the expected outputs of a test case that belongs to an exercise" +
-                        " of an exam with " + state + " state is being allowed");
-    }
-
-    /**
-     * Tests that clearing the inputs of a test case belonging to an exercise
-     * of an exam with the given {@code state} is not allowed.
-     *
-     * @param exam     The {@link Exam} owning the exercise.
-     * @param exercise The {@link Exercise} owning the test case.
-     * @param testCase The {@link TestCase} whose inputs are being tried to be cleared.
-     * @param state    The {@link Exam.State} being tested.
-     */
-    private void testClearInputs(final Exam exam, final Exercise exercise, final TestCase testCase,
-                                 final Exam.State state) {
-        testManagerTestCase(exam, state, exercise, testCase,
-                ExamManager::clearInputs,
-                "Clearing the inputs of a test case that belongs to an exercise" +
-                        " of an exam with " + state + " state is being allowed");
-    }
-
-    /**
-     * Tests that clearing the expected outputs of a test case belonging to an exercise
-     * of an exam with the given {@code state} is not allowed.
-     *
-     * @param exam     The {@link Exam} owning the exercise.
-     * @param exercise The {@link Exercise} owning the test case.
-     * @param testCase The {@link TestCase} whose expected outputs are being tried to be cleared.
-     * @param state    The {@link Exam.State} being tested.
-     */
-    private void testClearExpectedOutputs(final Exam exam, final Exercise exercise, final TestCase testCase,
-                                          final Exam.State state) {
-        testManagerTestCase(exam, state, exercise, testCase,
-                ExamManager::clearOutputs,
-                "Clearing the expected outputs of a test case that belongs to an exercise" +
-                        " of an exam with " + state + " state is being allowed");
-    }
-
 
     /**
      * Tests that deleting a test case belonging to an exercise of an exam with the given {@code state} is not allowed.
@@ -667,7 +480,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 "Deleting a test case that belongs to an exercise" +
                         " of an exam with " + state + " state is being allowed");
     }
-
 
     /**
      * Tests that creating a solution for an exercise belonging to an exam with the given {@code state}
@@ -696,7 +508,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verifyOnlyExerciseSearch(exerciseId);
         Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
-
 
     /**
      * Performs a test over the {@link ExamManager} action that involves directly interacting with an {@link Exam},

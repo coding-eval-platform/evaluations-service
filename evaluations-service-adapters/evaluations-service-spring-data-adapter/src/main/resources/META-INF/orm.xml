@@ -73,6 +73,9 @@
                 <column name="visibility" nullable="false" insertable="true" updatable="true"/>
                 <enumerated>STRING</enumerated>
             </basic>
+            <basic name="timeout">
+                <column name="timeout" nullable="true" insertable="true" updatable="true"/>
+            </basic>
             <many-to-one name="exercise" fetch="LAZY" optional="false">
                 <join-column name="belongs_to"
                              referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>

@@ -50,26 +50,84 @@ class TestCaseTest {
      */
     @Test
     void testAcceptableArguments() {
-        Assertions.assertDoesNotThrow(
-                this::createTestCase,
-                "Test cases with acceptable arguments are not being created"
+        Assertions.assertAll("Test cases with acceptable arguments are not being created",
+                () -> Assertions.assertDoesNotThrow(
+                        this::createTestCaseWithTimeout,
+                        "Cannot create with positive timeout"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        this::createTestCaseWithoutTimeout,
+                        "Cannot create without timeout (null timeout)"
+                )
         );
         Mockito.verifyZeroInteractions(mockedExercise);
     }
 
+    /**
+     * Tests that updating an {@link Exercise} with valid values works as expected.
+     */
+    @Test
+    void testValidArgumentsUpdate() {
+        Assertions.assertAll("Updating with acceptable arguments is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createAnyTimeoutTestCase().update(
+                                validVisibility(),
+                                validTimeout(),
+                                validList(),
+                                validList()
+                        ),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var testCase = createAnyTimeoutTestCase();
+                    final var visibility = validVisibility();
+                    final var timeout = validTimeout();
+                    final var inputs = validList();
+                    final var expectedOutputs = validList();
+                    testCase.update(visibility, timeout, inputs, expectedOutputs);
+                    Assertions.assertAll("Is not being set (does not change the Exercise value)",
+                            () -> Assertions.assertEquals(
+                                    visibility,
+                                    testCase.getVisibility(),
+                                    "Visibility mismatch"
+                            ),
+                            () -> Assertions.assertEquals(
+                                    timeout,
+                                    testCase.getTimeout(),
+                                    "Timeout mismatch"
+                            ),
+                            () -> Assertions.assertEquals(
+                                    inputs,
+                                    testCase.getInputs(),
+                                    "Inputs mismatch"
+                            ),
+                            () -> Assertions.assertEquals(
+                                    expectedOutputs,
+                                    testCase.getExpectedOutputs(),
+                                    "Expected outputs mismatch"
+                            )
+                    );
+                }
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that setting a valid {@link TestCase.Visibility} to a {@link TestCase} works as expected.
+     */
     @Test
     void testSetValidVisibility() {
         Assertions.assertAll("Setting a valid visibility is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createTestCase().setVisibility(TestCase.Visibility.PRIVATE),
+                        () -> createAnyTimeoutTestCase().setVisibility(TestCase.Visibility.PRIVATE),
                         "It throws an exception when it is private"
                 ),
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createTestCase().setVisibility(TestCase.Visibility.PUBLIC),
+                        () -> createAnyTimeoutTestCase().setVisibility(TestCase.Visibility.PUBLIC),
                         "It throws an exception when it is public"
                 ),
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     testCase.setVisibility(TestCase.Visibility.PRIVATE);
                     Assertions.assertSame(
                             TestCase.Visibility.PRIVATE,
@@ -78,7 +136,7 @@ class TestCaseTest {
                     );
                 },
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     testCase.setVisibility(TestCase.Visibility.PUBLIC);
                     Assertions.assertSame(
                             TestCase.Visibility.PUBLIC,
@@ -87,17 +145,56 @@ class TestCaseTest {
                     );
                 }
         );
+        Mockito.verifyZeroInteractions(mockedExercise);
     }
 
+    /**
+     * Tests that setting a valid timeout to a {@link TestCase} works as expected.
+     */
+    @Test
+    void testSetValidTimeout() {
+        Assertions.assertAll("Setting a valid timeout is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createAnyTimeoutTestCase().setTimeout(positiveTimeout()),
+                        "It throws an exception when setting a positive value"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createAnyTimeoutTestCase().setTimeout(null),
+                        "It throws an exception when setting a null value"
+                ),
+                () -> {
+                    final var testCase = createAnyTimeoutTestCase();
+                    final var timeout = positiveTimeout();
+                    testCase.setTimeout(timeout);
+                    Assertions.assertEquals(
+                            Long.valueOf(timeout),
+                            testCase.getTimeout(),
+                            "Is not being set (does not change the TestCase value)"
+                    );
+                },
+                () -> {
+                    final var testCase = createAnyTimeoutTestCase();
+                    testCase.setTimeout(null);
+                    Assertions.assertNull(
+                            testCase.getTimeout(),
+                            "Is not being set (does not change the TestCase value)");
+                }
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that setting a valid input {@link List} to a {@link TestCase} works as expected.
+     */
     @Test
     void testSetValidInputsList() {
         Assertions.assertAll("Setting a valid inputs list is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createTestCase().setInputs(validList()),
+                        () -> createAnyTimeoutTestCase().setInputs(validList()),
                         "It throws an exception"
                 ),
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     final var inputsList = validList();
                     testCase.setInputs(inputsList);
                     Assertions.assertEquals(
@@ -107,22 +204,21 @@ class TestCaseTest {
                     );
                 }
         );
+        Mockito.verifyZeroInteractions(mockedExercise);
     }
 
+    /**
+     * Tests that setting a valid expected output {@link List} to a {@link TestCase} works as expected.
+     */
     @Test
     void testSetValidExpectedOutputsList() {
-        Assertions.assertDoesNotThrow(
-                () -> createTestCase().setExpectedOutputs(validList()),
-                "Setting a valid expected outputs list is not working as expected"
-        );
-
         Assertions.assertAll("Setting a valid expected outputs list is not being allowed",
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createTestCase().setExpectedOutputs(validList()),
+                        () -> createAnyTimeoutTestCase().setExpectedOutputs(validList()),
                         "It throws an exception"
                 ),
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     final var outputsList = validList();
                     testCase.setExpectedOutputs(outputsList);
                     Assertions.assertEquals(
@@ -132,12 +228,8 @@ class TestCaseTest {
                     );
                 }
         );
+        Mockito.verifyZeroInteractions(mockedExercise);
     }
-
-
-    // ================================================================================================================
-    // Behaviour testing
-    // ================================================================================================================
 
     /**
      * Tests that clearing the inputs list works as expected
@@ -146,11 +238,11 @@ class TestCaseTest {
     void testClearInputs() {
         Assertions.assertAll("Removing inputs is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createTestCase().removeAllInputs(),
+                        () -> createAnyTimeoutTestCase().removeAllInputs(),
                         "Cannot remove inputs to a new created test case. This should not fail"
                 ),
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     testCase.setInputs(validList());
                     testCase.removeAllInputs();
                     Assertions.assertTrue(
@@ -159,7 +251,7 @@ class TestCaseTest {
                     );
                 },
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     testCase.setInputs(validList());
                     testCase.removeAllInputs();
                     Assertions.assertDoesNotThrow(
@@ -168,6 +260,7 @@ class TestCaseTest {
                     );
                 }
         );
+        Mockito.verifyZeroInteractions(mockedExercise);
     }
 
     /**
@@ -177,11 +270,11 @@ class TestCaseTest {
     void testClearExpectedOutputs() {
         Assertions.assertAll("Removing expected outputs is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createTestCase().removeAllExpectedOutputs(),
+                        () -> createAnyTimeoutTestCase().removeAllExpectedOutputs(),
                         "Cannot remove expected outputs to a new created test case. This should not fail"
                 ),
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     testCase.setExpectedOutputs(validList());
                     testCase.removeAllExpectedOutputs();
                     Assertions.assertTrue(
@@ -190,7 +283,7 @@ class TestCaseTest {
                     );
                 },
                 () -> {
-                    final var testCase = createTestCase();
+                    final var testCase = createAnyTimeoutTestCase();
                     testCase.setExpectedOutputs(validList());
                     testCase.removeAllExpectedOutputs();
                     Assertions.assertDoesNotThrow(
@@ -199,6 +292,7 @@ class TestCaseTest {
                     );
                 }
         );
+        Mockito.verifyZeroInteractions(mockedExercise);
     }
 
 
@@ -218,12 +312,105 @@ class TestCaseTest {
     void testNullVisibilityOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new TestCase(null, mockedExercise),
+                () -> new TestCase(null, validTimeout(), validList(), validList(), mockedExercise),
                 "Creating a test case with a null visibility is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExercise);
     }
 
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with a non positive timeout.
+     */
+    @Test
+    void testNonPositiveTimeoutOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), nonPositiveTimeout(), validList(), validList(), mockedExercise),
+                "Creating a test case with a null visibility is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with a null inputs {@link List}.
+     */
+    @Test
+    void testNullInputsListOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), validTimeout(), null, validList(), mockedExercise),
+                "Creating a test case with a null inputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with an empty inputs {@link List}.
+     */
+    @Test
+    void testEmptyInputsListOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), validTimeout(), Collections.emptyList(), validList(), mockedExercise),
+                "Creating a test case with an empty inputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with an inputs {@link List} containing a null element.
+     */
+    @Test
+    void testInputsListWithNullElementOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), validTimeout(), listWithNulls(), validList(), mockedExercise),
+                "Creating a test case with an inputs list with null elements is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with a null expected outputs {@link List}.
+     */
+    @Test
+    void testNullExpectedOutputsListOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), validTimeout(), validList(), null, mockedExercise),
+                "Creating a test case with a null expected outputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with an empty expected outputs {@link List}.
+     */
+    @Test
+    void testEmptyExpectedOutputsListOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), validTimeout(), validList(), Collections.emptyList(), mockedExercise),
+                "Creating a test case with an empty expected outputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating a {@link TestCase} with an expected outputs {@link List} containing a null element.
+     */
+    @Test
+    void testExpectedOutputsListWithNullElementOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new TestCase(validVisibility(), validTimeout(), validList(), listWithNulls(), mockedExercise),
+                "Creating a test case with an expected outputs list with null elements is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
@@ -233,9 +420,130 @@ class TestCaseTest {
     void testNullExerciseOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new TestCase(validVisibility(), null),
+                () -> new TestCase(validVisibility(), validTimeout(), validList(), validList(), null),
                 "Creating a test case with a null exercise is being allowed"
         );
+    }
+
+
+    // ================================
+    // Updates
+    // ================================
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with a null {@link TestCase.Visibility}.
+     */
+    @Test
+    void testNullVisibilityOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(null, validTimeout(), validList(), validList()),
+                "Updating a test case with a null visibility is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with a non positive timeout.
+     */
+    @Test
+    void testNonPositiveTimeoutOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), nonPositiveTimeout(), validList(), validList()),
+                "Updating a test case with a null visibility is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with a null inputs {@link List}.
+     */
+    @Test
+    void testNullInputsListOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), validTimeout(), null, validList()),
+                "Updating a test case with a null inputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with an empty inputs {@link List}.
+     */
+    @Test
+    void testEmptyInputsListOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), validTimeout(), Collections.emptyList(), validList()),
+                "Updating a test case with an empty inputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with an inputs {@link List} containing a null element.
+     */
+    @Test
+    void testInputsListWithNullElementOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), validTimeout(), listWithNulls(), validList()),
+                "Updating a test case with an inputs list with null elements is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with a null inputs {@link List}.
+     */
+    @Test
+    void testNullExpectedOutputsListOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), validTimeout(), validList(), null),
+                "Updating a test case with a null expected outputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with an empty expected outputs {@link List}.
+     */
+    @Test
+    void testEmptyExpectedOutputsListOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), validTimeout(), validList(), Collections.emptyList()),
+                "Updating a test case with an empty expected outputs list is being allowed");
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating a {@link TestCase} with an expected outputs {@link List} containing a null element.
+     */
+    @Test
+    void testExpectedOutputsListWithNullElementOnUpdate() {
+        final var testCase = createAnyTimeoutTestCase();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> testCase.update(validVisibility(), validTimeout(), validList(), listWithNulls()),
+                "Updating a test case with an expected outputs list with null elements is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExercise);
     }
 
 
@@ -251,9 +559,22 @@ class TestCaseTest {
     void testSetNullVisibility() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setVisibility(null),
+                () -> createAnyTimeoutTestCase().setVisibility(null),
                 "Setting a null visibility is being allowed."
         );
+        Mockito.verifyZeroInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when setting a non positive timeout to a {@link TestCase}.
+     */
+    @Test
+    void testSetNonPositiveTimeout() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> createAnyTimeoutTestCase().setTimeout(nonPositiveTimeout()),
+                "Setting a non positive timeout is being allowed");
         Mockito.verifyZeroInteractions(mockedExercise);
     }
 
@@ -265,7 +586,7 @@ class TestCaseTest {
     void testSetNullInputsList() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setInputs(null),
+                () -> createAnyTimeoutTestCase().setInputs(null),
                 "Setting a null inputs list is being allowed");
         Mockito.verifyZeroInteractions(mockedExercise);
     }
@@ -278,7 +599,7 @@ class TestCaseTest {
     void testSetEmptyInputsList() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setInputs(Collections.emptyList()),
+                () -> createAnyTimeoutTestCase().setInputs(Collections.emptyList()),
                 "Setting an empty inputs list is being allowed");
         Mockito.verifyZeroInteractions(mockedExercise);
     }
@@ -291,7 +612,7 @@ class TestCaseTest {
     void testSetInputsListWithNullElement() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setInputs(listWithNulls()),
+                () -> createAnyTimeoutTestCase().setInputs(listWithNulls()),
                 "Setting an input list with a null value is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExercise);
@@ -305,7 +626,7 @@ class TestCaseTest {
     void testSetNullExpectedOutputsList() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setExpectedOutputs(null),
+                () -> createAnyTimeoutTestCase().setExpectedOutputs(null),
                 "Setting a null expected outputs list is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExercise);
@@ -319,7 +640,7 @@ class TestCaseTest {
     void testSetEmptyExpectedOutputsList() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setExpectedOutputs(Collections.emptyList()),
+                () -> createAnyTimeoutTestCase().setExpectedOutputs(Collections.emptyList()),
                 "Setting an empty expected outputs list is being allowed");
         Mockito.verifyZeroInteractions(mockedExercise);
     }
@@ -332,7 +653,7 @@ class TestCaseTest {
     void testSetExpectedOutputsListWithNullElement() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> createTestCase().setExpectedOutputs(listWithNulls()),
+                () -> createAnyTimeoutTestCase().setExpectedOutputs(listWithNulls()),
                 "Setting an expected output list with a null value is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExercise);
@@ -348,13 +669,46 @@ class TestCaseTest {
     // ========================================
 
     /**
-     * Creates a valid {@link TestCase}.
+     * Creates a valid {@link TestCase} with a timeout set.
+     *
+     * @return A {@link TestCase}, with the timeout set.
+     */
+    private TestCase createTestCaseWithTimeout() {
+        return new TestCase(
+                validVisibility(),
+                positiveTimeout(),
+                validList(),
+                validList(),
+                mockedExercise
+        );
+    }
+
+    /**
+     * Creates a valid {@link TestCase} without a timeout set.
+     *
+     * @return A {@link TestCase}, without the timeout set.
+     */
+    private TestCase createTestCaseWithoutTimeout() {
+        return new TestCase(
+                validVisibility(),
+                null,
+                validList(),
+                validList(),
+                mockedExercise
+        );
+    }
+
+    /**
+     * Createa a valid {@link TestCase} with or without a timeout set.
      *
      * @return A {@link TestCase}.
      */
-    private TestCase createTestCase() {
+    private TestCase createAnyTimeoutTestCase() {
         return new TestCase(
                 validVisibility(),
+                validTimeout(),
+                validList(),
+                validList(),
                 mockedExercise
         );
     }
@@ -374,6 +728,20 @@ class TestCaseTest {
     }
 
     /**
+     * @return A random valid timeout.
+     */
+    private static Long validTimeout() {
+        return Faker.instance().bool().bool() ? positiveTimeout() : null;
+    }
+
+    /**
+     * @return A random positive long that represents a timeout.
+     */
+    private static long positiveTimeout() {
+        return Faker.instance().number().numberBetween(1, Long.MAX_VALUE);
+    }
+
+    /**
      * Creates a valid {@link List} of {@link String} to be used as inputs or expected outputs.
      *
      * @return A valid {@link List}.
@@ -388,6 +756,13 @@ class TestCaseTest {
     // ========================================
     // Invalid values
     // ========================================
+
+    /**
+     * @return A random non positive long that represents a timeout.
+     */
+    private static long nonPositiveTimeout() {
+        return Faker.instance().number().numberBetween(Long.MIN_VALUE, 1);
+    }
 
     /**
      * Creates a {@link List} containing a null value.
