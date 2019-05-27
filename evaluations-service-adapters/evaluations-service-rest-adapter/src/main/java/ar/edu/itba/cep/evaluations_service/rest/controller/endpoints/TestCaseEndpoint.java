@@ -80,8 +80,9 @@ public class TestCaseEndpoint {
         final var testCase = examService.createTestCase(
                 exerciseId,
                 dto.getVisibility(),
+                dto.getTimeout(),
                 dto.getInputs(),
-                dto.getOutputs()
+                dto.getExpectedOutputs()
         );
         final var location = uriInfo.getAbsolutePathBuilder()
                 .path(Long.toString(testCase.getId()))
@@ -90,53 +91,19 @@ public class TestCaseEndpoint {
     }
 
     @PUT
-    @Path(Routes.TEST_CASE_VISIBILITY)
+    @Path(Routes.TEST_CASE)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeVisibility(
+    public Response modifyTestCase(
             @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
-            @Valid @ConvertGroup(to = TestCaseUploadDto.ChangeVisibility.class) final TestCaseUploadDto dto) {
-        LOGGER.debug("Changing visibility for test case with id {}", testCaseId);
-        examService.changeVisibility(testCaseId, dto.getVisibility());
-        return Response.noContent().build();
-    }
-
-    @PUT
-    @Path(Routes.TEST_CASE_INPUTS)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeInputs(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
-            @Valid @ConvertGroup(to = TestCaseUploadDto.ChangeInputs.class) final TestCaseUploadDto dto) {
-        LOGGER.debug("Changing inputs for test case with id {}", testCaseId);
-        examService.changeInputs(testCaseId, dto.getInputs());
-        return Response.noContent().build();
-    }
-
-    @PUT
-    @Path(Routes.TEST_CASE_EXPECTED_OUTPUTS)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response changeExpectedOutputs(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
-            @Valid @ConvertGroup(to = TestCaseUploadDto.ChangeExpectedOutputs.class) final TestCaseUploadDto dto) {
-        LOGGER.debug("Changing expected outputs for test case with id {}", testCaseId);
-        examService.changeExpectedOutputs(testCaseId, dto.getOutputs());
-        return Response.noContent().build();
-    }
-
-    @DELETE
-    @Path(Routes.TEST_CASE_INPUTS)
-    public Response clearInputs(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId) {
-        LOGGER.debug("Removing all inputs for test case with id {}", testCaseId);
-        examService.clearInputs(testCaseId);
-        return Response.noContent().build();
-    }
-
-    @DELETE
-    @Path(Routes.TEST_CASE_EXPECTED_OUTPUTS)
-    public Response clearExpectedOutputs(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId) {
-        LOGGER.debug("Removing all expected outputs for test case with id {}", testCaseId);
-        examService.clearOutputs(testCaseId);
+            @Valid @ConvertGroup(to = TestCaseUploadDto.Update.class) final TestCaseUploadDto dto) {
+        LOGGER.debug("Updating test case with id {}", testCaseId);
+        examService.modifyTestCase(
+                testCaseId,
+                dto.getVisibility(),
+                dto.getTimeout(),
+                dto.getInputs(),
+                dto.getExpectedOutputs()
+        );
         return Response.noContent().build();
     }
 

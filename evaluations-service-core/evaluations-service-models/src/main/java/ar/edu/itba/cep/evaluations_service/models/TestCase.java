@@ -22,7 +22,7 @@ public class TestCase {
     private final List<String> inputs;
 
     /**
-     * The expected output.
+     * The expected outputs.
      */
     private final List<String> expectedOutputs;
 
@@ -31,6 +31,11 @@ public class TestCase {
      */
     // TODO: maybe, when implementing the scoring system, subclasses would be better (only privates will grant score).
     private Visibility visibility;
+
+    /**
+     * The time given to the exercise to execute, in milliseconds.
+     */
+    private Long timeout;
 
     /**
      * The {@link Exercise} to which this test case belongs to.
@@ -52,17 +57,30 @@ public class TestCase {
     /**
      * Constructor.
      *
-     * @param visibility Indicates whether the test case is public or private.
-     * @param exercise   The {@link Exercise} to which this test case belongs to.
+     * @param visibility      Indicates whether the test case is public or private.
+     * @param timeout         The time given to the exercise to execute, in milliseconds.
+     * @param inputs          The inputs of the test case.
+     * @param expectedOutputs The expected outputs.
+     * @param exercise        The {@link Exercise} to which this test case belongs to.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public TestCase(final Visibility visibility, final Exercise exercise) throws IllegalArgumentException {
+    public TestCase(
+            final Visibility visibility,
+            final Long timeout,
+            final List<String> inputs,
+            final List<String> expectedOutputs,
+            final Exercise exercise)
+            throws IllegalArgumentException {
         assertVisibility(visibility);
+        assertTimeout(timeout);
+        assertInputList(inputs);
+        assertExpectedOutputsList(expectedOutputs);
         assertExercise(exercise);
         this.id = 0;
-        this.inputs = new LinkedList<>();
-        this.expectedOutputs = new LinkedList<>();
         this.visibility = visibility;
+        this.timeout = timeout;
+        this.inputs = new LinkedList<>(inputs);
+        this.expectedOutputs = new LinkedList<>(expectedOutputs);
         this.exercise = exercise;
     }
 
@@ -75,6 +93,20 @@ public class TestCase {
     }
 
     /**
+     * @return Indicates whether the test case is public or private.
+     */
+    public Visibility getVisibility() {
+        return visibility;
+    }
+
+    /**
+     * @return The time given to the exercise to execute, in milliseconds.
+     */
+    public Long getTimeout() {
+        return timeout;
+    }
+
+    /**
      * @return The inputs of the test case.
      */
     public List<String> getInputs() {
@@ -82,17 +114,10 @@ public class TestCase {
     }
 
     /**
-     * @return The expected output.
+     * @return The expected outputs.
      */
     public List<String> getExpectedOutputs() {
         return expectedOutputs;
-    }
-
-    /**
-     * @return Indicates whether the test case is public or private.
-     */
-    public Visibility getVisibility() {
-        return visibility;
     }
 
     /**
@@ -114,6 +139,17 @@ public class TestCase {
     }
 
     /**
+     * Changes the timeout for this test case.
+     *
+     * @param timeout The new timeout for this test case.
+     * @throws IllegalArgumentException if the given {@code timeout} is not valid.
+     */
+    public void setTimeout(final Long timeout) throws IllegalArgumentException {
+        assertTimeout(timeout);
+        this.timeout = timeout;
+    }
+
+    /**
      * Replaces the inputs {@link List} for this test case.
      *
      * @param inputs The new {@link List} of inputs for this test case.
@@ -126,9 +162,9 @@ public class TestCase {
     }
 
     /**
-     * Replaces the outputs {@link List} for this test case.
+     * Replaces the expected outputs {@link List} for this test case.
      *
-     * @param outputs The new {@link List} of outputs for this test case.
+     * @param outputs The new {@link List} of expected outputs for this test case.
      * @throws IllegalArgumentException If the given {@code outputs} {@link List} is not valid.
      */
     public void setExpectedOutputs(final List<String> outputs) throws IllegalArgumentException {
@@ -149,6 +185,32 @@ public class TestCase {
      */
     public void removeAllExpectedOutputs() {
         this.expectedOutputs.clear();
+    }
+
+    /**
+     * Updates all fields of this test case.
+     *
+     * @param visibility      Indicates whether the test case is public or private.
+     * @param timeout         The time given to the exercise to execute, in milliseconds.
+     * @param inputs          inputs The new {@link List} of inputs for this test case.
+     * @param expectedOutputs The new {@link List} of outputs for this test case.
+     * @throws IllegalArgumentException If any argument is not valid.
+     */
+    public void update(
+            final TestCase.Visibility visibility,
+            final Long timeout,
+            final List<String> inputs,
+            final List<String> expectedOutputs) throws IllegalArgumentException {
+        assertVisibility(visibility);
+        assertTimeout(timeout);
+        assertInputList(inputs);
+        assertExpectedOutputsList(expectedOutputs);
+        this.visibility = visibility;
+        this.timeout = timeout;
+        this.inputs.clear();
+        this.inputs.addAll(inputs);
+        this.expectedOutputs.clear();
+        this.expectedOutputs.addAll(expectedOutputs);
     }
 
 
@@ -177,9 +239,10 @@ public class TestCase {
     public String toString() {
         return "TestCase [" +
                 "ID: " + id + ", " +
+                "Visibility: " + visibility + ", " +
+                "Timeout: " + timeout + ", " +
                 "Inputs: " + inputs + ", " +
                 "ExpectedOutputs: " + expectedOutputs + ", " +
-                "Visibility: " + visibility + ", " +
                 "Exercise: " + exercise +
                 ']';
     }
@@ -200,13 +263,13 @@ public class TestCase {
     }
 
     /**
-     * Asserts that the given {@code exercise} is valid.
+     * Asserts that the given {@code timeout} is valid.
      *
-     * @param exercise The {@link Exercise} to be checked.
-     * @throws IllegalArgumentException If the exercise is not valid.
+     * @param timeout The timeout to be checked.
+     * @throws IllegalArgumentException If the {@code timeout} is not valid.
      */
-    private static void assertExercise(final Exercise exercise) throws IllegalArgumentException {
-        Assert.notNull(exercise, "The exercise is missing");
+    private static void assertTimeout(final Long timeout) throws IllegalArgumentException {
+        Assert.isTrue(timeout == null || timeout > 0, "The timeout must be null or positive");
     }
 
     /**
@@ -237,10 +300,20 @@ public class TestCase {
         Assert.isTrue(outputs.stream().noneMatch(Objects::isNull), "The list must not contain null elements");
     }
 
+    /**
+     * Asserts that the given {@code exercise} is valid.
+     *
+     * @param exercise The {@link Exercise} to be checked.
+     * @throws IllegalArgumentException If the exercise is not valid.
+     */
+    private static void assertExercise(final Exercise exercise) throws IllegalArgumentException {
+        Assert.notNull(exercise, "The exercise is missing");
+    }
 
     // ================================
     // Helpers
     // ================================
+
 
     /**
      * An enum holding visibility values (i.e indicate whether the test case is public or private).

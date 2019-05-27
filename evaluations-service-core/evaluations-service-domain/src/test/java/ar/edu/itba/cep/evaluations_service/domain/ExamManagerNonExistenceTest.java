@@ -259,6 +259,7 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         manager.createTestCase(
                                 id,
                                 TestHelper.validTestCaseVisibility(),
+                                TestHelper.validTestCaseTimeout(),
                                 TestHelper.validTestCaseList(),
                                 TestHelper.validTestCaseList()
                         ),
@@ -272,62 +273,16 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
      * throws a {@link NoSuchEntityException}.
      */
     @Test
-    void testChangeVisibilityForNonExistenceTestCase() {
+    void testModifyNonExistenceTestCase() {
         testMissingTestCaseThrowsNoSuchEntityException(
-                (manager, id) -> manager.changeVisibility(id, TestHelper.validTestCaseVisibility()),
-                "Trying to change the visibility of a test case that does not exist" +
-                        " does not throw a NoSuchEntityException"
-        );
-    }
-
-    /**
-     * Tests that trying to change the inputs of a {@link TestCase} that does not exists
-     * throws a {@link NoSuchEntityException}.
-     */
-    @Test
-    void testChangeInputsForNonExistenceTestCase() {
-        testMissingTestCaseThrowsNoSuchEntityException(
-                (manager, id) -> manager.changeInputs(id, TestHelper.validTestCaseList()),
-                "Trying to change the inputs of a test case that does not exist" +
-                        " does not throw a NoSuchEntityException"
-        );
-    }
-
-    /**
-     * Tests that trying to change the expected outputs of a {@link TestCase} that does not exists
-     * throws a {@link NoSuchEntityException}.
-     */
-    @Test
-    void testChangeExpectedOutputsForNonExistenceTestCase() {
-        testMissingTestCaseThrowsNoSuchEntityException(
-                (manager, id) -> manager.changeExpectedOutputs(id, TestHelper.validTestCaseList()),
-                "Trying to change the expected outputs of a test case that does not exist" +
-                        " does not throw a NoSuchEntityException"
-        );
-    }
-
-    /**
-     * Tests that trying to clear the inputs of a {@link TestCase} that does not exists
-     * throws a {@link NoSuchEntityException}.
-     */
-    @Test
-    void testClearInputsForNonExistenceTestCase() {
-        testMissingTestCaseThrowsNoSuchEntityException(
-                ExamManager::clearInputs,
-                "Trying to clear the inputs of a test case that does not exist" +
-                        " does not throw a NoSuchEntityException"
-        );
-    }
-
-    /**
-     * Tests that trying to clear the expected inputs of a {@link TestCase} that does not exists
-     * throws a {@link NoSuchEntityException}.
-     */
-    @Test
-    void testClearExpectedOutputsForNonExistenceTestCase() {
-        testMissingTestCaseThrowsNoSuchEntityException(
-                ExamManager::clearOutputs,
-                "Trying to clear the expected outputs of a test case that does not exist" +
+                (manager, id) -> manager.modifyTestCase(
+                        id,
+                        TestHelper.validTestCaseVisibility(),
+                        TestHelper.validTestCaseTimeout(),
+                        TestHelper.validTestCaseList(),
+                        TestHelper.validTestCaseList()
+                ),
+                "Trying to modify a test case that does not exist" +
                         " does not throw a NoSuchEntityException"
         );
     }

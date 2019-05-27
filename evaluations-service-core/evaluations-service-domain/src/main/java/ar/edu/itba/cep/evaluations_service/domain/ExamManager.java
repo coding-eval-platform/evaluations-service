@@ -221,63 +221,29 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    public TestCase createTestCase(final long exerciseId,
-                                   final TestCase.Visibility visibility,
-                                   final List<String> inputs, final List<String> expectedOutputs)
+    public TestCase createTestCase(
+            final long exerciseId,
+            final TestCase.Visibility visibility,
+            final Long timeout,
+            final List<String> inputs,
+            final List<String> expectedOutputs)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
-        final var testCase = new TestCase(visibility, exercise);
-        testCase.setInputs(inputs);
-        testCase.setExpectedOutputs(expectedOutputs);
-        return testCaseRepository.save(testCase);
+        return testCaseRepository.save(new TestCase(visibility, timeout, inputs, expectedOutputs, exercise));
     }
 
     @Override
     @Transactional
-    public void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
+    public void modifyTestCase(final long testCaseId,
+                               final TestCase.Visibility visibility,
+                               final Long timeout,
+                               final List<String> inputs,
+                               final List<String> expectedOutputs)
             throws IllegalEntityStateException, IllegalArgumentException {
         final var testCase = loadTestCase(testCaseId);
         performExamUpcomingStateVerification(testCase.getExercise().getExam());
-        testCase.setVisibility(visibility);
-        testCaseRepository.save(testCase);
-    }
-
-    @Override
-    @Transactional
-    public void changeInputs(final long testCaseId, final List<String> inputs)
-            throws IllegalEntityStateException, IllegalArgumentException {
-        final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.getExercise().getExam());
-        testCase.setInputs(inputs);
-        testCaseRepository.save(testCase);
-    }
-
-    @Override
-    @Transactional
-    public void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
-            throws IllegalEntityStateException, IllegalArgumentException {
-        final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.getExercise().getExam());
-        testCase.setExpectedOutputs(outputs);
-        testCaseRepository.save(testCase);
-    }
-
-    @Override
-    @Transactional
-    public void clearInputs(final long testCaseId) throws IllegalEntityStateException {
-        final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.getExercise().getExam());
-        testCase.removeAllInputs();
-        testCaseRepository.save(testCase);
-    }
-
-    @Override
-    @Transactional
-    public void clearOutputs(final long testCaseId) throws IllegalEntityStateException {
-        final var testCase = loadTestCase(testCaseId);
-        performExamUpcomingStateVerification(testCase.getExercise().getExam());
-        testCase.removeAllExpectedOutputs();
+        testCase.update(visibility, timeout, inputs, expectedOutputs);
         testCaseRepository.save(testCase);
     }
 
@@ -290,6 +256,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
                     testCaseRepository.delete(testCase);
                 });
     }
+
 
     // ================================================================================================================
     // Solutions
@@ -418,7 +385,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         final var request = new ExecutionRequest(
                 solution.getAnswer(),
                 testCase.getInputs(),
-                null,
+                testCase.getTimeout(),
                 solution.getExercise().getLanguage());
         final var replyData = new ExecutionResultReplyData(solution.getId(), testCase.getId());
         executorService.requestExecution(request, replyData);

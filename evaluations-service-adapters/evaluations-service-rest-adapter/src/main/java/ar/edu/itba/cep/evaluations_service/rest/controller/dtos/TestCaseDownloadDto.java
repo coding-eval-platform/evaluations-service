@@ -22,6 +22,11 @@ public class TestCaseDownloadDto {
     private final TestCase.Visibility visibility;
 
     /**
+     * The timeout of the test case.
+     */
+    private final Long timeout;
+
+    /**
      * The inputs of the test case.
      */
     private final List<String> inputs;
@@ -29,7 +34,7 @@ public class TestCaseDownloadDto {
     /**
      * The expected output.
      */
-    private final List<String> outputs;
+    private final List<String> expectedOutputs;
 
 
     /**
@@ -40,8 +45,9 @@ public class TestCaseDownloadDto {
     public TestCaseDownloadDto(final TestCase testCase) {
         this.id = testCase.getId();
         this.visibility = testCase.getVisibility();
+        this.timeout = testCase.getTimeout();
         this.inputs = testCase.getInputs();
-        this.outputs = testCase.getExpectedOutputs();
+        this.expectedOutputs = testCase.getExpectedOutputs();
     }
 
 
@@ -62,6 +68,14 @@ public class TestCaseDownloadDto {
     }
 
     /**
+     * @return The timeout of the test case.
+     */
+    @JsonProperty(value = "timeout", access = JsonProperty.Access.READ_ONLY)
+    public Long getTimeout() {
+        return timeout;
+    }
+
+    /**
      * @return The inputs of the test case.
      */
     @JsonProperty(value = "inputs", access = JsonProperty.Access.READ_ONLY)
@@ -73,7 +87,7 @@ public class TestCaseDownloadDto {
      * @return The expected output.
      */
     @JsonProperty(value = "expectedOutputs", access = JsonProperty.Access.READ_ONLY)
-    public List<String> getOutputs() {
-        return outputs;
+    public List<String> getExpectedOutputs() {
+        return expectedOutputs;
     }
 }

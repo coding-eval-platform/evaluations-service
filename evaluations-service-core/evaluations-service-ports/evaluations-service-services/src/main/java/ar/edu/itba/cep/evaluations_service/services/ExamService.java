@@ -141,7 +141,7 @@ public interface ExamService {
     /**
      * Modifies the {@link Exercise} with the given {@code exerciseId}.
      *
-     * @param exerciseId       The id of the {@link Exam} to be modified.
+     * @param exerciseId       The id of the {@link Exercise} to be modified.
      * @param question         The new question for the exercise.
      * @param language         The new language for the exercise.
      * @param solutionTemplate The new solution template for the exercise.
@@ -212,6 +212,7 @@ public interface ExamService {
      *
      * @param exerciseId      The id of the {@link Exercise} to which a {@link TestCase} will be added.
      * @param visibility      The {@link TestCase.Visibility} of the {@link TestCase}.
+     * @param timeout         The timeout of the {@link TestCase}.
      * @param inputs          The inputs of the {@link TestCase}.
      * @param expectedOutputs The expected outputs of the {@link TestCase}.
      * @return The created {@link TestCase}.
@@ -222,15 +223,19 @@ public interface ExamService {
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility,
+    TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility, final Long timeout,
                             final List<String> inputs, final List<String> expectedOutputs)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
+
     /**
-     * Changes the {@link TestCase.Visibility} to the {@link TestCase} with the given {@code testCaseId}.
+     * Modifies the {@link TestCase} with the given {@code testCaseId}.
      *
-     * @param testCaseId The id of the {@link TestCase} whose {@code TestCase.Visibility} will be changed.
-     * @param visibility The new {@link TestCase.Visibility} value.
+     * @param testCaseId      The id of the {@link TestCase} being modified.
+     * @param visibility      The new {@link TestCase.Visibility} for the {@link TestCase}.
+     * @param timeout         The new timeout for the {@link TestCase}.
+     * @param inputs          The new inputs {@link List} for the {@link TestCase}.
+     * @param expectedOutputs The new expected outputs {@link List} for the {@link TestCase}.
      * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
@@ -239,66 +244,9 @@ public interface ExamService {
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void changeVisibility(final long testCaseId, final TestCase.Visibility visibility)
+    void modifyTestCase(final long testCaseId, final TestCase.Visibility visibility, final Long timeout,
+                        final List<String> inputs, final List<String> expectedOutputs)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
-
-    /**
-     * Changes the inputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
-     *
-     * @param testCaseId The id of the {@link TestCase} to which inputs will be replaced.
-     * @param inputs     The {@link List} of inputs for the {@link TestCase}.
-     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     that owns the {@link TestCase}
-     *                                     is not in {@link Exam.State#UPCOMING} state.
-     * @throws IllegalArgumentException    If the given {@code inputs} {@link List} is not valid.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
-     * is not in {@link Exam.State#UPCOMING} state.
-     */
-    void changeInputs(final long testCaseId, final List<String> inputs)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
-
-    /**
-     * Changes the expected outputs {@link List} to the {@link TestCase} with the given {@code testCaseId}.
-     *
-     * @param testCaseId The id of the {@link TestCase} to which expected outputs will be replaced.
-     * @param outputs    The {@link List} of expected outputs for the {@link TestCase}.
-     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     that owns the {@link TestCase}
-     *                                     is not in {@link Exam.State#UPCOMING} state.
-     * @throws IllegalArgumentException    If the given {@code outputs} {@link List} is not valid.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
-     * is not in {@link Exam.State#UPCOMING} state.
-     */
-    void changeExpectedOutputs(final long testCaseId, final List<String> outputs)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
-
-    /**
-     * Removes all the inputs for the {@link TestCase} with the given {@code testCaseId}.
-     *
-     * @param testCaseId The id of the {@link TestCase} to which inputs will be removed.
-     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     that owns the {@link TestCase}
-     *                                     is not in {@link Exam.State#UPCOMING} state.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
-     * is not in {@link Exam.State#UPCOMING} state.
-     */
-    void clearInputs(final long testCaseId) throws NoSuchEntityException, IllegalEntityStateException;
-
-    /**
-     * Removes all the expected outputs for the {@link TestCase} with the given {@code testCaseId}.
-     *
-     * @param testCaseId The id of the {@link TestCase} to which expected outputs will be removed.
-     * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     that owns the {@link TestCase}
-     *                                     is not in {@link Exam.State#UPCOMING} state.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
-     * is not in {@link Exam.State#UPCOMING} state.
-     */
-    void clearOutputs(final long testCaseId) throws NoSuchEntityException, IllegalEntityStateException;
 
     /**
      * Deletes the {@link TestCase} with the given {@code testCaseId}.

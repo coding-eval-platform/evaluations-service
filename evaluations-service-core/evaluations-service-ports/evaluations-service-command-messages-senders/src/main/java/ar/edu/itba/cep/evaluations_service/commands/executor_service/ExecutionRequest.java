@@ -20,7 +20,7 @@ public class ExecutionRequest {
      */
     private final List<String> inputs;
     /**
-     * The time given to execute, in milliseconds..
+     * The time given to execute, in milliseconds.
      */
     private final Long timeout;
     /**
