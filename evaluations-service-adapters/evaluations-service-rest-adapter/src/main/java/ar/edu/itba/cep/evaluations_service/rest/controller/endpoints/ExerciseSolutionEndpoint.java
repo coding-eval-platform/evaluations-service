@@ -54,7 +54,8 @@ public class ExerciseSolutionEndpoint {
             @PaginationParam final PagingRequest pagingRequest) {
         LOGGER.debug("Getting solutions for exercise with id {}", exerciseId);
         final var solutions = examService.listSolutions(exerciseId, pagingRequest)
-                .map(ExerciseSolutionDownloadDto::new);
+                .map(ExerciseSolutionDownloadDto::new)
+                .content();
         return Response.ok(solutions).build();
     }
 
