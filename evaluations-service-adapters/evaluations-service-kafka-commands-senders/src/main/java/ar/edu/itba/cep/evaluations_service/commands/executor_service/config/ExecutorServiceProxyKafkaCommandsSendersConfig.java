@@ -53,7 +53,7 @@ public class ExecutorServiceProxyKafkaCommandsSendersConfig {
     public MessageBuilderFactory<ExecutionRequestDto> executionRequestMessageBuilderFactory(
             final PayloadSerializer<ExecutionRequestDto> executionRequestDtoPayloadSerializer) {
         return new ExecutionRequestDtoMessageBuilderFactory(
-                "EvaluationService",
+                "EvaluationsService",
                 executionRequestDtoPayloadSerializer,
                 JacksonMessage::new);
     }
