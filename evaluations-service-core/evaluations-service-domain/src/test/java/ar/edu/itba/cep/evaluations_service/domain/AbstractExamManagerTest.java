@@ -66,13 +66,18 @@ abstract class AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository                   An {@link ExamRepository} that is injected to the {@link ExamManager}.
-     * @param exerciseRepository               An {@link ExerciseRepository} that is injected to the {@link ExamManager}.
-     * @param testCaseRepository               A {@link TestCaseRepository} that is injected to the {@link ExamManager}.
-     * @param exerciseSolutionRepository       An {@link ExerciseSolutionRepository}
-     *                                         that is injected to the {@link ExamManager}.
-     * @param exerciseSolutionResultRepository An {@link ExerciseSolutionResultRepository}
-     *                                         that is injected to the {@link ExamManager}.
+     * @param examRepository                     An {@link ExamRepository}
+     *                                           that is injected to the {@link ExamManager}.
+     * @param exerciseRepository                 An {@link ExerciseRepository}
+     *                                           that is injected to the {@link ExamManager}.
+     * @param testCaseRepository                 A {@link TestCaseRepository}
+     *                                           that is injected to the {@link ExamManager}.
+     * @param exerciseSolutionRepository         An {@link ExerciseSolutionRepository}
+     *                                           that is injected to the {@link ExamManager}.
+     * @param exerciseSolutionResultRepository   An {@link ExerciseSolutionResultRepository}
+     *                                           that is injected to the {@link ExamManager}.
+     * @param executorServiceCommandMessageProxy An {@link ExecutorServiceCommandMessageProxy}
+     *                                           that is injected to the {@link ExamManager}.
      */
     AbstractExamManagerTest(
             final ExamRepository examRepository,

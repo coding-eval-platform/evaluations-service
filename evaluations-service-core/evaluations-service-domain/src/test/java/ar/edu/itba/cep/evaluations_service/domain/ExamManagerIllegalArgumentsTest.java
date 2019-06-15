@@ -29,7 +29,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
      * @param examRepository             A mocked {@link ExamRepository} passed to super class.
      * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
      * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseSolutionRepository A mocked {@link ExerciseSolutionRepository} passed to super class.
      * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
      * @param executorServiceProxy       A mocked {@link ExecutorServiceCommandMessageProxy} passed to super class.
      */
