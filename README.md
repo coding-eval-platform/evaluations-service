@@ -269,17 +269,21 @@ To create an image to run this project in Docker just package the application wi
 You just have to run the following command:
 
 ```
-$ mvn clean package -P docker-build
+$ mvn clean package -P docker-build -Ddocker.image.tag=latest
 ```
+
+The built Docker image will be ```itbacep/evaluations-service:latest```. You can specify the tag you want.
+
 
 ### Run the project
 
 Once you have built the Docker image, just run the following command:
 
 ```
-$ export EVAL_SERVICE_VERSION=<project-version>
-$ docker run -p 8000:8000 itbacep/eval-service:$EVAL_SERVICE_VERSION
+$ docker run -p 8000:8000 itbacep/evaluations-service:latest
 ```
+
+Note that you have to use the same tag you used to create the image.
 
 Note that you will have to link the container with another container (or the host machine)
 in which a PostgreSQL server is running.
