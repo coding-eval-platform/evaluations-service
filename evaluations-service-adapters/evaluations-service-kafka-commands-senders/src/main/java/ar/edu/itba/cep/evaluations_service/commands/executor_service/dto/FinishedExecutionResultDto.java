@@ -1,6 +1,5 @@
 package ar.edu.itba.cep.evaluations_service.commands.executor_service.dto;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.FinishedExecutionResult;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,24 +9,13 @@ import java.util.List;
 /**
  * An {@link ExecutionResultDto} for a {@link FinishedExecutionResult}.
  */
-public class FinishedExecutionResultDto implements ExecutionResultDto {
+public class FinishedExecutionResultDto implements ExecutionResultDto<FinishedExecutionResult> {
+
 
     /**
-     * The execution's exit code.
+     * The {@link FinishedExecutionResult} corresponding to this DTO.
      */
-    private final int exitCode;
-
-    /**
-     * A {@link List} of {@link String}s that were sent to standard output by the program being executed.
-     * Each {@link String} in the {@link List} is a line that was printed in standard output.
-     */
-    private final List<String> stdout;
-
-    /**
-     * A {@link List} of {@link String}s that were sent to standard error output by the program being executed.
-     * Each {@link String} in the {@link List} is a line that was printed in standard error output.
-     */
-    private final List<String> stderr;
+    private final FinishedExecutionResult adapted;
 
 
     /**
@@ -49,37 +37,11 @@ public class FinishedExecutionResultDto implements ExecutionResultDto {
             @JsonProperty(value = "stdout", access = JsonProperty.Access.WRITE_ONLY) final List<String> stdout,
             @JsonProperty(value = "stderr", access = JsonProperty.Access.WRITE_ONLY) final List<String> stderr)
             throws IllegalArgumentException {
-        this.exitCode = exitCode;
-        this.stdout = stdout;
-        this.stderr = stderr;
-    }
-
-
-    /**
-     * @return The execution's exit code.
-     */
-    public int getExitCode() {
-        return exitCode;
-    }
-
-    /**
-     * @return A {@link List} of {@link String}s that were sent to standard output by the program being executed.
-     * Each {@link String} in the {@link List} is a line that was printed in standard output.
-     */
-    public List<String> getStdout() {
-        return stdout;
-    }
-
-    /**
-     * @return A {@link List} of {@link String}s that were sent to standard error output by the program being executed.
-     * Each {@link String} in the {@link List} is a line that was printed in standard error output.
-     */
-    public List<String> getStderr() {
-        return stderr;
+        this.adapted = new FinishedExecutionResult(exitCode, stdout, stderr);
     }
 
     @Override
-    public ExecutionResult getAdapted() {
-        return new FinishedExecutionResult(exitCode, stdout, stderr);
+    public FinishedExecutionResult getAdapted() {
+        return adapted;
     }
 }

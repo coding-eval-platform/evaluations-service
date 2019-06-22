@@ -1,13 +1,12 @@
 package ar.edu.itba.cep.evaluations_service.commands.executor_service.dto;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.TimedOutExecutionResult;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * An {@link ExecutionResultDto} for a {@link TimedOutExecutionResult}.
  */
-public class TimedOutExecutionResultDto implements ExecutionResultDto {
+public class TimedOutExecutionResultDto implements ExecutionResultDto<TimedOutExecutionResult> {
 
     /**
      * Constructor.
@@ -17,7 +16,7 @@ public class TimedOutExecutionResultDto implements ExecutionResultDto {
     }
 
     @Override
-    public ExecutionResult getAdapted() {
+    public TimedOutExecutionResult getAdapted() {
         return new TimedOutExecutionResult();
     }
 }
