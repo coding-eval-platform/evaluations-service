@@ -19,12 +19,10 @@ public interface ExecutionResultProcessor {
      *
      * @param solutionId      The id of the referenced {@link ExerciseSolution}.
      * @param testCaseId      The id of the referenced {@link TestCase}.
-     * @param executionResult An {@link ExecutionResult} with data to be processes.
+     * @param executionResult An {@link ExecutionResult} with data to be processed.
      * @throws NoSuchEntityException    If there is no {@link ExerciseSolution} with the given {@code solutionId},
      *                                  or if there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalArgumentException If any argument is not valid.
-     * @apiNote This method MUST be called only for finished executions
-     * (i.e not timed-out, with compilation errors, etc).
      */
     void processExecution(final long solutionId, final long testCaseId, final ExecutionResult executionResult)
             throws NoSuchEntityException, IllegalArgumentException;
