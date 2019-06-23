@@ -303,11 +303,13 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         // State validation is not needed because the existence of a solution proves state validity
 
         // Get the ExerciseSolutionResultCreator corresponding to the given executionResult,
-        // and the create the ExerciseSolutionResult
-        final var solutionResult = getResultCreator(executionResult).apply(solution, testCase);
-
-        // Save the created ExerciseSolutionResult
-        exerciseSolutionResultRepository.save(solutionResult);
+        // and then create the ExerciseSolutionResult to be saved.
+        // If the ExecutionResult is an InitializationErrorExecutionResult or an UnknownErrorExecutionResult,
+        // the returned Optional will be empty and nothing will happen.
+        getResultCreator(executionResult)
+                .map(creator -> creator.apply(solution, testCase))
+                .ifPresent(exerciseSolutionResultRepository::save)
+        ;
     }
 
 
@@ -409,29 +411,24 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     /**
      * Gets the {@link ExerciseSolutionResultCreator} corresponding to the given {@link ExecutionResult}.
      *
-     * @param executionResult The {@link ExecutionResult} to be analyzed in order to know which
-     *                        {@link ExerciseSolutionResultCreator} must be returned.
+     * @param result The {@link ExecutionResult} to be analyzed in order to know which
+     *               {@link ExerciseSolutionResultCreator} must be returned.
      * @return The {@link ExerciseSolutionResultCreator} corresponding to the given {@link ExecutionResult}.
      */
-    private static ExerciseSolutionResultCreator getResultCreator(final ExecutionResult executionResult) {
-        if (executionResult instanceof TimedOutExecutionResult) {
-            return ExamManager::createForTimedOut;
+    private static Optional<ExerciseSolutionResultCreator> getResultCreator(final ExecutionResult result) {
+        if (result instanceof FinishedExecutionResult) {
+            return Optional.of((s, t) -> createForFinished(s, t, (FinishedExecutionResult) result));
         }
-        if (executionResult instanceof FinishedExecutionResult) {
-            return (s, t) -> createForFinished(s, t, (FinishedExecutionResult) executionResult);
+        if (result instanceof TimedOutExecutionResult) {
+            return Optional.of((s, t) -> new ExerciseSolutionResult(s, t, ExerciseSolutionResult.Result.TIMED_OUT));
+        }
+        if (result instanceof CompileErrorExecutionResult) {
+            return Optional.of((s, t) -> new ExerciseSolutionResult(s, t, ExerciseSolutionResult.Result.NOT_COMPILED));
+        }
+        if (result instanceof InitializationErrorExecutionResult || result instanceof UnknownErrorExecutionResult) {
+            return Optional.empty(); // TODO: maybe make a solution result for this special cases? retry?
         }
         throw new IllegalArgumentException("Unknown subtype");
-    }
-
-    /**
-     * Creates an {@link ExerciseSolutionResult} for a {@link TimedOutExecutionResult}.
-     *
-     * @param solution The {@link ExerciseSolution} corresponding to the created {@link ExerciseSolutionResult}.
-     * @param testCase The {@link TestCase} corresponding to the created {@link ExerciseSolutionResult}.
-     * @return The created {@link ExerciseSolutionResult} for a {@link TimedOutExecutionResult}.
-     */
-    private static ExerciseSolutionResult createForTimedOut(final ExerciseSolution solution, final TestCase testCase) {
-        return new ExerciseSolutionResult(solution, testCase, ExerciseSolutionResult.Result.FAILED);
     }
 
     /**
