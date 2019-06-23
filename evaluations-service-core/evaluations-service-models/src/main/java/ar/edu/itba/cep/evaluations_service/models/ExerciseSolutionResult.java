@@ -134,9 +134,20 @@ public class ExerciseSolutionResult {
          */
         APPROVED,
         /**
-         * Indicates that an exercise's solution is not accepted when testing it with a given test case.
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
+         * the execution returned a non expected output.
          */
         FAILED,
+        /**
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
+         * the execution timed out.
+         */
+        TIMED_OUT,
+        /**
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
+         * the code could not be compiled.
+         */
+        NOT_COMPILED,
         ;
     }
 

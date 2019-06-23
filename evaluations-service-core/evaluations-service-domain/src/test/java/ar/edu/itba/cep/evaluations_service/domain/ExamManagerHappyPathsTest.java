@@ -706,43 +706,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
 
     /**
      * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link TimedOutExecutionResult}.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithTimedOutExecutionResult(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final TimedOutExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a timed-out execution result"
-        );
-
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
-        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
-        Mockito
-                .verify(exerciseSolutionResultRepository, Mockito.only())
-                .save(Mockito.argThat(withResult(ExerciseSolutionResult.Result.FAILED)))
-        ;
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
      * when the {@link ExecutionResult} is a {@link FinishedExecutionResult} with a non zero exit code.
      *
      * @param exerciseSolution The {@link ExerciseSolution} being executed.
@@ -908,6 +871,144 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         ;
         Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
+
+    /**
+     * Tests the processing of an execution result
+     * when the {@link ExecutionResult} is a {@link TimedOutExecutionResult}.
+     *
+     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+     * @param testCase         The {@link TestCase} used in the execution.
+     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
+     */
+    @Test
+    void testProcessExecutionWithTimedOutExecutionResult(
+            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "executionResult") final TimedOutExecutionResult executionResult) {
+        final var testCaseId = TestHelper.validTestCaseId();
+        final var solutionId = TestHelper.validExerciseSolutionId();
+
+        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+        Mockito
+                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
+                .then(invocation -> invocation.getArgument(0));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
+                "An exception was thrown when processing a timed-out execution result"
+        );
+
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+        Mockito
+                .verify(exerciseSolutionResultRepository, Mockito.only())
+                .save(Mockito.argThat(withResult(ExerciseSolutionResult.Result.TIMED_OUT)))
+        ;
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests the processing of an execution result
+     * when the {@link ExecutionResult} is a {@link CompileErrorExecutionResult}.
+     *
+     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+     * @param testCase         The {@link TestCase} used in the execution.
+     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
+     */
+    @Test
+    void testProcessExecutionWithNotCompiledExecutionResult(
+            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "executionResult") final CompileErrorExecutionResult executionResult) {
+        final var testCaseId = TestHelper.validTestCaseId();
+        final var solutionId = TestHelper.validExerciseSolutionId();
+
+        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+        Mockito
+                .when(exerciseSolutionResultRepository.save(Mockito.any(ExerciseSolutionResult.class)))
+                .then(invocation -> invocation.getArgument(0));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
+                "An exception was thrown when processing a timed-out execution result"
+        );
+
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+        Mockito
+                .verify(exerciseSolutionResultRepository, Mockito.only())
+                .save(Mockito.argThat(withResult(ExerciseSolutionResult.Result.NOT_COMPILED)))
+        ;
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests the processing of an execution result
+     * when the {@link ExecutionResult} is an {@link InitializationErrorExecutionResult}.
+     *
+     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+     * @param testCase         The {@link TestCase} used in the execution.
+     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
+     */
+    @Test
+    void testProcessExecutionWithInitializationErrorExecutionResult(
+            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "executionResult") final InitializationErrorExecutionResult executionResult) {
+        final var testCaseId = TestHelper.validTestCaseId();
+        final var solutionId = TestHelper.validExerciseSolutionId();
+
+        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
+                "An exception was thrown when processing a timed-out execution result"
+        );
+
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests the processing of an execution result
+     * when the {@link ExecutionResult} is an {@link InitializationErrorExecutionResult}.
+     *
+     * @param exerciseSolution The {@link ExerciseSolution} being executed.
+     * @param testCase         The {@link TestCase} used in the execution.
+     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
+     */
+    @Test
+    void testProcessExecutionWithUnknownErrorExecutionResult(
+            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "executionResult") final UnknownErrorExecutionResult executionResult) {
+        final var testCaseId = TestHelper.validTestCaseId();
+        final var solutionId = TestHelper.validExerciseSolutionId();
+
+        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        Mockito.when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
+                "An exception was thrown when processing a timed-out execution result"
+        );
+
+        Mockito.verifyZeroInteractions(examRepository);
+        Mockito.verifyZeroInteractions(exerciseRepository);
+        Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
+        Mockito.verify(exerciseSolutionRepository, Mockito.only()).findById(solutionId);
+        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
+        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+
 
 
     // ================================================================================================================
