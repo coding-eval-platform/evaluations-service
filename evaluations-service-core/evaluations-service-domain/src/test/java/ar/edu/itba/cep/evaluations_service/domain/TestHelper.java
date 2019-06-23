@@ -347,7 +347,7 @@ class TestHelper {
      */
     /* package */
     static long invalidTestCaseTimeout() {
-        return Faker.instance().number().numberBetween(Long.MIN_VALUE, 0);
+        return Faker.instance().number().numberBetween(Long.MIN_VALUE, 1);
     }
 
     /**
