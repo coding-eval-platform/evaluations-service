@@ -48,7 +48,7 @@ class TestHelper {
      */
     /* package */
     static <T> Stream<T> randomLengthStream(final IntFunction<T> creator) {
-        final var length = Faker.instance().number().numberBetween(0, LISTS_SIZE);
+        final var length = (int) Faker.instance().number().numberBetween(0L, LISTS_SIZE);
         return IntStream.range(0, length).mapToObj(creator);
     }
 
@@ -124,7 +124,7 @@ class TestHelper {
     /* package */
     static Language validLanguage() {
         final var languages = Language.values();
-        final var randomIndex = Faker.instance().number().numberBetween(0, languages.length);
+        final var randomIndex = (int) Faker.instance().number().numberBetween(0L, languages.length);
         return languages[randomIndex];
     }
 
@@ -142,7 +142,7 @@ class TestHelper {
                         .characters(ValidationConstants.ANSWER_MIN_LENGTH, Short.MAX_VALUE)
         );
 
-        final var index = Faker.instance().number().numberBetween(0, possibleSolutionTemplates.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, possibleSolutionTemplates.size());
         return possibleSolutionTemplates.get(index);
     }
 
@@ -160,7 +160,7 @@ class TestHelper {
     /* package */
     static TestCase.Visibility validTestCaseVisibility() {
         final var visibilities = TestCase.Visibility.values();
-        final var randomIndex = Faker.instance().number().numberBetween(0, visibilities.length);
+        final var randomIndex = (int) Faker.instance().number().numberBetween(0L, visibilities.length);
         return visibilities[randomIndex];
     }
 
@@ -172,7 +172,7 @@ class TestHelper {
         final List<Long> validValues = new LinkedList<>();
         validValues.add(Faker.instance().number().numberBetween(1, Long.MAX_VALUE));
         validValues.add(null);
-        final var index = Faker.instance().number().numberBetween(0, validValues.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, validValues.size());
         return validValues.get(index);
     }
 
@@ -221,10 +221,10 @@ class TestHelper {
      */
     /* package */
     static int validNonZeroExerciseSolutionExitCode() {
-        final var negatives = Faker.instance().number().numberBetween(Integer.MIN_VALUE, 0);
+        final var negatives = Faker.instance().number().numberBetween(Integer.MIN_VALUE, -1);
         final var positives = Faker.instance().number().numberBetween(1, Integer.MAX_VALUE);
         final var values = List.of(negatives, positives);
-        final var index = Faker.instance().number().numberBetween(0, values.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, values.size());
         return values.get(index);
     }
 
@@ -347,7 +347,7 @@ class TestHelper {
      */
     /* package */
     static long invalidTestCaseTimeout() {
-        return Faker.instance().number().numberBetween(Long.MIN_VALUE, 1);
+        return Faker.instance().number().numberBetween(Long.MIN_VALUE, 0);
     }
 
     /**

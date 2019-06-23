@@ -723,7 +723,7 @@ class TestCaseTest {
      */
     private static TestCase.Visibility validVisibility() {
         final var visibilities = TestCase.Visibility.values();
-        final var randomIndex = Faker.instance().number().numberBetween(0, visibilities.length);
+        final var randomIndex = (int)  Faker.instance().number().numberBetween(0L, visibilities.length);
         return visibilities[randomIndex];
     }
 

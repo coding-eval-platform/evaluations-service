@@ -378,7 +378,7 @@ class ExerciseTest {
      */
     private static Language validLanguage() {
         final var languages = Language.values();
-        final var randomIndex = Faker.instance().number().numberBetween(0, languages.length);
+        final var randomIndex = (int) Faker.instance().number().numberBetween(0L, languages.length);
         return languages[randomIndex];
     }
 
@@ -395,7 +395,7 @@ class ExerciseTest {
                         .characters(ValidationConstants.ANSWER_MIN_LENGTH, Short.MAX_VALUE)
         );
 
-        final var index = Faker.instance().number().numberBetween(0, possibleSolutionTemplates.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, possibleSolutionTemplates.size());
         return possibleSolutionTemplates.get(index);
     }
 

@@ -145,7 +145,7 @@ class ExerciseSolutionResultTest {
      */
     private static ExerciseSolutionResult.Result validResult() {
         final var results = ExerciseSolutionResult.Result.values();
-        final var randomIndex = Faker.instance().number().numberBetween(0, results.length);
+        final var randomIndex = (int) Faker.instance().number().numberBetween(0L, results.length);
         return results[randomIndex];
     }
 }
