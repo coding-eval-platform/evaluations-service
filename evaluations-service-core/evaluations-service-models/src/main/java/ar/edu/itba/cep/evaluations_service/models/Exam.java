@@ -3,17 +3,22 @@ package ar.edu.itba.cep.evaluations_service.models;
 
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 
 /**
  * Represents an exam.
  */
+@Getter
+@EqualsAndHashCode(of = "id")
+@ToString(doNotUseGetters = true, callSuper = true)
 public class Exam {
 
     /**
@@ -82,55 +87,6 @@ public class Exam {
         this.actualDuration = null;
     }
 
-
-    /**
-     * @return The exam's id.
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * @return A description for the exam (e.g mid-term exams, final exams, etc.).
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @return {@link LocalDateTime} at which the exam starts.
-     */
-    public LocalDateTime getStartingAt() {
-        return startingAt;
-    }
-
-    /**
-     * @return {@link Duration} of the exam.
-     */
-    public Duration getDuration() {
-        return duration;
-    }
-
-    /**
-     * @return The exam's {@link State} (i.e upcoming, in progress or finished).
-     */
-    public State getState() {
-        return state;
-    }
-
-    /**
-     * @return The actual {@link Instant} at which the exam really started.
-     */
-    public Instant getActualStartingMoment() {
-        return actualStartingMoment;
-    }
-
-    /**
-     * @return The actual {@link Duration} of the exam.
-     */
-    public Duration getActualDuration() {
-        return actualDuration;
-    }
 
     /**
      * Changes the description for this exam.
@@ -218,41 +174,6 @@ public class Exam {
         }
         this.state = State.FINISHED;
         this.actualDuration = Duration.between(actualStartingMoment, Instant.now());
-    }
-
-
-    // ================================
-    // equals, hashcode and toString
-    // ================================
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Exam)) {
-            return false;
-        }
-        final var exam = (Exam) o;
-        return id == exam.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Exam: [" +
-                "ID: " + id + ", " +
-                "Description: '" + description + "', " +
-                "StartingAt: " + startingAt + ", " +
-                "Duration: " + duration + ", " +
-                "State:" + state + ", " +
-                "ActualStartingMoment:" + actualStartingMoment + ", " +
-                "ActualDuration:" + actualDuration +
-                ']';
     }
 
 

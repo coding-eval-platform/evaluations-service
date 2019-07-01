@@ -1,12 +1,16 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
-
-import java.util.Objects;
 
 /**
  * Represents a solution of an exercise.
  */
+@Getter
+@EqualsAndHashCode(of = "id")
+@ToString(doNotUseGetters = true, callSuper = true)
 public class ExerciseSolution {
 
     /**
@@ -46,59 +50,6 @@ public class ExerciseSolution {
         this.id = 0;
         this.exercise = exercise;
         this.answer = answer;
-    }
-
-
-    /**
-     * @return The exercise solution's id.
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * @return The {@link Exercise} to which it belongs to.
-     */
-    public Exercise getExercise() {
-        return exercise;
-    }
-
-    /**
-     * @return The answer to the question of the {@link Exercise} (i.e the code written by the student).
-     */
-    public String getAnswer() {
-        return answer;
-    }
-
-
-    // ================================
-    // equals, hashcode and toString
-    // ================================
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ExerciseSolution)) {
-            return false;
-        }
-        final var that = (ExerciseSolution) o;
-        return id == that.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "ExerciseSolution [" +
-                "ID: " + id + ", " +
-                "Exercise: " + exercise + ", " +
-                "Answer: '" + answer + "'" +
-                "]";
     }
 
 

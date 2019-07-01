@@ -1,13 +1,17 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
-
-import java.util.Objects;
 
 
 /**
  * Represents an exercise.
  */
+@Getter
+@EqualsAndHashCode(of = "id")
+@ToString(doNotUseGetters = true, callSuper = true)
 public class Exercise {
 
     /**
@@ -69,42 +73,6 @@ public class Exercise {
 
 
     /**
-     * @return The exercise's id.
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * @return The question being asked.
-     */
-    public String getQuestion() {
-        return question;
-    }
-
-    /**
-     * @return The {@link Language} in which the answer must be written.
-     */
-    public Language getLanguage() {
-        return language;
-    }
-
-    /**
-     * @return The solution template.
-     */
-    public String getSolutionTemplate() {
-        return solutionTemplate;
-    }
-
-    /**
-     * @return The {@link Exam} to which this exercise belongs to.
-     */
-    public Exam getExam() {
-        return exam;
-    }
-
-
-    /**
      * Changes the question for this exercise.
      *
      * @param question The new question for the exercise.
@@ -153,39 +121,6 @@ public class Exercise {
         this.question = question;
         this.language = language;
         this.solutionTemplate = solutionTemplate;
-    }
-
-
-    // ================================
-    // equals, hashcode and toString
-    // ================================
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Exercise)) {
-            return false;
-        }
-        final var exercise = (Exercise) o;
-        return id == exercise.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Exercise [" +
-                "ID: " + id + ", " +
-                "Question: '" + question + "', " +
-                "Language: '" + language + "', " +
-                "SolutionTemplate: '" + solutionTemplate + "', " +
-                "Exam: " + exam +
-                "]";
     }
 
 

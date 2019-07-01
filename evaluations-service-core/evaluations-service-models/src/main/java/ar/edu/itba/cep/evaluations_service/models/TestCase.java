@@ -1,5 +1,8 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
 
 import java.util.LinkedList;
@@ -9,6 +12,9 @@ import java.util.Objects;
 /**
  * Represents a test case for an {@link Exercise}.
  */
+@Getter
+@EqualsAndHashCode(of = "id")
+@ToString(doNotUseGetters = true, callSuper = true)
 public class TestCase {
 
     /**
@@ -84,48 +90,6 @@ public class TestCase {
         this.exercise = exercise;
     }
 
-
-    /**
-     * @return The test case's id.
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * @return Indicates whether the test case is public or private.
-     */
-    public Visibility getVisibility() {
-        return visibility;
-    }
-
-    /**
-     * @return The time given to the exercise to execute, in milliseconds.
-     */
-    public Long getTimeout() {
-        return timeout;
-    }
-
-    /**
-     * @return The inputs of the test case.
-     */
-    public List<String> getInputs() {
-        return inputs;
-    }
-
-    /**
-     * @return The expected outputs.
-     */
-    public List<String> getExpectedOutputs() {
-        return expectedOutputs;
-    }
-
-    /**
-     * @return The {@link Exercise} to which this test case belongs to.
-     */
-    public Exercise getExercise() {
-        return exercise;
-    }
 
     /**
      * Changes the visibility for this test case.
@@ -211,40 +175,6 @@ public class TestCase {
         this.inputs.addAll(inputs);
         this.expectedOutputs.clear();
         this.expectedOutputs.addAll(expectedOutputs);
-    }
-
-
-    // ================================
-    // equals, hashcode and toString
-    // ================================
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof TestCase)) {
-            return false;
-        }
-        final var testCase = (TestCase) o;
-        return id == testCase.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "TestCase [" +
-                "ID: " + id + ", " +
-                "Visibility: " + visibility + ", " +
-                "Timeout: " + timeout + ", " +
-                "Inputs: " + inputs + ", " +
-                "ExpectedOutputs: " + expectedOutputs + ", " +
-                "Exercise: " + exercise +
-                ']';
     }
 
 

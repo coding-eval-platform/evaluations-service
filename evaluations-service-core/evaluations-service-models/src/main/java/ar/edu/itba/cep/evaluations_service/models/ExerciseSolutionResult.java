@@ -1,14 +1,18 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
-
-import java.util.Objects;
 
 /**
  * Represents an exercise's solution result (i.e approved or failed).
  * This class relates an {@link ExerciseSolution} and a {@link TestCase},
  * indicating whether the solution is approved or failed, when testing it with the test case.
  */
+@Getter
+@EqualsAndHashCode(of = "id")
+@ToString(doNotUseGetters = true, callSuper = true)
 public class ExerciseSolutionResult {
 
     /**
@@ -57,67 +61,6 @@ public class ExerciseSolutionResult {
         this.solution = solution;
         this.testCase = testCase;
         this.result = result;
-    }
-
-
-    /**
-     * @return The exercise's solution result id.
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * @return The {@link ExerciseSolution} to which this result makes reference.
-     */
-    public ExerciseSolution getSolution() {
-        return solution;
-    }
-
-    /**
-     * @return The test case being used to reach the result.
-     */
-    public TestCase getTestCase() {
-        return testCase;
-    }
-
-    /**
-     * @return Indicates whether the result is approved or failed.
-     */
-    public Result getResult() {
-        return result;
-    }
-
-
-    // ================================
-    // equals, hashcode and toString
-    // ================================
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ExerciseSolutionResult)) {
-            return false;
-        }
-        final var that = (ExerciseSolutionResult) o;
-        return id == that.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "ExerciseSolutionResult [" +
-                "ID: " + id + ", " +
-                "Solution: " + solution + ", " +
-                "TestCase: " + testCase + ", " +
-                "Result: " + result +
-                "]";
     }
 
 

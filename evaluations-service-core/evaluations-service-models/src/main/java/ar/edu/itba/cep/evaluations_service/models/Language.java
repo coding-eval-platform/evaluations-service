@@ -1,24 +1,42 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import lombok.Getter;
 import org.springframework.util.Assert;
 
 /**
  * Enum containing the different programming languages supported by the evaluations service.
  */
+@Getter
 public enum Language {
     /**
      * The Java programming language.
      */
-    JAVA,
+    JAVA(true),
     /**
      * The Ruby programming language.
      */
-    RUBY,
+    RUBY(false),
     /**
      * The C programming language.
      */
-    C,
+    C(true),
     ;
+
+
+    /**
+     * Indicates whether this language is compiled.
+     */
+    private final boolean compiled;
+
+
+    /**
+     * Constructor.
+     *
+     * @param compiled Indicates whether this language is compiled.
+     */
+    Language(final boolean compiled) {
+        this.compiled = compiled;
+    }
 
 
     /**
