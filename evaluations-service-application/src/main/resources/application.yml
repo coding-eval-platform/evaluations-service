@@ -1,98 +1,110 @@
 # Default Configuration
 
 spring:
-    profiles:
-        active: dev
+  profiles:
+    active: dev
 
-    main:
-        banner-mode: "off"
+  main:
+    banner-mode: "off"
 
-    jersey:
-        servlet:
-            load-on-startup: 1
+  jersey:
+    servlet:
+      load-on-startup: 1
 
-    flyway:
-        locations: "classpath:db/migrations"
+  flyway:
+    locations: "classpath:db/migrations"
 
-    jpa:
-        hibernate:
-            ddl-auto: none
-        properties:
-            hibernate:
-                show_sql: false
-                format_sql: false
-                jdbc:
-                    lob:
-                        non_contextual_creation: true
-        open-in-view: false
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    open-in-view: false
 
-    # TODO: check this stuff
-    kafka:
-        consumer:
-            group-id: "evaluations_service"
-            auto-offset-reset: earliest
-            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-            value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-            properties:
-                spring:
-                    json:
-                        use.type.headers: false
-                        value.default.type: com.bellotapps.the_messenger.transport.json.jackson.JacksonMessage
-        producer:
-            key-serializer: org.apache.kafka.common.serialization.StringSerializer
-            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-            properties:
-                spring:
-                    json:
-                        add.type.headers: false
+  # TODO: check this stuff
+  kafka:
+    consumer:
+      group-id: "evaluations_service"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            use.type.headers: false
+            value.default.type: com.bellotapps.the_messenger.transport.json.jackson.JacksonMessage
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add.type.headers: false
 
 server:
-    port: 8000
-    error:
-        include-stacktrace: never
-        whitelabel:
-            enabled: false
-        include-exception: false
-    servlet:
-        context-path: /
-    compression:
-        enabled: true
+  port: 8000
+  error:
+    include-stacktrace: never
+    whitelabel:
+      enabled: false
+    include-exception: false
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
 
 
 ---
 # Configuration for Development Environment
 
 spring:
-    profiles:
-        - dev
-        - development
+  profiles:
+    - dev
+    - development
 
-    datasource:
-        url: jdbc:postgresql://localhost:5432/coding-eval-platform__evaluations-service
-        username: coding-eval-platform__evaluations-service
-        password: coding-eval-platform__evaluations-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/coding-eval-platform__evaluations-service
+    username: coding-eval-platform__evaluations-service
+    password: coding-eval-platform__evaluations-service
 
-    jpa:
-        properties:
-            hibernate:
-                format_sql: true
-                show_sql: true
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
 
-    # TODO: check this stuff
-    kafka:
-        bootstrap-servers: localhost:9092
+  # TODO: check this stuff
+  kafka:
+    bootstrap-servers: localhost:9092
+
+eureka:
+  client:
+    service-url:
+      default-zone: "http://localhost:8761/eureka/"
 
 ---
 # Configuration for Staging Environment
 
 spring:
-    profiles:
-        - staging
+  profiles:
+    - staging
 
 ---
 # Configuration for Production Environment
 
 spring:
-    profiles:
-        - prod
-        - production
+  profiles:
+    - prod
+    - production
