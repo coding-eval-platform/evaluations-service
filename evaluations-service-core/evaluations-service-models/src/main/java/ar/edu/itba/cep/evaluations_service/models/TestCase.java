@@ -150,9 +150,6 @@ public class TestCase {
      */
     private static void assertInputList(final List<String> inputs) throws IllegalArgumentException {
         Assert.notNull(inputs, "The inputs list is missing");
-        Assert.notEmpty(inputs,
-                "The list must not be empty." +
-                        " To clear the inputs list use TestCase#removeAllInputs");
         Assert.isTrue(inputs.stream().noneMatch(Objects::isNull), "The list must not contain null elements");
     }
 

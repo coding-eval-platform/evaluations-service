@@ -43,7 +43,7 @@ public class TestCaseUploadDto {
     /**
      * The inputs of the test case.
      */
-    @NotEmpty(message = "The inputs list must not be null nor empty", payload = IllegalValue.class,
+    @NotNull(message = "The inputs list must not be null", payload = MissingValue.class,
             groups = {
                     Create.class,
                     Update.class,

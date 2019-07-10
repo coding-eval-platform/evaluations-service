@@ -58,6 +58,10 @@ class TestCaseTest {
                 () -> Assertions.assertDoesNotThrow(
                         this::createTestCaseWithoutTimeout,
                         "Cannot create without timeout (null timeout)"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        this::createWithEmptyInputList,
+                        "Cannot create with an empty input list"
                 )
         );
         Mockito.verifyZeroInteractions(mockedExercise);
@@ -77,6 +81,15 @@ class TestCaseTest {
                                 validList()
                         ),
                         "It throws an exception"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createAnyTimeoutTestCase().update(
+                                validVisibility(),
+                                validTimeout(),
+                                Collections.emptyList(),
+                                validList()
+                        ),
+                        "Does not allow an empty input list"
                 ),
                 () -> {
                     final var testCase = createAnyTimeoutTestCase();
@@ -159,19 +172,6 @@ class TestCaseTest {
                 IllegalArgumentException.class,
                 () -> new TestCase(validVisibility(), validTimeout(), null, validList(), mockedExercise),
                 "Creating a test case with a null inputs list is being allowed");
-        Mockito.verifyZeroInteractions(mockedExercise);
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when creating a {@link TestCase} with an empty inputs {@link List}.
-     */
-    @Test
-    void testEmptyInputsListOnCreation() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> new TestCase(validVisibility(), validTimeout(), Collections.emptyList(), validList(), mockedExercise),
-                "Creating a test case with an empty inputs list is being allowed");
         Mockito.verifyZeroInteractions(mockedExercise);
     }
 
@@ -293,20 +293,6 @@ class TestCaseTest {
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
-     * when updating a {@link TestCase} with an empty inputs {@link List}.
-     */
-    @Test
-    void testEmptyInputsListOnUpdate() {
-        final var testCase = createAnyTimeoutTestCase();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> testCase.update(validVisibility(), validTimeout(), Collections.emptyList(), validList()),
-                "Updating a test case with an empty inputs list is being allowed");
-        Mockito.verifyZeroInteractions(mockedExercise);
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating a {@link TestCase} with an inputs {@link List} containing a null element.
      */
     @Test
@@ -403,7 +389,22 @@ class TestCaseTest {
     }
 
     /**
-     * Createa a valid {@link TestCase} with or without a timeout set.
+     * Creates a valid {@link TestCase} with an empty input list.
+     *
+     * @return A {@link TestCase}, with an empty input list.
+     */
+    private TestCase createWithEmptyInputList() {
+        return new TestCase(
+                validVisibility(),
+                validTimeout(),
+                Collections.emptyList(),
+                validList(),
+                mockedExercise
+        );
+    }
+
+    /**
+     * Creates a valid {@link TestCase} with or without a timeout set.
      *
      * @return A {@link TestCase}.
      */
