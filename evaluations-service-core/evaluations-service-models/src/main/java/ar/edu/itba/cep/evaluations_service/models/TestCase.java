@@ -92,66 +92,6 @@ public class TestCase {
 
 
     /**
-     * Changes the visibility for this test case.
-     *
-     * @param visibility The new {@link Visibility} for this test case.
-     * @throws IllegalArgumentException If the given {@code visibility} is not valid.
-     */
-    public void setVisibility(final Visibility visibility) throws IllegalArgumentException {
-        assertVisibility(visibility);
-        this.visibility = visibility;
-    }
-
-    /**
-     * Changes the timeout for this test case.
-     *
-     * @param timeout The new timeout for this test case.
-     * @throws IllegalArgumentException if the given {@code timeout} is not valid.
-     */
-    public void setTimeout(final Long timeout) throws IllegalArgumentException {
-        assertTimeout(timeout);
-        this.timeout = timeout;
-    }
-
-    /**
-     * Replaces the inputs {@link List} for this test case.
-     *
-     * @param inputs The new {@link List} of inputs for this test case.
-     * @throws IllegalArgumentException If the given {@code inputs} {@link List} is not valid.
-     */
-    public void setInputs(final List<String> inputs) throws IllegalArgumentException {
-        assertInputList(inputs);
-        this.inputs.clear();
-        this.inputs.addAll(inputs);
-    }
-
-    /**
-     * Replaces the expected outputs {@link List} for this test case.
-     *
-     * @param outputs The new {@link List} of expected outputs for this test case.
-     * @throws IllegalArgumentException If the given {@code outputs} {@link List} is not valid.
-     */
-    public void setExpectedOutputs(final List<String> outputs) throws IllegalArgumentException {
-        assertExpectedOutputsList(outputs);
-        this.expectedOutputs.clear();
-        this.expectedOutputs.addAll(outputs);
-    }
-
-    /**
-     * Removes all inputs.
-     */
-    public void removeAllInputs() {
-        this.inputs.clear();
-    }
-
-    /**
-     * Removes all outputs.
-     */
-    public void removeAllExpectedOutputs() {
-        this.expectedOutputs.clear();
-    }
-
-    /**
      * Updates all fields of this test case.
      *
      * @param visibility      Indicates whether the test case is public or private.

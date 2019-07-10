@@ -73,39 +73,6 @@ public class Exercise {
 
 
     /**
-     * Changes the question for this exercise.
-     *
-     * @param question The new question for the exercise.
-     * @throws IllegalArgumentException If the given {@code question} is not valid.
-     */
-    public void setQuestion(final String question) throws IllegalArgumentException {
-        assertQuestion(question);
-        this.question = question;
-    }
-
-    /**
-     * Changes the {@link Language} for this exercise.
-     *
-     * @param language The new {@link Language} for the exercise.
-     * @throws IllegalArgumentException If the given {@code language} is not valid.
-     */
-    public void setLanguage(final Language language) throws IllegalArgumentException {
-        assertLanguage(language);
-        this.language = language;
-    }
-
-    /**
-     * Changes the solution template for this exercise.
-     *
-     * @param solutionTemplate The new solution template for the exercise.
-     * @throws IllegalArgumentException If the given {@code solutionTemplate} is not valid.
-     */
-    public void setSolutionTemplate(final String solutionTemplate) throws IllegalArgumentException {
-        assertSolutionTemplate(solutionTemplate);
-        this.solutionTemplate = solutionTemplate;
-    }
-
-    /**
      * Updates all fields of this exercise.
      *
      * @param question         The new question for the exercise.

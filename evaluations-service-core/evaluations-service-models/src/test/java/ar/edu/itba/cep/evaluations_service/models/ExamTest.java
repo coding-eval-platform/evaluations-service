@@ -71,75 +71,6 @@ class ExamTest {
         );
     }
 
-    /**
-     * Tests that setting a valid description to an {@link Exam} works as expected.
-     */
-    @Test
-    void testSetValidDescription() {
-        Assertions.assertAll("Setting a valid description is not working as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> createExam().setDescription(validDescription()),
-                        "It throws an exception"
-                ),
-                () -> {
-                    final var exam = createExam();
-                    final var description = validDescription();
-                    exam.setDescription(description);
-                    Assertions.assertEquals(
-                            description,
-                            exam.getDescription(),
-                            "Is not being set (does not change the Exam value)"
-                    );
-                }
-        );
-    }
-
-    /**
-     * Tests that setting a valid starting at moment to an {@link Exam} works as expected.
-     */
-    @Test
-    void testSetValidStartingAt() {
-        Assertions.assertAll("Setting a valid starting at moment is not working as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> createExam().setStartingAt(validStartingMoment()),
-                        "It throws an exception"
-                ),
-                () -> {
-                    final var exam = createExam();
-                    final var startingAt = validStartingMoment();
-                    exam.setStartingAt(startingAt);
-                    Assertions.assertEquals(
-                            startingAt,
-                            exam.getStartingAt(),
-                            "Is not being set (does not change the Exam value)"
-                    );
-                }
-        );
-    }
-
-    /**
-     * Tests that setting a valid duration to an {@link Exam} works as expected.
-     */
-    @Test
-    void testSetValidDuration() {
-        Assertions.assertAll("Setting a valid duration is not working as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> createExam().setDuration(validDuration()),
-                        "It throws an exception"
-                ),
-                () -> {
-                    final var exam = createExam();
-                    final var duration = validDuration();
-                    exam.setDuration(duration);
-                    Assertions.assertEquals(
-                            duration,
-                            exam.getDuration(),
-                            "Is not being set (does not change the Exam value)"
-                    );
-                }
-        );
-    }
-
 
     // ================================================================================================================
     // Behaviour testing
@@ -164,23 +95,9 @@ class ExamTest {
     @Test
     void testNewExamModificationsBehaviour() {
         final var exam = createExam();
-        Assertions.assertAll("Exams are not being able to be modified in UPCOMING state",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> exam.setDescription(validDescription()),
-                        "Cannot change description"
-                ),
-                () -> Assertions.assertDoesNotThrow(
-                        () -> exam.setStartingAt(validStartingMoment()),
-                        "Cannot change startingAt"
-                ),
-                () -> Assertions.assertDoesNotThrow(
-                        () -> exam.setDuration(validDuration()),
-                        "Cannot change duration"
-                ),
-                () -> Assertions.assertDoesNotThrow(
-                        () -> exam.update(validDescription(), validStartingMoment(), validDuration()),
-                        "Cannot perform complete update"
-                )
+        Assertions.assertDoesNotThrow(
+                () -> exam.update(validDescription(), validStartingMoment(), validDuration()),
+                "Exams are not being able to be modified in UPCOMING state"
         );
     }
 
@@ -232,27 +149,10 @@ class ExamTest {
     void testInProgressExamModificationsBehaviour() {
         final var exam = createExam();
         exam.startExam();
-        Assertions.assertAll("Exams are being allowed to be modified in IN_PROGRESS state",
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.setDescription(validDescription()),
-                        "Change of description is being allowed"
-                ),
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.setStartingAt(validStartingMoment()),
-                        "Change of startingAt is being allowed"
-                ),
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.setDuration(validDuration()),
-                        "Change of duration is being allowed"
-                ),
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.update(validDescription(), validStartingMoment(), validDuration()),
-                        "Complete update is being allowed"
-                )
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> exam.update(validDescription(), validStartingMoment(), validDuration()),
+                "Exams are being allowed to be modified in IN_PROGRESS state"
         );
     }
 
@@ -308,27 +208,10 @@ class ExamTest {
         final var exam = createExam();
         exam.startExam();
         exam.finishExam();
-        Assertions.assertAll("Exams are being allowed to be modified in FINISHED state",
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.setDescription(validDescription()),
-                        "Change of description is being allowed"
-                ),
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.setStartingAt(validStartingMoment()),
-                        "Change of startingAt is being allowed"
-                ),
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.setDuration(validDuration()),
-                        "Change of duration is being allowed"
-                ),
-                () -> Assertions.assertThrows(
-                        IllegalEntityStateException.class,
-                        () -> exam.update(validDescription(), validStartingMoment(), validDuration()),
-                        "Complete update is being allowed"
-                )
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> exam.update(validDescription(), validStartingMoment(), validDuration()),
+                "Exams are being allowed to be modified in FINISHED state"
         );
     }
 
@@ -539,97 +422,6 @@ class ExamTest {
                 IllegalArgumentException.class,
                 () -> exam.update(validDescription(), validStartingMoment(), null),
                 "Updating an exam with a null duration is being allowed."
-        );
-    }
-
-
-    // ================================
-    // Setters
-    // ================================
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a null description to an {@link Exam}.
-     */
-    @Test
-    void testSetNullDescription() {
-        final var exam = createExam();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exam.setDescription(null),
-                "Setting a null description is being allowed."
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a too short description to an {@link Exam}.
-     */
-    @Test
-    void testSetShortDescription() {
-        final var exam = createExam();
-        shortDescription().ifPresent(
-                shortDescription -> Assertions.assertThrows(
-                        IllegalArgumentException.class,
-                        () -> exam.setDescription(shortDescription),
-                        "Setting a too short description is being allowed."
-                )
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a too long description to an {@link Exam}.
-     */
-    @Test
-    void testSetLongDescription() {
-        final var exam = createExam();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exam.setDescription(longDescription()),
-                "Setting a too long description is being allowed."
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a null starting at {@link LocalDateTime} to an {@link Exam}.
-     */
-    @Test
-    void testSetNullStartingAt() {
-        final var exam = createExam();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exam.setStartingAt(null),
-                "Setting a null starting at local date time is being allowed."
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a past staring at {@link LocalDateTime} to an {@link Exam}.
-     */
-    @Test
-    void testSetPastStartingAt() {
-        final var exam = createExam();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exam.setStartingAt(pastStartingMoment()),
-                "Setting a past starting at local date time is being allowed."
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a null duration to an {@link Exam}.
-     */
-    @Test
-    void testSetNullDuration() {
-        final var exam = createExam();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exam.setDuration(null),
-                "Setting a null duration is being allowed."
         );
     }
 
