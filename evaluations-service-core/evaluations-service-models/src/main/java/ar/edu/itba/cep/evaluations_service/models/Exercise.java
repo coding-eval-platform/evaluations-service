@@ -35,6 +35,11 @@ public class Exercise {
     private String solutionTemplate;
 
     /**
+     * Indicates how much score this exercise awards.
+     */
+    private int awardedScore;
+
+    /**
      * The {@link Exam} to which this exercise belongs to.
      */
     private final Exam exam;
@@ -55,19 +60,26 @@ public class Exercise {
      * @param question         The question being asked.
      * @param language         The {@link Language} in which the answer must be written.
      * @param solutionTemplate The solution template.
+     * @param awardedScore     Indicates how much score this exercise awards.
      * @param exam             The {@link Exam} to which this exercise belongs to.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public Exercise(final String question, final Language language, final String solutionTemplate, final Exam exam)
-            throws IllegalArgumentException {
+    public Exercise(
+            final String question,
+            final Language language,
+            final String solutionTemplate,
+            final int awardedScore,
+            final Exam exam) throws IllegalArgumentException {
         assertQuestion(question);
         assertLanguage(language);
         assertSolutionTemplate(solutionTemplate);
+        assertAwardedScore(awardedScore);
         assertExam(exam);
         this.id = 0;
         this.question = question;
         this.language = language;
         this.solutionTemplate = solutionTemplate;
+        this.awardedScore = awardedScore;
         this.exam = exam;
     }
 
@@ -78,16 +90,22 @@ public class Exercise {
      * @param question         The new question for the exercise.
      * @param language         The new language for the exercise.
      * @param solutionTemplate The new solution template for the exercise.
+     * @param awardedScore     The new awarded score for the exercise.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public void update(final String question, final Language language, final String solutionTemplate)
-            throws IllegalArgumentException {
+    public void update(
+            final String question,
+            final Language language,
+            final String solutionTemplate,
+            final int awardedScore) throws IllegalArgumentException {
         assertQuestion(question);
         assertLanguage(language);
         assertSolutionTemplate(solutionTemplate);
+        assertAwardedScore(awardedScore);
         this.question = question;
         this.language = language;
         this.solutionTemplate = solutionTemplate;
+        this.awardedScore = awardedScore;
     }
 
 
@@ -125,6 +143,16 @@ public class Exercise {
      */
     private static void assertSolutionTemplate(final String solutionTemplate) throws IllegalArgumentException {
         // There is not assertion fot the solution template. Can be null and have any length.
+    }
+
+    /**
+     * Asserts that the given {@code awardedScore} is valid.
+     *
+     * @param awardedScore The awarded score to be checked.
+     * @throws IllegalArgumentException If the awarded score is not valid.
+     */
+    private static void assertAwardedScore(final int awardedScore) throws IllegalArgumentException {
+        Assert.isTrue(awardedScore > 0, "The awarded score must be positive");
     }
 
     /**

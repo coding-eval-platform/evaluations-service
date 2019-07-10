@@ -77,7 +77,8 @@ public class ExerciseEndpoint {
                 examId,
                 dto.getQuestion(),
                 dto.getLanguage(),
-                dto.getSolutionTemplate()
+                dto.getSolutionTemplate(),
+                dto.getAwardedScore()
         );
         final var location = uriInfo.getAbsolutePathBuilder()
                 .path(Long.toString(exercise.getId()))
@@ -92,7 +93,13 @@ public class ExerciseEndpoint {
             @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
             @Valid @ConvertGroup(to = ExerciseUploadDto.Update.class) final ExerciseUploadDto dto) {
         LOGGER.debug("Updating exercise with id {}", exerciseId);
-        examService.modifyExercise(exerciseId, dto.getQuestion(), dto.getLanguage(), dto.getSolutionTemplate());
+        examService.modifyExercise(
+                exerciseId,
+                dto.getQuestion(),
+                dto.getLanguage(),
+                dto.getSolutionTemplate(),
+                dto.getAwardedScore()
+        );
         return Response.noContent().build();
     }
 

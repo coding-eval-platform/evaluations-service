@@ -29,6 +29,11 @@ public class ExerciseDownloadDto {
      */
     private final String solutionTemplate;
 
+    /**
+     * The awarded score for the exercise.
+     */
+    private final int awardedScore;
+
 
     /**
      * Constructor.
@@ -40,6 +45,7 @@ public class ExerciseDownloadDto {
         this.question = exercise.getQuestion();
         this.language = exercise.getLanguage();
         this.solutionTemplate = exercise.getSolutionTemplate();
+        this.awardedScore = exercise.getAwardedScore();
     }
 
 
@@ -73,5 +79,13 @@ public class ExerciseDownloadDto {
     @JsonProperty(value = "solutionTemplate", access = JsonProperty.Access.READ_ONLY)
     public String getSolutionTemplate() {
         return solutionTemplate;
+    }
+
+    /**
+     * @return The awarded score for the exercise.
+     */
+    @JsonProperty(value = "awardedScore", access = JsonProperty.Access.READ_ONLY)
+    public int getAwardedScore() {
+        return awardedScore;
     }
 }

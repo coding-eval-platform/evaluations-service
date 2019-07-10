@@ -128,15 +128,19 @@ public interface ExamService {
      * @param question         The question of the {@link Exercise}.
      * @param language         The {@link Language} in which the answer must be written.
      * @param solutionTemplate The solution template.
+     * @param awardedScore     The awarded score for the {@link Exercise}.
      * @return The created {@link Exercise}.
      * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      * @throws IllegalArgumentException    If any argument for the {@link Exercise} is not valid.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
-    Exercise createExercise(final long examId,
-                            final String question, final Language language, final String solutionTemplate)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
+    Exercise createExercise(
+            final long examId,
+            final String question,
+            final Language language,
+            final String solutionTemplate,
+            final int awardedScore) throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Modifies the {@link Exercise} with the given {@code exerciseId}.
@@ -145,6 +149,7 @@ public interface ExamService {
      * @param question         The new question for the exercise.
      * @param language         The new language for the exercise.
      * @param solutionTemplate The new solution template for the exercise.
+     * @param awardedScore     The new awarded score for the {@link Exercise}.
      * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     is not in {@link Exam.State#UPCOMING} state.
@@ -152,9 +157,12 @@ public interface ExamService {
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void modifyExercise(final long exerciseId,
-                        final String question, final Language language, final String solutionTemplate)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
+    void modifyExercise(
+            final long exerciseId,
+            final String question,
+            final Language language,
+            final String solutionTemplate,
+            final int awardedScore) throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
 
     /**

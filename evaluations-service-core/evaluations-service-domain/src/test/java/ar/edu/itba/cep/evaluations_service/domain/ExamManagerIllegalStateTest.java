@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
@@ -18,6 +17,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for {@link ExamManager}, containing tests for the illegal state situations
@@ -381,7 +382,8 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                         id,
                         TestHelper.validExerciseQuestion(),
                         TestHelper.validLanguage(),
-                        TestHelper.validSolutionTemplate()
+                        TestHelper.validSolutionTemplate(),
+                        TestHelper.validAwardedScore()
                 ),
                 "Creating an exercise for an exam with " + state + " state is being allowed");
     }
@@ -400,7 +402,8 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                         id,
                         TestHelper.validExerciseQuestion(),
                         TestHelper.validLanguage(),
-                        TestHelper.validSolutionTemplate()
+                        TestHelper.validSolutionTemplate(),
+                        TestHelper.validAwardedScore()
                 ),
                 "Modifying an exercise belonging to an exam with " + state + " state" +
                         " is being allowed.");
@@ -491,9 +494,9 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
      */
     private void testExerciseSolutionCreation(final Exam exam, final Exercise exercise, final Exam.State state) {
         final var exerciseId = TestHelper.validExerciseId();
-        Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        when(exam.getState()).thenReturn(state);
+        when(exercise.getExam()).thenReturn(exam);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> examManager.createExerciseSolution(
@@ -503,10 +506,10 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 "Creating a solution for an exercise that belongs to an exam" +
                         " with " + state + " state is being allosed"
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
+        verify(exam, only()).getState();
+        verify(exercise, only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -525,16 +528,16 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
             final Consumer<Exam> examActionVerification,
             final String message) {
         final var examId = TestHelper.validExamId();
-        examActionVerification.accept(Mockito.doThrow(IllegalEntityStateException.class).when(exam));
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        examActionVerification.accept(doThrow(IllegalEntityStateException.class).when(exam));
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> examManagerAction.accept(examManager, examId),
                 message
         );
-        examActionVerification.accept(Mockito.verify(exam));
+        examActionVerification.accept(verify(exam));
         verifyOnlyExamSearch(examId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -551,15 +554,15 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
             final BiConsumer<ExamManager, Long> examManagerAction,
             final String message) {
         final var examId = TestHelper.validExamId();
-        Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(exam.getState()).thenReturn(state);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> examManagerAction.accept(examManager, examId),
                 message
         );
         verifyOnlyExamSearch(examId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -578,18 +581,18 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
             final BiConsumer<ExamManager, Long> examManagerAction,
             final String message) {
         final var exerciseId = TestHelper.validExerciseId();
-        Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        when(exam.getState()).thenReturn(state);
+        when(exercise.getExam()).thenReturn(exam);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> examManagerAction.accept(examManager, exerciseId),
                 message
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
+        verify(exam, only()).getState();
+        verify(exercise, only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -610,19 +613,19 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
             final BiConsumer<ExamManager, Long> examManagerAction,
             final String message) {
         final var testCaseId = TestHelper.validTestCaseId();
-        Mockito.when(exam.getState()).thenReturn(state);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(exam.getState()).thenReturn(state);
+        when(exercise.getExam()).thenReturn(exam);
+        when(testCase.getExercise()).thenReturn(exercise);
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> examManagerAction.accept(examManager, testCaseId),
                 message
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.only()).getExercise();
+        verify(exam, only()).getState();
+        verify(exercise, only()).getExam();
+        verify(testCase, only()).getExercise();
         verifyOnlyTestCaseSearch(testCaseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 }

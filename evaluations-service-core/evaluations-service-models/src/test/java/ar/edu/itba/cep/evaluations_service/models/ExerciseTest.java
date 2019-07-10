@@ -55,7 +55,13 @@ class ExerciseTest {
     void testValidArgumentsUpdate() {
         Assertions.assertAll("Updating with acceptable arguments is not working as expected",
                 () -> Assertions.assertDoesNotThrow(
-                        () -> createExercise().update(validQuestion(), validLanguage(), validSolutionTemplate()),
+                        () -> createExercise()
+                                .update(
+                                        validQuestion(),
+                                        validLanguage(),
+                                        validSolutionTemplate(),
+                                        validAwardedScore()
+                                ),
                         "It throws an exception"
                 ),
                 () -> {
@@ -63,7 +69,8 @@ class ExerciseTest {
                     final var question = validQuestion();
                     final var language = validLanguage();
                     final var solutionTemplate = validSolutionTemplate();
-                    exercise.update(question, language, solutionTemplate);
+                    final var awardedScore = validAwardedScore();
+                    exercise.update(question, language, solutionTemplate, awardedScore);
                     Assertions.assertAll("Is not being set (does not change the Exercise value)",
                             () -> Assertions.assertEquals(
                                     question,
@@ -79,6 +86,11 @@ class ExerciseTest {
                                     solutionTemplate,
                                     exercise.getSolutionTemplate(),
                                     "Solution template mismatch"
+                            ),
+                            () -> Assertions.assertEquals(
+                                    awardedScore,
+                                    exercise.getAwardedScore(),
+                                    "Awarded score mismatch"
                             )
                     );
                 }
@@ -103,7 +115,7 @@ class ExerciseTest {
     void testNullQuestionOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exercise(null, validLanguage(), validSolutionTemplate(), mockedExam),
+                () -> new Exercise(null, validLanguage(), validSolutionTemplate(), validAwardedScore(), mockedExam),
                 "Creating an exercise with a null question is being allowed."
         );
         Mockito.verifyZeroInteractions(mockedExam);
@@ -118,7 +130,13 @@ class ExerciseTest {
         shortQuestion().ifPresent(
                 shortQuestion -> Assertions.assertThrows(
                         IllegalArgumentException.class,
-                        () -> new Exercise(shortQuestion, validLanguage(), validSolutionTemplate(), mockedExam),
+                        () -> new Exercise(
+                                shortQuestion,
+                                validLanguage(),
+                                validSolutionTemplate(),
+                                validAwardedScore(),
+                                mockedExam
+                        ),
                         "Creating an exercise with a too short question is being allowed."
                 )
         );
@@ -133,7 +151,7 @@ class ExerciseTest {
     void testNullLanguageOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exercise(validQuestion(), null, validSolutionTemplate(), mockedExam),
+                () -> new Exercise(validQuestion(), null, validSolutionTemplate(), validAwardedScore(), mockedExam),
                 "Creating an exercise with a null language is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExam);
@@ -143,13 +161,32 @@ class ExerciseTest {
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating an {@link Exercise} with a non positive awarded score.
+     */
+    @Test
+    void testNonPositiveAwardedScoreOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new Exercise(
+                        validQuestion(),
+                        validLanguage(),
+                        validSolutionTemplate(),
+                        nonPositiveAwardedScore(),
+                        mockedExam
+                ),
+                "Creating an exercise with a non positive awarded score is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exercise} with a null {@link Exam}.
      */
     @Test
     void testNullExamOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exercise(validQuestion(), validLanguage(), validSolutionTemplate(), null),
+                () -> new Exercise(validQuestion(), validLanguage(), validSolutionTemplate(), validAwardedScore(), null),
                 "Creating an exercise with a null exam is being allowed."
         );
     }
@@ -168,7 +205,7 @@ class ExerciseTest {
         final var exercise = createExercise();
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> exercise.update(null, validLanguage(), validSolutionTemplate()),
+                () -> exercise.update(null, validLanguage(), validSolutionTemplate(), validAwardedScore()),
                 "Updating an exercise with a null question is being allowed."
         );
         Mockito.verifyZeroInteractions(mockedExam);
@@ -184,7 +221,13 @@ class ExerciseTest {
         shortQuestion().ifPresent(
                 shortQuestion -> Assertions.assertThrows(
                         IllegalArgumentException.class,
-                        () -> exercise.update(shortQuestion, validLanguage(), validSolutionTemplate()),
+                        () -> exercise
+                                .update(
+                                        shortQuestion,
+                                        validLanguage(),
+                                        validSolutionTemplate(),
+                                        validAwardedScore()
+                                ),
                         "Updating an exercise with a too short question is being allowed."
                 )
         );
@@ -200,13 +243,34 @@ class ExerciseTest {
         final var exercise = createExercise();
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> exercise.update(validQuestion(), null, validSolutionTemplate()),
+                () -> exercise.update(validQuestion(), null, validSolutionTemplate(), validAwardedScore()),
                 "Updating an exercise with a null language is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExam);
     }
 
     // No test for solution template as it can be null or any string
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating an {@link Exercise} with a null {@link Language}.
+     */
+    @Test
+    void testNonPositiveAwardedScoreOnUpdate() {
+        final var exercise = createExercise();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> exercise
+                        .update(
+                                validQuestion(),
+                                validLanguage(),
+                                validSolutionTemplate(),
+                                nonPositiveAwardedScore()
+                        ),
+                "Updating an exercise with a non positive awarded score is being allowed"
+        );
+        Mockito.verifyZeroInteractions(mockedExam);
+    }
 
 
     // ================================================================================================================
@@ -227,6 +291,7 @@ class ExerciseTest {
                 validQuestion(),
                 validLanguage(),
                 validSolutionTemplate(),
+                validAwardedScore(),
                 mockedExam
         );
     }
@@ -273,6 +338,13 @@ class ExerciseTest {
         return possibleSolutionTemplates.get(index);
     }
 
+    /**
+     * @return A random valid awarded score.
+     */
+    private static int validAwardedScore() {
+        return (int) Faker.instance().number().numberBetween(1L, Integer.MAX_VALUE);
+    }
+
 
     // ========================================
     // Invalid values
@@ -290,5 +362,12 @@ class ExerciseTest {
             return Optional.of(question);
         }
         return Optional.empty();
+    }
+
+    /**
+     * @return An invalid awarded score. Is invalid because it is not positive.
+     */
+    private static int nonPositiveAwardedScore() {
+        return (int) Faker.instance().number().numberBetween(Integer.MIN_VALUE, 1L);
     }
 }
