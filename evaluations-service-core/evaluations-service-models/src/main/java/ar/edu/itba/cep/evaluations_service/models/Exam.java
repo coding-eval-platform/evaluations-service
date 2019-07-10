@@ -89,48 +89,6 @@ public class Exam {
 
 
     /**
-     * Changes the description for this exam.
-     *
-     * @param description The new description for the exam.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
-     * @throws IllegalArgumentException    If the given {@code description} is not valid.
-     */
-    public void setDescription(final String description)
-            throws IllegalEntityStateException, IllegalArgumentException {
-        assertDescription(description);
-        verifyStateForUpdate();
-        this.description = description;
-    }
-
-    /**
-     * Changes the starting moment for this exam.
-     *
-     * @param startingAt The new {@link LocalDateTime} at which the exam starts.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
-     * @throws IllegalArgumentException    If the given {@code startingAt} {@link LocalDateTime} is not valid.
-     */
-    public void setStartingAt(final LocalDateTime startingAt)
-            throws IllegalEntityStateException, IllegalArgumentException {
-        assertStartingAt(startingAt);
-        verifyStateForUpdate();
-        this.startingAt = startingAt;
-    }
-
-    /**
-     * Changes the duration for this exam.
-     *
-     * @param duration The new {@link Duration} for the exam.
-     * @throws IllegalEntityStateException If the exam cannot be updated because it's not in upcoming state.
-     * @throws IllegalArgumentException    If the given {@code duration} is not valid.
-     */
-    public void setDuration(final Duration duration)
-            throws IllegalEntityStateException, IllegalArgumentException {
-        assertDuration(duration);
-        verifyStateForUpdate();
-        this.duration = duration;
-    }
-
-    /**
      * Updates all fields of this exam.
      *
      * @param description The new description for the exam.
@@ -149,6 +107,7 @@ public class Exam {
         this.startingAt = startingAt;
         this.duration = duration;
     }
+
 
     /**
      * Starts the exam.
