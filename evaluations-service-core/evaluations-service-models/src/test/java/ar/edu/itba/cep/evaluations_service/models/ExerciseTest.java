@@ -86,77 +86,6 @@ class ExerciseTest {
         Mockito.verifyZeroInteractions(mockedExam);
     }
 
-    /**
-     * Tests that setting a valid question to an {@link Exercise} works as expected.
-     */
-    @Test
-    void testSetValidQuestion() {
-        Assertions.assertAll("Setting a valid question is not working as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> createExercise().setQuestion(validQuestion()),
-                        "It throws an exception"
-                ),
-                () -> {
-                    final var exercise = createExercise();
-                    final var question = validQuestion();
-                    exercise.setQuestion(question);
-                    Assertions.assertEquals(
-                            question,
-                            exercise.getQuestion(),
-                            "Is not being set (does not change the Exercise value)"
-                    );
-                }
-        );
-        Mockito.verifyZeroInteractions(mockedExam);
-    }
-
-    /**
-     * Tests that setting a valid {@link Language} to an {@link Exercise} works as expected.
-     */
-    @Test
-    void testSetValidLanguage() {
-        Assertions.assertAll("Setting a valid language is not working as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> createExercise().setLanguage(validLanguage()),
-                        "It throws an exception"
-                ),
-                () -> {
-                    final var exercise = createExercise();
-                    final var language = validLanguage();
-                    exercise.setLanguage(language);
-                    Assertions.assertEquals(
-                            language,
-                            exercise.getLanguage(),
-                            "Is not being set (does not change the Exercise value)"
-                    );
-                }
-        );
-        Mockito.verifyZeroInteractions(mockedExam);
-    }
-
-    /**
-     * Tests that setting a valid solution template to an {@link Exercise} works as expected.
-     */
-    @Test
-    void testSetValidSolutionTemplate() {
-        Assertions.assertAll("Setting a valid solution template is not working as expected",
-                () -> Assertions.assertDoesNotThrow(
-                        () -> createExercise().setSolutionTemplate(validSolutionTemplate()),
-                        "It throws an exception"
-                ),
-                () -> {
-                    final var exercise = createExercise();
-                    final var solutionTemplate = validSolutionTemplate();
-                    exercise.setSolutionTemplate(solutionTemplate);
-                    Assertions.assertEquals(
-                            solutionTemplate,
-                            exercise.getSolutionTemplate(),
-                            "Is not being set (does not change the Exercise value)"
-                    );
-                }
-        );
-        Mockito.verifyZeroInteractions(mockedExam);
-    }
 
     // ================================================================================================================
     // Constraint testing
@@ -273,61 +202,6 @@ class ExerciseTest {
                 IllegalArgumentException.class,
                 () -> exercise.update(validQuestion(), null, validSolutionTemplate()),
                 "Updating an exercise with a null language is being allowed"
-        );
-        Mockito.verifyZeroInteractions(mockedExam);
-    }
-
-    // No test for solution template as it can be null or any string
-
-
-    // ================================
-    // Setters
-    // ================================
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a null question to an {@link Exercise}.
-     */
-    @Test
-    void testSetNullQuestion() {
-        final var exercise = createExercise();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exercise.setQuestion(null),
-                "Setting a null question is being allowed."
-        );
-        Mockito.verifyZeroInteractions(mockedExam);
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a too short question to an {@link Exercise}.
-     */
-    @Test
-    void testSetShortQuestion() {
-        final var exercise = createExercise();
-        shortQuestion().ifPresent(
-                shortQuestion -> Assertions.assertThrows(
-                        IllegalArgumentException.class,
-                        () -> exercise.setQuestion(shortQuestion),
-                        "Setting a short question is being allowed."
-                )
-        );
-        Mockito.verifyZeroInteractions(mockedExam);
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when setting a null {@link Language} to an {@link Exercise}.
-     */
-    @Test
-    void testSetNullLanguage() {
-        final var exercise = createExercise();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exercise.setLanguage(null),
-                "Setting a null language is being allowed."
-
         );
         Mockito.verifyZeroInteractions(mockedExam);
     }
