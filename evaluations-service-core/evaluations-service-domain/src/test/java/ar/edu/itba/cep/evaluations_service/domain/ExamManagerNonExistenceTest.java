@@ -13,11 +13,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for {@link ExamManager},
@@ -64,13 +65,13 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     @Test
     void testSearchForExamThatDoesNotExist() {
         final var examId = TestHelper.validExamId();
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.empty());
+        when(examRepository.findById(examId)).thenReturn(Optional.empty());
         Assertions.assertTrue(
                 examManager.getExam(examId).isEmpty(),
                 "Searching for an exam that does not exist does not return an empty optional."
         );
         verifyOnlyExamSearch(examId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -167,7 +168,8 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         id,
                         TestHelper.validExerciseQuestion(),
                         TestHelper.validLanguage(),
-                        TestHelper.validSolutionTemplate()
+                        TestHelper.validSolutionTemplate(),
+                        TestHelper.validAwardedScore()
                 ),
                 "Trying to create an exercise" +
                         " belonging to an exam that does not exist does not throw a NoSuchEntityException"
@@ -185,7 +187,8 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         id,
                         TestHelper.validExerciseQuestion(),
                         TestHelper.validLanguage(),
-                        TestHelper.validSolutionTemplate()
+                        TestHelper.validSolutionTemplate(),
+                        TestHelper.validAwardedScore()
                 ),
                 "Trying to modify an exercise that does not exist does not throw a NoSuchEntityException"
         );
@@ -237,7 +240,7 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     @Test
     void testListOfExerciseSolutionsForNonExistenceExercise() {
         testMissingExerciseThrowsNoSuchEntityException(
-                (manager, id) -> manager.listSolutions(id, Mockito.mock(PagingRequest.class)),
+                (manager, id) -> manager.listSolutions(id, mock(PagingRequest.class)),
                 "Trying to list the exercise solutions of an exercise that does not exist" +
                         " does not throw a NoSuchEntityException"
         );
@@ -333,11 +336,9 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
             @Mock(name = "testCase") final TestCase testCase,
             @Mock(name = "executionResult") final ExecutionResult executionResult) {
         final var solutionId = TestHelper.validExerciseId();
-        Mockito
-                .when(testCaseRepository.findById(solutionId))
+        when(testCaseRepository.findById(solutionId))
                 .thenReturn(Optional.of(testCase));
-        Mockito
-                .when(exerciseSolutionRepository.findById(solutionId))
+        when(exerciseSolutionRepository.findById(solutionId))
                 .thenReturn(Optional.empty());
 
         Assertions.assertThrows(
@@ -352,13 +353,13 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         " does not throw a NoSuchEntityException"
         );
 
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.atMost(1)).findById(Mockito.anyLong());
-        Mockito.verify(exerciseSolutionRepository, Mockito.atMost(1)).findById(solutionId);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        Mockito.verifyNoMoreInteractions(testCaseRepository, exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verify(testCaseRepository, atMost(1)).findById(anyLong());
+        verify(exerciseSolutionRepository, atMost(1)).findById(solutionId);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyNoMoreInteractions(testCaseRepository, exerciseSolutionRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -372,11 +373,9 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
             @Mock(name = "solution") final ExerciseSolution solution,
             @Mock(name = "executionResult") final ExecutionResult executionResult) {
         final var testCaseId = TestHelper.validExerciseId();
-        Mockito
-                .when(exerciseSolutionRepository.findById(testCaseId))
+        when(exerciseSolutionRepository.findById(testCaseId))
                 .thenReturn(Optional.of(solution));
-        Mockito
-                .when(testCaseRepository.findById(testCaseId))
+        when(testCaseRepository.findById(testCaseId))
                 .thenReturn(Optional.empty());
 
         Assertions.assertThrows(
@@ -391,13 +390,13 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         " does not throw a NoSuchEntityException"
         );
 
-        Mockito.verifyZeroInteractions(examRepository);
-        Mockito.verifyZeroInteractions(exerciseRepository);
-        Mockito.verify(testCaseRepository, Mockito.atMost(1)).findById(testCaseId);
-        Mockito.verify(exerciseSolutionRepository, Mockito.atMost(1)).findById(Mockito.anyLong());
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
-        Mockito.verifyNoMoreInteractions(testCaseRepository, exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verify(testCaseRepository, atMost(1)).findById(testCaseId);
+        verify(exerciseSolutionRepository, atMost(1)).findById(anyLong());
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyNoMoreInteractions(testCaseRepository, exerciseSolutionRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -473,10 +472,10 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
             final BiConsumer<ExamManager, Long> examManagerAction,
             final String message) {
         final var examId = TestHelper.validExerciseId();
-        Mockito.when(exerciseRepository.findById(examId)).thenReturn(Optional.empty());
+        when(exerciseRepository.findById(examId)).thenReturn(Optional.empty());
         missingEntityAssertion.assertion(examManager, examId, examManagerAction, message);
         verifyOnlyExamSearch(examId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -492,10 +491,10 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
             final BiConsumer<ExamManager, Long> examManagerAction,
             final String message) {
         final var exerciseId = TestHelper.validExerciseId();
-        Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.empty());
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.empty());
         missingEntityAssertion.assertion(examManager, exerciseId, examManagerAction, message);
         verifyOnlyExerciseSearch(exerciseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -511,10 +510,10 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
             final BiConsumer<ExamManager, Long> examManagerAction,
             final String message) {
         final var testCaseId = TestHelper.validExerciseId();
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.empty());
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.empty());
         missingEntityAssertion.assertion(examManager, testCaseId, examManagerAction, message);
         verifyOnlyTestCaseSearch(testCaseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 

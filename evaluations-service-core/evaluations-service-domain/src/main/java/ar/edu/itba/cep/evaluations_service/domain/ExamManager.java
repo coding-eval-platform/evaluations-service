@@ -164,23 +164,33 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    public Exercise createExercise(final long examId,
-                                   final String question, final Language language, final String solutionTemplate)
+    public Exercise createExercise(
+            final long examId,
+            final String question,
+            final Language language,
+            final String solutionTemplate,
+            final int awardedScore)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
+
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
-        final var exercise = new Exercise(question, language, solutionTemplate, exam);
+        final var exercise = new Exercise(question, language, solutionTemplate, awardedScore, exam);
         return exerciseRepository.save(exercise);
     }
 
     @Override
     @Transactional
-    public void modifyExercise(final long exerciseId,
-                               final String question, final Language language, final String solutionTemplate)
+    public void modifyExercise(
+            final long exerciseId,
+            final String question,
+            final Language language,
+            final String solutionTemplate,
+            final int awardedScore)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
+
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
-        exercise.update(question, language, solutionTemplate);
+        exercise.update(question, language, solutionTemplate, awardedScore);
         exerciseRepository.save(exercise);
     }
 

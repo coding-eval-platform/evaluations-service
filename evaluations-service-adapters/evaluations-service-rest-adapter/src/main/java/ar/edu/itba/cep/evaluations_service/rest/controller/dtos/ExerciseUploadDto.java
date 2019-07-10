@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 /**
@@ -50,6 +51,14 @@ public class ExerciseUploadDto {
      */
     private final String solutionTemplate;
 
+    @Positive(message = "The awarded score must be positive.", payload = IllegalValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
+    private final int awardedScore;
+
 
     /**
      * Constructor.
@@ -57,6 +66,7 @@ public class ExerciseUploadDto {
      * @param question         The question for the exercise.
      * @param language         The {@link Language} for the exercise.
      * @param solutionTemplate The solution template for the exercise.
+     * @param awardedScore     The awarded score for the exercise.
      */
     @JsonCreator
     public ExerciseUploadDto(
@@ -71,10 +81,15 @@ public class ExerciseUploadDto {
             @JsonProperty(
                     value = "solutionTemplate",
                     access = JsonProperty.Access.WRITE_ONLY
-            ) final String solutionTemplate) {
+            ) final String solutionTemplate,
+            @JsonProperty(
+                    value = "awardedScore",
+                    access = JsonProperty.Access.WRITE_ONLY
+            ) final int awardedScore) {
         this.question = question;
         this.language = language;
         this.solutionTemplate = solutionTemplate;
+        this.awardedScore = awardedScore;
     }
 
 
@@ -97,6 +112,13 @@ public class ExerciseUploadDto {
      */
     public String getSolutionTemplate() {
         return solutionTemplate;
+    }
+
+    /**
+     * @return The awarded score for the exercise.
+     */
+    public int getAwardedScore() {
+        return awardedScore;
     }
 
     // ================================================================================================================

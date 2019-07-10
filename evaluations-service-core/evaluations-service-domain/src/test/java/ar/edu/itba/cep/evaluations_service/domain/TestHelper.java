@@ -147,6 +147,14 @@ class TestHelper {
     }
 
     /**
+     * @return A random valid awarded score.
+     */
+    /* package */
+    static int validAwardedScore() {
+        return (int) Faker.instance().number().numberBetween(1L, Integer.MAX_VALUE);
+    }
+
+    /**
      * @return A valid {@link TestCase} id.
      */
     /* package */
@@ -324,6 +332,14 @@ class TestHelper {
                 .number()
                 .numberBetween(0, possibleValues.size());
         return possibleValues.get(index);
+    }
+
+    /**
+     * @return An invalid awarded score. Is invalid because it is not positive.
+     */
+    /* package */
+    static int nonPositiveAwardedScore() {
+        return (int) Faker.instance().number().numberBetween(Integer.MIN_VALUE, 1L);
     }
 
     /**

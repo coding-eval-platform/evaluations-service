@@ -16,6 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.mockito.Mockito.*;
+
 /**
  * Test class for {@link ExamManager}, containing tests for the illegal arguments situations
  * (i.e how the manager behaves when operating with invalid values).
@@ -68,7 +70,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 "Using invalid arguments when creating an Exam did not throw an IllegalArgumentException"
         );
         verifyNoInteractionWithAnyMockedRepository();
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -83,16 +85,16 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         final var newDescription = TestHelper.invalidExamDescription();
         final var newStartingAt = TestHelper.invalidExamStartingAt();
         final var newDuration = TestHelper.invalidExamDuration();
-        Mockito.doThrow(IllegalArgumentException.class).when(exam).update(newDescription, newStartingAt, newDuration);
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        doThrow(IllegalArgumentException.class).when(exam).update(newDescription, newStartingAt, newDuration);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.modifyExam(examId, newDescription, newStartingAt, newDuration),
                 "Using invalid arguments when updating an Exam did not throw an IllegalArgumentException"
         );
-        Mockito.verify(exam, Mockito.only()).update(newDescription, newStartingAt, newDuration);
+        verify(exam, only()).update(newDescription, newStartingAt, newDuration);
         verifyOnlyExamSearch(examId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -108,21 +110,22 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
     @Test
     void testCreateExerciseWithInvalidArgumentsForUpcomingExam(@Mock(name = "exam") final Exam exam) {
         final var examId = TestHelper.validExamId();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(exam.getState()).thenReturn(Exam.State.UPCOMING);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.createExercise(
                         examId,
                         TestHelper.invalidExerciseQuestion(),
                         TestHelper.invalidLanguage(),
-                        TestHelper.validSolutionTemplate() // There is no invalid value for the solution template.
+                        TestHelper.validSolutionTemplate(), // There is no invalid value for the solution template.
+                        TestHelper.nonPositiveAwardedScore()
                 ),
                 "Using invalid arguments when creating an Exercise did not throw an IllegalArgumentException"
         );
-        Mockito.verify(exam, Mockito.only()).getState();
+        verify(exam, only()).getState();
         verifyOnlyExamSearch(examId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -139,24 +142,31 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         final var newQuestion = TestHelper.invalidExerciseQuestion();
         final var newLanguage = TestHelper.invalidLanguage();
         final var newSolutionTemplate = TestHelper.validSolutionTemplate(); // There is no invalid value for this.
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
+        final var newAwardedScore = TestHelper.nonPositiveAwardedScore();
+        when(exam.getState()).thenReturn(Exam.State.UPCOMING);
+        when(exercise.getExam()).thenReturn(exam);
         Mockito
                 .doThrow(IllegalArgumentException.class)
-                .when(exercise).update(newQuestion, newLanguage, newSolutionTemplate);
-        Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+                .when(exercise).update(newQuestion, newLanguage, newSolutionTemplate, newAwardedScore);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> examManager.modifyExercise(exerciseId, newQuestion, newLanguage, newSolutionTemplate),
+                () -> examManager.modifyExercise(
+                        exerciseId,
+                        newQuestion,
+                        newLanguage,
+                        newSolutionTemplate,
+                        newAwardedScore
+                ),
                 "Using an invalid value when modifying an Exercise" +
                         " did not throw an IllegalArgumentException"
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.times(1)).getExam();
-        Mockito.verify(exercise, Mockito.times(1)).update(newQuestion, newLanguage, newSolutionTemplate);
-        Mockito.verifyNoMoreInteractions(exercise);
+        verify(exam, only()).getState();
+        verify(exercise, times(1)).getExam();
+        verify(exercise, times(1)).update(newQuestion, newLanguage, newSolutionTemplate, newAwardedScore);
+        verifyNoMoreInteractions(exercise);
         verifyOnlyExerciseSearch(exerciseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -175,9 +185,9 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise) {
         final var exerciseId = TestHelper.validExerciseId();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        when(exam.getState()).thenReturn(Exam.State.UPCOMING);
+        when(exercise.getExam()).thenReturn(exam);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.createTestCase(
@@ -189,10 +199,10 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 ),
                 "Using invalid arguments when creating a TestCase did not throw an IllegalArgumentException"
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
+        verify(exam, only()).getState();
+        verify(exercise, only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -215,16 +225,16 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         final var newInputs = TestHelper.invalidTestCaseList();
         final var newExpectedOutputs = TestHelper.invalidTestCaseList();
 
-        Mockito.when(exam.getState()).thenReturn(Exam.State.UPCOMING);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(testCase.getExercise()).thenReturn(exercise);
-        Mockito.doThrow(IllegalArgumentException.class).when(testCase).update(
+        when(exam.getState()).thenReturn(Exam.State.UPCOMING);
+        when(exercise.getExam()).thenReturn(exam);
+        when(testCase.getExercise()).thenReturn(exercise);
+        doThrow(IllegalArgumentException.class).when(testCase).update(
                 newVisibility,
                 newTimeout,
                 newInputs,
                 newExpectedOutputs
         );
-        Mockito.when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
 
 
         Assertions.assertThrows(
@@ -232,18 +242,18 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 () -> examManager.modifyTestCase(testCaseId, newVisibility, newTimeout, newInputs, newExpectedOutputs),
                 "Using an invalid value when modifying a TestCase did not throw an IllegalArgumentException"
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
-        Mockito.verify(testCase, Mockito.times(1)).getExercise();
-        Mockito.verify(testCase, Mockito.times(1)).update(
+        verify(exam, only()).getState();
+        verify(exercise, only()).getExam();
+        verify(testCase, times(1)).getExercise();
+        verify(testCase, times(1)).update(
                 newVisibility,
                 newTimeout,
                 newInputs,
                 newExpectedOutputs
         );
-        Mockito.verifyNoMoreInteractions(testCase);
+        verifyNoMoreInteractions(testCase);
         verifyOnlyTestCaseSearch(testCaseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -262,9 +272,9 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise) {
         final var exerciseId = TestHelper.validExerciseId();
-        Mockito.when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
-        Mockito.when(exercise.getExam()).thenReturn(exam);
-        Mockito.when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
+        when(exercise.getExam()).thenReturn(exam);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.createExerciseSolution(
@@ -274,10 +284,10 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 "Using invalid arguments when creating an ExerciseSolution" +
                         " did not throw an IllegalArgumentException"
         );
-        Mockito.verify(exam, Mockito.only()).getState();
-        Mockito.verify(exercise, Mockito.only()).getExam();
+        verify(exam, only()).getState();
+        verify(exercise, only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
-        Mockito.verifyZeroInteractions(executorServiceCommandMessageProxy);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
