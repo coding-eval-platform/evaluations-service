@@ -118,7 +118,18 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @Transactional
     public void startExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
+        // First verify that the exam has at least once exercise.
+        final var exercises = exerciseRepository.getExamExercises(exam);
+        if (exercises.isEmpty()) {
+            throw new IllegalEntityStateException(EXAM_DOES_NOT_CONTAIN_EXERCISES);
+        }
+        // Then, verify that all exercises have at least one test case.
+        if (exercises.stream().map(testCaseRepository::getExercisePrivateTestCases).anyMatch(List::isEmpty)) {
+            throw new IllegalEntityStateException(EXAM_CONTAIN_EXERCISE_WITHOUT_TEST_CASE);
+        }
+        // Then, start the exam.
         exam.startExam(); // The Exam verifies state by its own.
+        // Finally, save the exam.
         examRepository.save(exam);
     }
 
@@ -484,4 +495,18 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
      */
     private final static IllegalEntityStateError EXAM_IS_NOT_IN_PROGRESS =
             new IllegalEntityStateError("The exam is not in progress state", "state");
+
+    /**
+     * An {@link IllegalEntityStateError} that indicates that a certain action that involves an {@link Exam}
+     * cannot be performed because the said {@link Exam}'s does not contain any {@link Exercise}.
+     */
+    private final static IllegalEntityStateError EXAM_DOES_NOT_CONTAIN_EXERCISES =
+            new IllegalEntityStateError("The exam does not contain any exercise");
+
+    /**
+     * An {@link IllegalEntityStateError} that indicates that a certain action that involves an {@link Exam}
+     * cannot be performed because the said {@link Exam}'s contains an {@link Exercise} without {@link TestCase}s.
+     */
+    private final static IllegalEntityStateError EXAM_CONTAIN_EXERCISE_WITHOUT_TEST_CASE =
+            new IllegalEntityStateError("The exam contains an exercise without any private test case");
 }

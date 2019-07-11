@@ -14,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -79,13 +81,96 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     /**
      * Tests the service behaviour when {@link Exam#startExam()} throws an {@link IllegalEntityStateException}.
      *
+     * @param exam     A mocked {@link Exam} (the one being started).
+     * @param exercise A mocked {@link Exercise} (owned by the {@code exam}).
+     * @param testCase A mocked {@link TestCase} (owned by the {@code exercise}).
+     * @implNote In this test, the {@code exam} contains an {@link Exercise} with a private {@link TestCase} in order
+     * to test only when the case in which {@link Exam#startExam()} throws the {@link IllegalEntityStateException}.
+     */
+    @Test
+    void testExamIsNotStartedWhenIllegalEntityStateExceptionIsThrownByExam(
+            @Mock(name = "exam") final Exam exam,
+            @Mock(name = "exercise") final Exercise exercise,
+            @Mock(name = "testCase") final TestCase testCase) {
+
+        final var examId = TestHelper.validExamId();
+        doThrow(IllegalEntityStateException.class).when(exam).startExam();
+        when(exerciseRepository.getExamExercises(exam)).thenReturn(List.of(exercise));
+        when(testCaseRepository.getExercisePrivateTestCases(exercise)).thenReturn(List.of(testCase));
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> examManager.startExam(examId),
+                "An IllegalEntityStateException is not being thrown when the Exam does" +
+                        " (when starting an Exam)"
+        );
+
+        verify(exam, only()).startExam();
+        verify(examRepository, only()).findById(examId);
+        verify(exerciseRepository, only()).getExamExercises(exam);
+        verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests the service behaviour when trying to start an {@link Exam} that contains an {@link Exercise} without
+     * private {@link TestCase}s.
+     *
+     * @param exam     A mocked {@link Exam} (the one being started).
+     * @param exercise A mocked {@link Exercise} (owned by the {@code exam}).
+     */
+    @Test
+    void testExamIsNotStartedWhenExerciseDoesNotContainPrivateTestCases(
+            @Mock(name = "exam") final Exam exam,
+            @Mock(name = "exercise") final Exercise exercise) {
+
+        final var examId = TestHelper.validExamId();
+        when(exerciseRepository.getExamExercises(exam)).thenReturn(List.of(exercise));
+        when(testCaseRepository.getExercisePrivateTestCases(exercise)).thenReturn(Collections.emptyList());
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> examManager.startExam(examId),
+                "An IllegalEntityStateException is not being thrown when the Exam contains an Exercise" +
+                        " without private Test Cases"
+        );
+
+        verifyZeroInteractions(exam);
+        verify(examRepository, only()).findById(examId);
+        verify(exerciseRepository, only()).getExamExercises(exam);
+        verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests the service behaviour when trying to start an {@link Exam} that does not contain any {@link Exercise}.
+     *
      * @param exam A mocked {@link Exam} (the one being started).
      */
     @Test
-    void testExamIsNotStartedWhenIllegalEntityStateExceptionIsThrown(@Mock(name = "exam") final Exam exam) {
-        testExam(exam, ExamManager::startExam, Exam::startExam,
-                "An IllegalEntityStateException is not being thrown when the Exam does" +
-                        " (when starting an Exam)");
+    void testExamIsNotStartedWhenItDoesNotContainAnyExercise(@Mock(name = "exam") final Exam exam) {
+
+        final var examId = TestHelper.validExamId();
+        when(exerciseRepository.getExamExercises(exam)).thenReturn(Collections.emptyList());
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> examManager.startExam(examId),
+                "An IllegalEntityStateException is not being thrown" +
+                        " when the Exam does not contain any Exercise"
+        );
+
+        verifyZeroInteractions(exam);
+        verify(examRepository, only()).findById(examId);
+        verify(exerciseRepository, only()).getExamExercises(exam);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**

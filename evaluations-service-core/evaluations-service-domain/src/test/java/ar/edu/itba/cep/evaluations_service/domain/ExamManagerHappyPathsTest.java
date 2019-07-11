@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -157,13 +156,21 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
      * Tests that starting an upcoming {@link Exam} works as expected
      * (changes the state and then saves the exam instance).
      *
-     * @param exam A mocked {@link Exam} (the one being started).
+     * @param exam     A mocked {@link Exam} (the one being started).
+     * @param exercise A mocked {@link Exercise} (owned by the {@code exam}).
+     * @param testCase A mocked {@link TestCase} (owned by the {@code exercise}).
      */
     @Test
-    void testExamIsStartedWhenIsUpcoming(@Mock(name = "exam") final Exam exam) {
+    void testExamIsStartedWhenIsUpcomingAndHasExercisesWithPrivateTestCases(
+            @Mock(name = "exam") final Exam exam,
+            @Mock(name = "exercise") final Exercise exercise,
+            @Mock(name = "testCase") final TestCase testCase) {
+
         final var examId = TestHelper.validExamId();
         doNothing().when(exam).startExam();
         when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(exerciseRepository.getExamExercises(exam)).thenReturn(List.of(exercise));
+        when(testCaseRepository.getExercisePrivateTestCases(exercise)).thenReturn(List.of(testCase));
         when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.startExam(examId),
@@ -173,8 +180,8 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, times(1)).findById(examId);
         verify(examRepository, times(1)).save(exam);
         verifyNoMoreInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verifyZeroInteractions(testCaseRepository);
+        verify(exerciseRepository, only()).getExamExercises(exam);
+        verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
         verifyZeroInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
@@ -300,9 +307,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         final var examId = TestHelper.validExamId();
         when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
-        Mockito
-                .when(exerciseRepository.save(any(Exercise.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseRepository.save(any(Exercise.class))).then(invocation -> invocation.getArgument(0));
         final var exercise = examManager.createExercise(examId, question, language, solutionTemplate, awardedScore);
         Assertions.assertAll("Exercise properties are not the expected",
                 () -> Assertions.assertEquals(
@@ -477,12 +482,8 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
             @Mock(name = "pagingRequest") final PagingRequest pagingRequest,
             @Mock(name = "mockedSolutions") final Page<ExerciseSolution> mockedExeSolutions) {
         final var exerciseId = TestHelper.validExerciseId();
-        Mockito
-                .when(exerciseRepository.findById(exerciseId))
-                .thenReturn(Optional.of(exercise));
-        Mockito
-                .when(exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest))
-                .thenReturn(mockedExeSolutions);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        when(exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest)).thenReturn(mockedExeSolutions);
         final var solutions = examManager.listSolutions(exerciseId, pagingRequest);
         Assertions.assertEquals(
                 mockedExeSolutions,
@@ -520,9 +521,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         when(exercise.getExam()).thenReturn(exam);
         when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        Mockito
-                .when(testCaseRepository.save(any(TestCase.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(testCaseRepository.save(any(TestCase.class))).then(invocation -> invocation.getArgument(0));
         final var testCase = examManager.createTestCase(exerciseId, visibility, timeout, inputs, expectedOutputs);
         Assertions.assertAll("TestCase properties are not the expected",
                 () -> Assertions.assertEquals(
@@ -660,9 +659,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         when(exercise.getExam()).thenReturn(exam);
         when(exercise.getLanguage()).thenReturn(language);
         when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        Mockito
-                .when(exerciseSolutionRepository.save(any(ExerciseSolution.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionRepository.save(any(ExerciseSolution.class))).then(invocation -> invocation.getArgument(0));
         final var privateTestCases = mockTestCases();
         final var publicTestCases = mockTestCases();
         final var allTestCases = Stream.concat(
@@ -729,9 +726,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         when(executionResult.getExitCode()).thenReturn(TestHelper.validNonZeroExerciseSolutionExitCode());
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.processExecution(solutionId, testCaseId, executionResult),
                 "An exception was thrown when processing a finished execution result with a non zero exit code"
@@ -769,9 +764,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         when(executionResult.getStderr()).thenReturn(stderr);
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.processExecution(solutionId, testCaseId, executionResult),
                 "An exception was thrown when processing a finished execution result with a non empty stderr list"
@@ -813,9 +806,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         when(executionResult.getStdout()).thenReturn(anotherOutputs);
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.processExecution(solutionId, testCaseId, executionResult),
                 "An exception was thrown when processing a finished execution result with not expected outputs"
@@ -856,9 +847,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
 
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.processExecution(solutionId, testCaseId, executionResult),
                 "An exception was thrown when processing a finished execution result with the expected outputs"
@@ -892,9 +881,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
 
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.processExecution(solutionId, testCaseId, executionResult),
                 "An exception was thrown when processing a timed-out execution result"
@@ -928,9 +915,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
 
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Mockito
-                .when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class)))
-                .then(invocation -> invocation.getArgument(0));
+        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
         Assertions.assertDoesNotThrow(
                 () -> examManager.processExecution(solutionId, testCaseId, executionResult),
                 "An exception was thrown when processing a timed-out execution result"

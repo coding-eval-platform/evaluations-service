@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -139,31 +138,29 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise) {
         final var exerciseId = TestHelper.validExerciseId();
-        final var newQuestion = TestHelper.invalidExerciseQuestion();
-        final var newLanguage = TestHelper.invalidLanguage();
-        final var newSolutionTemplate = TestHelper.validSolutionTemplate(); // There is no invalid value for this.
-        final var newAwardedScore = TestHelper.nonPositiveAwardedScore();
+        final var question = TestHelper.invalidExerciseQuestion();
+        final var language = TestHelper.invalidLanguage();
+        final var solutionTemplate = TestHelper.validSolutionTemplate(); // There is no invalid value for this.
+        final var awardedScore = TestHelper.nonPositiveAwardedScore();
         when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         when(exercise.getExam()).thenReturn(exam);
-        Mockito
-                .doThrow(IllegalArgumentException.class)
-                .when(exercise).update(newQuestion, newLanguage, newSolutionTemplate, newAwardedScore);
+        doThrow(IllegalArgumentException.class).when(exercise).update(question, language, solutionTemplate, awardedScore);
         when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.modifyExercise(
                         exerciseId,
-                        newQuestion,
-                        newLanguage,
-                        newSolutionTemplate,
-                        newAwardedScore
+                        question,
+                        language,
+                        solutionTemplate,
+                        awardedScore
                 ),
                 "Using an invalid value when modifying an Exercise" +
                         " did not throw an IllegalArgumentException"
         );
         verify(exam, only()).getState();
         verify(exercise, times(1)).getExam();
-        verify(exercise, times(1)).update(newQuestion, newLanguage, newSolutionTemplate, newAwardedScore);
+        verify(exercise, times(1)).update(question, language, solutionTemplate, awardedScore);
         verifyNoMoreInteractions(exercise);
         verifyOnlyExerciseSearch(exerciseId);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
