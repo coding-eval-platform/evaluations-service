@@ -49,8 +49,7 @@ public class TestCaseEndpoint {
 
     @GET
     @Path(Routes.EXERCISE_PUBLIC_TEST_CASES)
-    public Response getPublicTestCases(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId) {
+    public Response getPublicTestCases(@PathParam("exerciseId") final long exerciseId) {
         LOGGER.debug("Getting public test cases for exercise with id {}", exerciseId);
         final var testCases = examService.getPublicTestCases(exerciseId).stream()
                 .map(TestCaseDownloadDto::new)
@@ -60,8 +59,7 @@ public class TestCaseEndpoint {
 
     @GET
     @Path(Routes.EXERCISE_PRIVATE_TEST_CASES)
-    public Response getPrivateTestCases(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId) {
+    public Response getPrivateTestCases(@PathParam("exerciseId") final long exerciseId) {
         LOGGER.debug("Getting private test cases for exercise with id {}", exerciseId);
         final var testCases = examService.getPrivateTestCases(exerciseId).stream()
                 .map(TestCaseDownloadDto::new)
@@ -74,7 +72,7 @@ public class TestCaseEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createTestCaseForExercise(
             @Context final UriInfo uriInfo,
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
+            @PathParam("exerciseId") final long exerciseId,
             @Valid @ConvertGroup(to = TestCaseUploadDto.Create.class) final TestCaseUploadDto dto) {
         LOGGER.debug("Creating test case for exercise with id {}", exerciseId);
         final var testCase = examService.createTestCase(
@@ -105,7 +103,7 @@ public class TestCaseEndpoint {
     @Path(Routes.TEST_CASE)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyTestCase(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId,
+            @PathParam("testCaseId") final long testCaseId,
             @Valid @ConvertGroup(to = TestCaseUploadDto.Update.class) final TestCaseUploadDto dto) {
         LOGGER.debug("Updating test case with id {}", testCaseId);
         examService.modifyTestCase(
@@ -120,8 +118,7 @@ public class TestCaseEndpoint {
 
     @DELETE
     @Path(Routes.TEST_CASE)
-    public Response deleteTestCase(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("testCaseId") final long testCaseId) {
+    public Response deleteTestCase(@PathParam("testCaseId") final long testCaseId) {
         LOGGER.debug("Removing test case with id {}", testCaseId);
         examService.deleteTestCase(testCaseId);
         return Response.noContent().build();

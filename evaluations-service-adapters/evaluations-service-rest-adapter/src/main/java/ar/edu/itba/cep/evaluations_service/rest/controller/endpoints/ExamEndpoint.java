@@ -58,7 +58,7 @@ public class ExamEndpoint {
 
     @GET
     @Path(Routes.EXAM)
-    public Response getExamById(@SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId) {
+    public Response getExamById(@PathParam("examId") final long examId) {
         LOGGER.debug("Getting exam with id {}", examId);
         return examService.getExam(examId)
                 .map(ExamDownloadDto::new)
@@ -89,7 +89,7 @@ public class ExamEndpoint {
     @Path(Routes.EXAM)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyExam(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId,
+            @PathParam("examId") final long examId,
             @Valid @ConvertGroup(to = ExamUploadDto.Update.class) final ExamUploadDto dto) {
         LOGGER.debug("Updating exam with id {}", examId);
         examService.modifyExam(examId, dto.getDescription(), dto.getStartingAt(), dto.getDuration());
@@ -99,8 +99,7 @@ public class ExamEndpoint {
     @PUT
     @Path(Routes.EXAM_START)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response startExam(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId) {
+    public Response startExam(@PathParam("examId") final long examId) {
         LOGGER.debug("Starting exam with id {}", examId);
         examService.startExam(examId);
         return Response.noContent().build();
@@ -109,8 +108,7 @@ public class ExamEndpoint {
     @PUT
     @Path(Routes.EXAM_FINISH)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response finishExam(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId) {
+    public Response finishExam(@PathParam("examId") final long examId) {
         LOGGER.debug("Finishing exam with id {}", examId);
         examService.finishExam(examId);
         return Response.noContent().build();
@@ -118,7 +116,7 @@ public class ExamEndpoint {
 
     @DELETE
     @Path(Routes.EXAM)
-    public Response deleteExam(@SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId) {
+    public Response deleteExam(@PathParam("examId") final long examId) {
         LOGGER.debug("Deleting exam with id {}", examId);
         examService.deleteExam(examId);
         return Response.noContent().build();

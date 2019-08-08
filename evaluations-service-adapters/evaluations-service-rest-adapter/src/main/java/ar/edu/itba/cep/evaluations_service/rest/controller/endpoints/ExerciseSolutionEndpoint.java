@@ -50,7 +50,7 @@ public class ExerciseSolutionEndpoint {
     @GET
     @Path(Routes.EXERCISE_SOLUTIONS)
     public Response listSolutions(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
+            @PathParam("exerciseId") final long exerciseId,
             @PaginationParam final PagingRequest pagingRequest) {
         LOGGER.debug("Getting solutions for exercise with id {}", exerciseId);
         final var solutions = examService.listSolutions(exerciseId, pagingRequest)
@@ -64,7 +64,7 @@ public class ExerciseSolutionEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createSolution(
             @Context final UriInfo uriInfo,
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
+            @PathParam("exerciseId") final long exerciseId,
             @Valid @ConvertGroup(to = ExerciseSolutionUploadDto.Create.class) final ExerciseSolutionUploadDto dto) {
         LOGGER.debug("Creating a solution for exercise with id {}", exerciseId);
         final var solution = examService.createExerciseSolution(exerciseId, dto.getAnswer());

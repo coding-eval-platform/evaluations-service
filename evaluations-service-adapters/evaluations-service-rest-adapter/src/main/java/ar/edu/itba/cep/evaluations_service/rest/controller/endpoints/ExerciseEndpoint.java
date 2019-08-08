@@ -49,7 +49,7 @@ public class ExerciseEndpoint {
 
     @GET
     @Path(Routes.EXAM_EXERCISES)
-    public Response getExamExercises(@SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId) {
+    public Response getExamExercises(@PathParam("examId") final long examId) {
         LOGGER.debug("Getting exercises for exam with id {}", examId);
         final var exercises = examService.getExercises(examId).stream()
                 .map(ExerciseDownloadDto::new)
@@ -59,7 +59,7 @@ public class ExerciseEndpoint {
 
     @DELETE
     @Path(Routes.EXAM_EXERCISES)
-    public Response deleteExamExercises(@SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId) {
+    public Response deleteExamExercises(@PathParam("examId") final long examId) {
         LOGGER.debug("Deleting exercises for exam with id {}", examId);
         examService.clearExercises(examId);
         return Response.noContent().build();
@@ -70,7 +70,7 @@ public class ExerciseEndpoint {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createExerciseForExam(
             @Context final UriInfo uriInfo,
-            @SuppressWarnings("RSReferenceInspection") @PathParam("examId") final long examId,
+            @PathParam("examId") final long examId,
             @Valid @ConvertGroup(to = ExerciseUploadDto.Create.class) final ExerciseUploadDto dto) {
         LOGGER.debug("Creating exercise for exam with id {}", examId);
         final var exercise = examService.createExercise(
@@ -101,7 +101,7 @@ public class ExerciseEndpoint {
     @Path(Routes.EXERCISE)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response modifyExercise(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId,
+            @PathParam("exerciseId") final long exerciseId,
             @Valid @ConvertGroup(to = ExerciseUploadDto.Update.class) final ExerciseUploadDto dto) {
         LOGGER.debug("Updating exercise with id {}", exerciseId);
         examService.modifyExercise(
@@ -116,8 +116,7 @@ public class ExerciseEndpoint {
 
     @DELETE
     @Path(Routes.EXERCISE)
-    public Response deleteExercise(
-            @SuppressWarnings("RSReferenceInspection") @PathParam("exerciseId") final long exerciseId) {
+    public Response deleteExercise(@PathParam("exerciseId") final long exerciseId) {
         LOGGER.debug("Deleting exercise with id {}", exerciseId);
         examService.deleteExercise(exerciseId);
         return Response.noContent().build();
