@@ -205,6 +205,11 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         testDeleteExam(exam, Exam.State.FINISHED);
     }
 
+
+    // ================================================================================================================
+    // Exercises
+    // ================================================================================================================
+
     /**
      * Tests that clearing exercises of an in progress exam is not allowed.
      *
@@ -224,11 +229,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     void testClearExercisesOfFinishedExam(@Mock(name = "exam") final Exam exam) {
         testClearExercises(exam, Exam.State.FINISHED);
     }
-
-
-    // ================================================================================================================
-    // Exercises
-    // ================================================================================================================
 
     /**
      * Tests that creating an exercise for an in progress exam is not allowed.
