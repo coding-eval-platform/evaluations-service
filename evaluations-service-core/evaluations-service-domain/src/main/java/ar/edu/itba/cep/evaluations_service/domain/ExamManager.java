@@ -161,6 +161,11 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
                 });
     }
 
+
+    // ================================================================================================================
+    // Exercises
+    // ================================================================================================================
+
     @Override
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
     public List<Exercise> getExercises(final long examId) throws NoSuchEntityException {
@@ -178,11 +183,6 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         exerciseRepository.deleteExamExercises(exam);
     }
 
-
-    // ================================================================================================================
-    // Exercises
-    // ================================================================================================================
-
     @Override
     @Transactional
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
@@ -198,6 +198,12 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         performExamUpcomingStateVerification(exam);
         final var exercise = new Exercise(question, language, solutionTemplate, awardedScore, exam);
         return exerciseRepository.save(exercise);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    public Optional<Exercise> getExercise(long exerciseId) {
+        return exerciseRepository.findById(exerciseId);
     }
 
     @Override
@@ -229,6 +235,11 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
                 });
     }
 
+
+    // ================================================================================================================
+    // Test Cases
+    // ================================================================================================================
+
     @Override
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
     public List<TestCase> getPublicTestCases(final long exerciseId) throws NoSuchEntityException {
@@ -244,20 +255,6 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
-    public Page<ExerciseSolution> listSolutions(final long exerciseId, final PagingRequest pagingRequest)
-            throws NoSuchEntityException {
-        final var exercise = loadExercise(exerciseId);
-        return exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest);
-
-    }
-
-
-    // ================================================================================================================
-    // Test Cases
-    // ================================================================================================================
-
-    @Override
     @Transactional
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
     public TestCase createTestCase(
@@ -270,6 +267,16 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         final var exercise = loadExercise(exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
         return testCaseRepository.save(new TestCase(visibility, timeout, inputs, expectedOutputs, exercise));
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    public Optional<TestCase> getTestCase(long testCaseId) {
+        return testCaseRepository.findById(testCaseId).map(testCase -> {
+            testCase.getInputs().size(); // Initialize Lazy Collection
+            testCase.getExpectedOutputs().size(); // Initialize Lazy Collection
+            return testCase;
+        });
     }
 
     @Override
@@ -302,6 +309,15 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     // ================================================================================================================
     // Solutions
     // ================================================================================================================
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    public Page<ExerciseSolution> listSolutions(final long exerciseId, final PagingRequest pagingRequest)
+            throws NoSuchEntityException {
+        final var exercise = loadExercise(exerciseId);
+        return exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest);
+
+    }
 
     @Override
     @Transactional
