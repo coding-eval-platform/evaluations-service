@@ -97,6 +97,11 @@ public interface ExamService {
      */
     void deleteExam(final long examId) throws IllegalEntityStateException;
 
+
+    // ================================================================================================================
+    // Exercises
+    // ================================================================================================================
+
     /**
      * Lists all the {@link Exercise}s of a given {@code Exam}.
      *
@@ -115,11 +120,6 @@ public interface ExamService {
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
      */
     void clearExercises(final long examId) throws NoSuchEntityException, IllegalEntityStateException;
-
-
-    // ================================================================================================================
-    // Exercises
-    // ================================================================================================================
 
     /**
      * Creates an {@link Exercise} for the {@link Exam} with the given {@code examId}.
@@ -143,6 +143,14 @@ public interface ExamService {
             final int awardedScore) throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
+     * Finds the {@link Exercise} with the given {@code exerciseId}.
+     *
+     * @param exerciseId The id of the {@link Exercise} being requested.
+     * @return An {@link Optional} containing the requested {@link Exercise} if it exists, or empty otherwise.
+     */
+    Optional<Exercise> getExercise(final long exerciseId);
+
+    /**
      * Modifies the {@link Exercise} with the given {@code exerciseId}.
      *
      * @param exerciseId       The id of the {@link Exercise} to be modified.
@@ -164,7 +172,6 @@ public interface ExamService {
             final String solutionTemplate,
             final int awardedScore) throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
-
     /**
      * Deletes the {@link Exercise} with the given {@code exerciseId}.
      *
@@ -177,6 +184,11 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void deleteExercise(final long exerciseId) throws IllegalEntityStateException;
+
+
+    // ================================================================================================================
+    // Test Cases
+    // ================================================================================================================
 
     /**
      * Returns the public {@link TestCase}s of the {@link Exercise} with the given {@code exerciseId}.
@@ -199,23 +211,6 @@ public interface ExamService {
     List<TestCase> getPrivateTestCases(final long exerciseId) throws NoSuchEntityException;
 
     /**
-     * Lists all {@link ExerciseSolution}s for the {@link Exercise} with the given {@code exerciseId},
-     * in a paginated view.
-     *
-     * @param exerciseId    The The id of the {@link Exercise} whose {@link ExerciseSolution}s are being requested.
-     * @param pagingRequest The {@link PagingRequest} containing paging data.
-     * @return The requested {@link Page} of {@link ExerciseSolution}.
-     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
-     */
-    Page<ExerciseSolution> listSolutions(final long exerciseId, PagingRequest pagingRequest)
-            throws NoSuchEntityException;
-
-
-    // ================================================================================================================
-    // Test Cases
-    // ================================================================================================================
-
-    /**
      * Creates a {@link TestCase} for the {@link Exercise} with the given {@code exerciseId}.
      *
      * @param exerciseId      The id of the {@link Exercise} to which a {@link TestCase} will be added.
@@ -235,6 +230,13 @@ public interface ExamService {
                             final List<String> inputs, final List<String> expectedOutputs)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
+    /**
+     * Finds the {@link TestCase} with the given {@code testCaseId}.
+     *
+     * @param testCaseId The id of the {@link TestCase} being requested.
+     * @return An {@link Optional} containing the requested {@link TestCase} if it exists, or empty otherwise.
+     */
+    Optional<TestCase> getTestCase(final long testCaseId);
 
     /**
      * Modifies the {@link TestCase} with the given {@code testCaseId}.
@@ -272,6 +274,18 @@ public interface ExamService {
     // ================================================================================================================
     // Solutions
     // ================================================================================================================
+
+    /**
+     * Lists all {@link ExerciseSolution}s for the {@link Exercise} with the given {@code exerciseId},
+     * in a paginated view.
+     *
+     * @param exerciseId    The The id of the {@link Exercise} whose {@link ExerciseSolution}s are being requested.
+     * @param pagingRequest The {@link PagingRequest} containing paging data.
+     * @return The requested {@link Page} of {@link ExerciseSolution}.
+     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
+     */
+    Page<ExerciseSolution> listSolutions(final long exerciseId, PagingRequest pagingRequest)
+            throws NoSuchEntityException;
 
     /**
      * Creates an {@link ExerciseSolution} for the {@link Exercise} with the given {@code exerciseId}.

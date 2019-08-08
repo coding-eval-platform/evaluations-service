@@ -125,6 +125,11 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
         );
     }
 
+
+    // ================================================================================================================
+    // Exercises
+    // ================================================================================================================
+
     /**
      * Tests that trying to get {@link Exercise}s belonging to an {@link Exam} that does not exists
      * throws a {@link NoSuchEntityException}.
@@ -152,11 +157,6 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
         );
     }
 
-
-    // ================================================================================================================
-    // Exercises
-    // ================================================================================================================
-
     /**
      * Tests that trying to create an {@link Exercise} for an {@link Exam} that does not exists
      * throws a {@link NoSuchEntityException}.
@@ -174,6 +174,22 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                 "Trying to create an exercise" +
                         " belonging to an exam that does not exist does not throw a NoSuchEntityException"
         );
+    }
+
+    /**
+     * Tests that searching for an {@link Exercise} that does not exist does not fail,
+     * and returns an empty {@link Optional}.
+     */
+    @Test
+    void testSearchForExerciseThatDoesNotExist() {
+        final var exerciseId = TestHelper.validExerciseId();
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.empty());
+        Assertions.assertTrue(
+                examManager.getExercise(exerciseId).isEmpty(),
+                "Searching for an exercise that does not exist does not return an empty optional."
+        );
+        verifyOnlyExerciseSearch(exerciseId);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -207,6 +223,11 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
         );
     }
 
+
+    // ================================================================================================================
+    // Test Cases
+    // ================================================================================================================
+
     /**
      * Tests that trying to list the public {@link TestCase}s belonging to an {@link Exercise} that does not exists
      * throws a {@link NoSuchEntityException}.
@@ -234,24 +255,6 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     }
 
     /**
-     * Tests that trying to list the {@link ExerciseSolution}s belonging to an {@link Exercise} that does not exists
-     * throws a {@link NoSuchEntityException}.
-     */
-    @Test
-    void testListOfExerciseSolutionsForNonExistenceExercise() {
-        testMissingExerciseThrowsNoSuchEntityException(
-                (manager, id) -> manager.listSolutions(id, mock(PagingRequest.class)),
-                "Trying to list the exercise solutions of an exercise that does not exist" +
-                        " does not throw a NoSuchEntityException"
-        );
-    }
-
-
-    // ================================================================================================================
-    // Test Cases
-    // ================================================================================================================
-
-    /**
      * Tests that trying to create an {@link Exercise} for an {@link Exam} that does not exists
      * throws a {@link NoSuchEntityException}.
      */
@@ -269,6 +272,22 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                 "Trying to create a test case" +
                         " belonging to an exercise that does not exist does not throw a NoSuchEntityException"
         );
+    }
+
+    /**
+     * Tests that searching for a {@link TestCase} that does not exist does not fail,
+     * and returns an empty {@link Optional}.
+     */
+    @Test
+    void testSearchForTestCaseThatDoesNotExist() {
+        final var testCaseId = TestHelper.validTestCaseId();
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.empty());
+        Assertions.assertTrue(
+                examManager.getTestCase(testCaseId).isEmpty(),
+                "Searching for a test case that does not exist does not return an empty optional."
+        );
+        verifyOnlyTestCaseSearch(testCaseId);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -307,6 +326,19 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     // ================================================================================================================
     // Solutions
     // ================================================================================================================
+
+    /**
+     * Tests that trying to list the {@link ExerciseSolution}s belonging to an {@link Exercise} that does not exists
+     * throws a {@link NoSuchEntityException}.
+     */
+    @Test
+    void testListOfExerciseSolutionsForNonExistenceExercise() {
+        testMissingExerciseThrowsNoSuchEntityException(
+                (manager, id) -> manager.listSolutions(id, mock(PagingRequest.class)),
+                "Trying to list the exercise solutions of an exercise that does not exist" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
 
     /**
      * Tests that trying to create an {@link ExerciseSolution} for an {@link Exercise} that does not not exists

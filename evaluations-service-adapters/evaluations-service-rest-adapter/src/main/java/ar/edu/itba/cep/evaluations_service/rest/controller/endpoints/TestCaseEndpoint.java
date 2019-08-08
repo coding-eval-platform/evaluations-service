@@ -90,6 +90,17 @@ public class TestCaseEndpoint {
         return Response.created(location).build();
     }
 
+    @GET
+    @Path(Routes.TEST_CASE)
+    public Response getTestCaseById(@PathParam("testCaseId") final long testCaseId) {
+        LOGGER.debug("Getting test case with id {}", testCaseId);
+        return examService.getTestCase(testCaseId)
+                .map(TestCaseDownloadDto::new)
+                .map(Response::ok)
+                .orElse(Response.status(Response.Status.NOT_FOUND).entity(""))
+                .build();
+    }
+
     @PUT
     @Path(Routes.TEST_CASE)
     @Consumes(MediaType.APPLICATION_JSON)

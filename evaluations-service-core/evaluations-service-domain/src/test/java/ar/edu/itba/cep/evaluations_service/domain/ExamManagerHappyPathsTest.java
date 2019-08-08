@@ -239,6 +239,11 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
+
+    // ================================================================================================================
+    // Exercises
+    // ================================================================================================================
+
     /**
      * Tests that the {@link List} of {@link Exercise}s belonging to a given {@link Exam} is returned as expected.
      *
@@ -287,11 +292,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
-
-
-    // ================================================================================================================
-    // Exercises
-    // ================================================================================================================
 
     /**
      * Tests that creating an exercise for an upcoming exam is performed as expected.
@@ -342,6 +342,32 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(testCaseRepository);
         verifyZeroInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests that searching for an {@link Exercise} that exists returns the expected {@link Exercise}.
+     *
+     * @param exercise A mocked {@link Exercise} (which is returned by {@link ExamManager#getExercise(long)}).
+     */
+    @Test
+    void testSearchForExerciseThatExists(@Mock(name = "exercise") final Exercise exercise) {
+        final var exerciseId = TestHelper.validExerciseId();
+        when(exercise.getId()).thenReturn(exerciseId);
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        final var exerciseOptional = examManager.getExercise(exerciseId);
+        Assertions.assertAll("Searching for an exercise that exists is not working as expected",
+                () -> Assertions.assertTrue(
+                        exerciseOptional.isPresent(),
+                        "The returned Optional is empty"
+                ),
+                () -> Assertions.assertEquals(
+                        exerciseId,
+                        exerciseOptional.map(Exercise::getId).get().longValue(),
+                        "The returned Exercise id's is not the same as the requested"
+                )
+        );
+        verifyOnlyExerciseSearch(exerciseId);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
@@ -414,6 +440,11 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
+
+    // ================================================================================================================
+    // Test Cases
+    // ================================================================================================================
+
     /**
      * Tests that listing an exercise's private test cases is performed as expected.
      *
@@ -467,41 +498,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
-
-
-    /**
-     * Tests that listing an exercise's solutions is performed as expected.
-     *
-     * @param exercise           A mocked {@link Exercise} (the owner of the {@link TestCase}s).
-     * @param pagingRequest      A mocked {@link PagingRequest} to be passed to the {@link ExerciseSolutionRepository}.
-     * @param mockedExeSolutions A mocked {@link Page} of {@link ExerciseSolution}s belonging to the {@link Exercise}.
-     */
-    @Test
-    void testListExerciseSolutions(
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "pagingRequest") final PagingRequest pagingRequest,
-            @Mock(name = "mockedSolutions") final Page<ExerciseSolution> mockedExeSolutions) {
-        final var exerciseId = TestHelper.validExerciseId();
-        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        when(exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest)).thenReturn(mockedExeSolutions);
-        final var solutions = examManager.listSolutions(exerciseId, pagingRequest);
-        Assertions.assertEquals(
-                mockedExeSolutions,
-                solutions,
-                "The returned solutions is not the one returned by the repository"
-        );
-        verifyZeroInteractions(examRepository);
-        verify(exerciseRepository, only()).findById(exerciseId);
-        verifyZeroInteractions(testCaseRepository);
-        verify(exerciseSolutionRepository, only()).getExerciseSolutions(exercise, pagingRequest);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-
-    // ================================================================================================================
-    // Test Cases
-    // ================================================================================================================
 
     /**
      * Tests that creating a test case for an exercise of an upcoming exam is performed as expected.
@@ -557,6 +553,32 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(testCaseRepository, only()).save(any(TestCase.class));
         verifyZeroInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests that searching for a {@link TestCase} that exists returns the expected {@link TestCase}.
+     *
+     * @param testCase A mocked {@link TestCase} (which is returned by {@link ExamManager#getTestCase(long)}).
+     */
+    @Test
+    void testSearchForTestCaseThatExists(@Mock(name = "testCase") final TestCase testCase) {
+        final var testCaseId = TestHelper.validTestCaseId();
+        when(testCase.getId()).thenReturn(testCaseId);
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        final var testCaseOptional = examManager.getTestCase(testCaseId);
+        Assertions.assertAll("Searching for a test case that exists is not working as expected",
+                () -> Assertions.assertTrue(
+                        testCaseOptional.isPresent(),
+                        "The returned Optional is empty"
+                ),
+                () -> Assertions.assertEquals(
+                        testCaseId,
+                        testCaseOptional.map(TestCase::getId).get().longValue(),
+                        "The returned TestCase id's is not the same as the requested"
+                )
+        );
+        verifyOnlyTestCaseSearch(testCaseId);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
@@ -641,6 +663,35 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     // ================================================================================================================
     // Solutions
     // ================================================================================================================
+
+    /**
+     * Tests that listing an exercise's solutions is performed as expected.
+     *
+     * @param exercise           A mocked {@link Exercise} (the owner of the {@link TestCase}s).
+     * @param pagingRequest      A mocked {@link PagingRequest} to be passed to the {@link ExerciseSolutionRepository}.
+     * @param mockedExeSolutions A mocked {@link Page} of {@link ExerciseSolution}s belonging to the {@link Exercise}.
+     */
+    @Test
+    void testListExerciseSolutions(
+            @Mock(name = "exercise") final Exercise exercise,
+            @Mock(name = "pagingRequest") final PagingRequest pagingRequest,
+            @Mock(name = "mockedSolutions") final Page<ExerciseSolution> mockedExeSolutions) {
+        final var exerciseId = TestHelper.validExerciseId();
+        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
+        when(exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest)).thenReturn(mockedExeSolutions);
+        final var solutions = examManager.listSolutions(exerciseId, pagingRequest);
+        Assertions.assertEquals(
+                mockedExeSolutions,
+                solutions,
+                "The returned solutions is not the one returned by the repository"
+        );
+        verifyZeroInteractions(examRepository);
+        verify(exerciseRepository, only()).findById(exerciseId);
+        verifyZeroInteractions(testCaseRepository);
+        verify(exerciseSolutionRepository, only()).getExerciseSolutions(exercise, pagingRequest);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
 
     /**
      * Tests that creating a solution for an exercise belonging to an in progress exam is performed as expected.

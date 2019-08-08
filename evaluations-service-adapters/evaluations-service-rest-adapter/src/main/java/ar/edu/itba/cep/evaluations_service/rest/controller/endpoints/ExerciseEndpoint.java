@@ -86,6 +86,17 @@ public class ExerciseEndpoint {
         return Response.created(location).build();
     }
 
+    @GET
+    @Path(Routes.EXERCISE)
+    public Response getExerciseById(@PathParam("exerciseId") final long exerciseId) {
+        LOGGER.debug("Getting exercise with id {}", exerciseId);
+        return examService.getExercise(exerciseId)
+                .map(ExerciseDownloadDto::new)
+                .map(Response::ok)
+                .orElse(Response.status(Response.Status.NOT_FOUND).entity(""))
+                .build();
+    }
+
     @PUT
     @Path(Routes.EXERCISE)
     @Consumes(MediaType.APPLICATION_JSON)
