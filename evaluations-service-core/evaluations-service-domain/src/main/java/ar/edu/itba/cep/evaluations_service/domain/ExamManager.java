@@ -5,6 +5,8 @@ import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import ar.edu.itba.cep.evaluations_service.security.authentication.AuthenticationHelper;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
+import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
+import ar.edu.itba.cep.evaluations_service.services.ExamWithoutOwners;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
@@ -90,14 +92,17 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only list own exams?
-    public Page<Exam> listExams(final PagingRequest pagingRequest) {
-        return examRepository.findAll(pagingRequest);
+    public Page<ExamWithoutOwners> listExams(final PagingRequest pagingRequest) {
+        return examRepository.findAll(pagingRequest).map(ExamWithoutOwners::new);
     }
 
     @Override
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
-    public Optional<Exam> getExam(final long examId) {
-        return examRepository.findById(examId);
+    public Optional<ExamWithOwners> getExam(final long examId) {
+        return examRepository.findById(examId).map(exam -> {
+            exam.getOwners().size(); // Initialize Lazy Collection
+            return new ExamWithOwners(exam);
+        });
     }
 
     @Override

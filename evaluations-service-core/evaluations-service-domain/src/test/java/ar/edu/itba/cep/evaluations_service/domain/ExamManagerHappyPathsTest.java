@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.domain;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.hamcrest.Matchers;
@@ -81,7 +82,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 ),
                 () -> Assertions.assertEquals(
                         examId,
-                        examOptional.map(Exam::getId).get().longValue(),
+                        examOptional.map(ExamWithOwners::getId).get().longValue(),
                         "The returned Exam id's is not the same as the requested"
                 )
         );

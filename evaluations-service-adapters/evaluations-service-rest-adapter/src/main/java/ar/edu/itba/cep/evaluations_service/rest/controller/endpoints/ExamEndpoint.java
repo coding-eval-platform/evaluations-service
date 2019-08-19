@@ -1,7 +1,8 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.endpoints;
 
-import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExamDownloadDto;
 import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExamUploadDto;
+import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.NoOwnersExamDownloadDto;
+import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.WithOwnersExamDownloadDto;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import com.bellotapps.webapps_commons.config.JerseyController;
 import com.bellotapps.webapps_commons.data_transfer.jersey.annotations.PaginationParam;
@@ -55,7 +56,7 @@ public class ExamEndpoint {
     @Path(Routes.EXAMS)
     public Response listExams(@PaginationParam final PagingRequest pagingRequest) {
         LOGGER.debug("Getting exams");
-        final var exams = examService.listExams(pagingRequest).map(ExamDownloadDto::new);
+        final var exams = examService.listExams(pagingRequest).map(NoOwnersExamDownloadDto::new);
         return Response.ok(exams.content()).build();
     }
 
@@ -64,7 +65,7 @@ public class ExamEndpoint {
     public Response getExamById(@PathParam("examId") final long examId) {
         LOGGER.debug("Getting exam with id {}", examId);
         return examService.getExam(examId)
-                .map(ExamDownloadDto::new)
+                .map(WithOwnersExamDownloadDto::new)
                 .map(Response::ok)
                 .orElse(Response.status(Response.Status.NOT_FOUND).entity(""))
                 .build();
