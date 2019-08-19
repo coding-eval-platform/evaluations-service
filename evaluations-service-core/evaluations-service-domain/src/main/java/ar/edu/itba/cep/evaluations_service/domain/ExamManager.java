@@ -151,6 +151,24 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
+    public void addOwnerToExam(final long examId, final String owner)
+            throws NoSuchEntityException, IllegalArgumentException {
+        final var exam = loadExam(examId);
+        exam.addOwner(owner);
+        examRepository.save(exam);
+    }
+
+    @Override
+    @Transactional
+    public void removeOwnerFromExam(final long examId, final String owner)
+            throws NoSuchEntityException, IllegalEntityStateException {
+        final var exam = loadExam(examId);
+        exam.removeOwner(owner);
+        examRepository.save(exam);
+    }
+
+    @Override
+    @Transactional
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
     public void deleteExam(final long examId) throws IllegalEntityStateException {
         examRepository.findById(examId)

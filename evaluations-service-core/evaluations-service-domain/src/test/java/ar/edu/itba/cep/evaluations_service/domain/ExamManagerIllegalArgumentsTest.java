@@ -111,6 +111,27 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
+    /**
+     * Tests that an {@link Exam} is not saved if trying to add an invalid owner.
+     *
+     * @param exam A mocked {@link Exam} (the one to which an owner is being set).
+     */
+    @Test
+    void testOwnerIsNotAddedWithInvalidArgument(@Mock(name = "exam") final Exam exam) {
+        final var examId = TestHelper.validExamId();
+        final var owner = TestHelper.invalidOwner();
+        doThrow(IllegalArgumentException.class).when(exam).addOwner(owner);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> examManager.addOwnerToExam(examId, owner),
+                "setting an invalid owner to an Exam did not throw an IllegalArgumentException"
+        );
+        verify(exam, only()).addOwner(owner);
+        verifyOnlyExamSearch(examId);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
 
     // ================================================================================================================
     // Exercises

@@ -113,6 +113,29 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
     }
 
     /**
+     * Tests that trying to add an owner to an {@link Exam} that does not exists throws a {@link NoSuchEntityException}.
+     */
+    @Test
+    void testAddOwnerForNonExistenceExam() {
+        testMissingExamThrowsNoSuchEntityException(
+                (em, id) -> em.addOwnerToExam(id, TestHelper.validOwner()),
+                "Trying to add an owner to an exam that does not exist does not throw a NoSuchEntityException"
+        );
+    }
+
+    /**
+     * Tests that trying to remove an owner from an {@link Exam}
+     * that does not exists throws a {@link NoSuchEntityException}.
+     */
+    @Test
+    void testRemoveOwnerForNonExistenceExam() {
+        testMissingExamThrowsNoSuchEntityException(
+                (em, id) -> em.removeOwnerFromExam(id, TestHelper.validOwner()),
+                "Trying to remove an owner from an exam that does not exist does not throw a NoSuchEntityException"
+        );
+    }
+
+    /**
      * Tests that trying to delete an {@link Exam} that does not not exists
      * does not throws a {@link NoSuchEntityException}.
      */

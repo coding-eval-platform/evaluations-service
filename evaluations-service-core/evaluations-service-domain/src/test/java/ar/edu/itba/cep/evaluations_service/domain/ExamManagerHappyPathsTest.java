@@ -231,6 +231,60 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     }
 
     /**
+     * Tests that adding an owner to an {@link Exam} works as expected.
+     *
+     * @param exam A mocked {@link Exam} (the one to which an owner is being set).
+     */
+    @Test
+    void testOwnerIsAdded(@Mock(name = "exam") final Exam exam) {
+        final var examId = TestHelper.validExamId();
+        final var owner = TestHelper.validOwner();
+        doNothing().when(exam).addOwner(owner);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.addOwnerToExam(examId, owner),
+                "An unexpected exception was thrown"
+        );
+        verify(exam, only()).addOwner(owner);
+        verify(examRepository, times(1)).findById(examId);
+        verify(examRepository, times(1)).save(exam);
+        verifyNoMoreInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests that removing an owner from an {@link Exam} works as expected.
+     *
+     * @param exam A mocked {@link Exam} (the one from which an owner is being removed).
+     */
+    @Test
+    void testOwnerIsRemoved(@Mock(name = "exam") final Exam exam) {
+        final var examId = TestHelper.validExamId();
+        final var owner = TestHelper.validOwner();
+        doNothing().when(exam).removeOwner(owner);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.removeOwnerFromExam(examId, owner),
+                "An unexpected exception was thrown"
+        );
+        verify(exam, only()).removeOwner(owner);
+        verify(examRepository, times(1)).findById(examId);
+        verify(examRepository, times(1)).save(exam);
+        verifyNoMoreInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
      * Tests that deleting an upcoming exam is performed as expected.
      *
      * @param exam A mocked {@link Exam} (the one being deleted).

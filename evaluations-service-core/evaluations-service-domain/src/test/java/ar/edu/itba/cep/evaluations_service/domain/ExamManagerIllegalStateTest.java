@@ -186,6 +186,20 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     }
 
     /**
+     * Tests the service behaviour when {@link Exam#removeOwner(String)} throws an {@link IllegalEntityStateException}.
+     *
+     * @param exam A mocked {@link Exam} (the one to which an owner is being removed).
+     */
+    @Test
+    void testExamIsNotSavedWhenAnIllegalEntityStateExceptionIsThrowOnRemoveAnOwner(
+            @Mock(name = "exam") final Exam exam) {
+        final var owner = TestHelper.validOwner();
+        testExam(exam, (em, id) -> em.removeOwnerFromExam(id, owner), e -> e.removeOwner(owner),
+                "An IllegalEntityStateException is not being thrown when the Exam does" +
+                        " (when removing an Owner)");
+    }
+
+    /**
      * Tests that deleting an in progress exam is not allowed.
      * <p>
      * A mocked {@link Exam} (the one being deleted).
