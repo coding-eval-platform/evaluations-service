@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.domain;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.security.authentication.AuthenticationHelper;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
@@ -104,7 +105,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
     public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
             throws IllegalArgumentException {
-        final var exam = new Exam(description, startingAt, duration);
+        final var exam = new Exam(description, startingAt, duration, AuthenticationHelper.currentUserUsername());
         return examRepository.save(exam);
     }
 

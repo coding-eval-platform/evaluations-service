@@ -9,8 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,6 +67,64 @@ class ExamTest {
                                     "Duration mismatch")
                     );
                 }
+        );
+    }
+
+    /**
+     * Tests that adding an owner to an {@link Exam} (using valid values) works as expected.
+     */
+    @Test
+    void testValidOwnerWhenAdding() {
+        Assertions.assertAll(
+                "Adding an owner is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().addOwner(validOwner()),
+                        "It throws an exception"
+                ),
+                () -> {
+                    final var exam = createExam();
+                    final var creator = exam.getOwners().stream().findFirst().orElseThrow(IllegalStateException::new);
+                    final var owner1 = validOwner();
+                    final var owner2 = validOwner();
+                    final var owner3 = validOwner();
+                    exam.addOwner(owner1);
+                    exam.addOwner(owner2);
+                    exam.addOwner(owner3);
+                    Assertions.assertTrue(
+                            exam.getOwners().containsAll(Set.of(creator, owner1, owner2, owner3)),
+                            "There is a mismatch in the owners"
+                    );
+                }
+        );
+    }
+
+    /**
+     * Tests how the {@link Exam#removeOwner(String)} method behaves when using valid and invalid values.
+     */
+    @Test
+    void testValidAndInvalidOwnerWhenRemoving() {
+        Assertions.assertAll(
+                "Removing an owner is not working as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> {
+                            final var exam = createExam();
+                            exam.removeOwner(validOwner());
+                        },
+                        "Throws an exception when using valid owners that are not contained in the owners set"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        () -> {
+                            final var exam = createExam();
+                            final var owner = validOwner();
+                            exam.addOwner(owner);
+                            exam.removeOwner(owner);
+                        },
+                        "Throws an exception when using valid owners that are contained in the owners set"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().removeOwner(invalidOwner()),
+                        "Throws an exception when using an invalid value"
+                )
         );
     }
 
@@ -245,6 +302,161 @@ class ExamTest {
         );
     }
 
+    /**
+     * Tests several variants of the {@link Exam#removeOwner(String)}, testing with the creator and additional owner,
+     * using values that are contained and not contained as well.
+     */
+    @Test
+    void testRemoveAndOwnersQuantity() {
+        Assertions.assertAll(
+                "Removing an owner does not work as expected",
+                () -> Assertions.assertDoesNotThrow(
+                        () -> createExam().removeOwner(validOwner()),
+                        "Removing an owner that is not contained throws an unexpected exception"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        () -> {
+                            final var exam = createExam();
+                            exam.addOwner(validOwner());
+                            exam.removeOwner(validOwner());
+                        },
+                        "Removing an owner that is contained in the owners set throws an unexpected exception, " +
+                                "having another owner in the set (the owner)"
+                ),
+                () -> Assertions.assertDoesNotThrow(
+                        () -> {
+                            final var exam = createExam();
+                            final var creator = exam.getOwners().stream()
+                                    .findFirst()
+                                    .orElseThrow(IllegalStateException::new);
+                            final var anotherOwner = validOwner();
+                            exam.addOwner(anotherOwner);
+                            exam.removeOwner(creator);
+                        },
+                        "Removing the creator throws an unexpected exception, even when having another owner"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalEntityStateException.class,
+                        () -> {
+                            final var exam = createExam();
+                            final var creator = exam.getOwners().stream()
+                                    .findFirst()
+                                    .orElseThrow(IllegalStateException::new);
+                            exam.removeOwner(creator);
+                        },
+                        "Removing the creator (only owner) is being allowed"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalEntityStateException.class,
+                        () -> {
+                            final var exam = createExam();
+                            final var creator = exam.getOwners().stream()
+                                    .findFirst()
+                                    .orElseThrow(IllegalStateException::new);
+                            final var anotherOwner = validOwner();
+                            exam.removeOwner(creator);
+                            exam.removeOwner(anotherOwner);
+                        },
+                        "Removing an owner when there is any other (even the creator was removed) " +
+                                "is being allowed"
+                )
+
+        );
+    }
+
+    /**
+     * Tests that an owner can be added when the exam is upcoming.
+     */
+    @Test
+    void testAddOwnerIfUpcoming() {
+        Assertions.assertDoesNotThrow(
+                () -> createExam().addOwner(validOwner()),
+                "Adding an owner when the exam is upcoming is not being allowed"
+        );
+    }
+
+    /**
+     * Tests that an owner can be added when the exam is in progress.
+     */
+    @Test
+    void testAddOwnerIfInProgress() {
+        Assertions.assertDoesNotThrow(
+                () -> {
+                    final var exam = createExam();
+                    exam.startExam();
+                    exam.addOwner(validOwner());
+                },
+                "Adding an owner when the exam is in progress is not being allowed"
+        );
+    }
+
+    /**
+     * Tests that an owner can be added when the exam is finished.
+     */
+    @Test
+    void testAddOwnerIfFinished() {
+        Assertions.assertDoesNotThrow(
+                () -> {
+                    final var exam = createExam();
+                    exam.startExam();
+                    exam.finishExam();
+                    exam.addOwner(validOwner());
+                },
+                "Adding an owner when the exam is finished is not being allowed"
+        );
+    }
+
+    /**
+     * Tests that an owner can be removed when the exam is upcoming.
+     */
+    @Test
+    void testRemoveOwnerIfUpcoming() {
+        Assertions.assertDoesNotThrow(
+                () -> {
+                    final var exam = createExam();
+                    final var owner = validOwner();
+                    exam.addOwner(owner);
+                    exam.removeOwner(owner);
+                },
+                "Removing an owner when the exam is upcoming is not being allowed"
+        );
+    }
+
+    /**
+     * Tests that an owner can be removed when the exam is in progress.
+     */
+    @Test
+    void testRemoveOwnerIfInProgress() {
+        Assertions.assertDoesNotThrow(
+                () -> {
+                    final var exam = createExam();
+                    final var owner = validOwner();
+                    exam.addOwner(owner);
+                    exam.startExam();
+                    exam.removeOwner(owner);
+                },
+                "Removing an owner when the exam is in progress is not being allowed"
+        );
+    }
+
+    /**
+     * Tests that an owner can be removed when the exam is finished.
+     */
+    @Test
+    void testRemoveOwnerIfFinished() {
+        Assertions.assertDoesNotThrow(
+                () -> {
+                    final var exam = createExam();
+                    final var owner = validOwner();
+                    exam.addOwner(owner);
+                    exam.startExam();
+                    exam.finishExam();
+                    exam.removeOwner(owner);
+                },
+                "Removing an owner when the exam is finished is not being allowed"
+        );
+    }
+
 
     // ================================================================================================================
     // Constraint testing
@@ -262,7 +474,7 @@ class ExamTest {
     void testNullDescriptionOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exam(null, validStartingMoment(), validDuration()),
+                () -> new Exam(null, validStartingMoment(), validDuration(), validOwner()),
                 "Creating an exam with a null description is being allowed."
         );
     }
@@ -276,7 +488,7 @@ class ExamTest {
         shortDescription().ifPresent(
                 shortDescription -> Assertions.assertThrows(
                         IllegalArgumentException.class,
-                        () -> new Exam(shortDescription, validStartingMoment(), validDuration()),
+                        () -> new Exam(shortDescription, validStartingMoment(), validDuration(), validOwner()),
                         "Creating an exam with a too short description is being allowed."
                 )
         );
@@ -290,7 +502,7 @@ class ExamTest {
     void testLongDescriptionOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exam(longDescription(), validStartingMoment(), validDuration()),
+                () -> new Exam(longDescription(), validStartingMoment(), validDuration(), validOwner()),
                 "Creating an exam with a too long description is being allowed."
         );
     }
@@ -303,7 +515,7 @@ class ExamTest {
     void testNullStartingAtOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exam(validDescription(), null, validDuration()),
+                () -> new Exam(validDescription(), null, validDuration(), validOwner()),
                 "Creating an exam with a null starting at local date time is being allowed."
         );
     }
@@ -316,7 +528,7 @@ class ExamTest {
     void testPastStartingAtOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exam(validDescription(), pastStartingMoment(), validDuration()),
+                () -> new Exam(validDescription(), pastStartingMoment(), validDuration(), validOwner()),
                 "Creating an exam with a past starting at local date time is being allowed."
         );
     }
@@ -329,8 +541,64 @@ class ExamTest {
     void testNullDurationOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new Exam(validDescription(), validStartingMoment(), null),
+                () -> new Exam(validDescription(), validStartingMoment(), null, validOwner()),
                 "Creating an exam with a null duration is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown when creating an {@link Exam} with a null creator.
+     */
+    @Test
+    void testNullCreator() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new Exam(validDescription(), validStartingMoment(), validDuration(), null),
+                "Creating an exam with a null creator is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown when creating an {@link Exam}
+     * with an empty string creator.
+     */
+    @Test
+    void testEmptyStringCreator() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new Exam(validDescription(), validStartingMoment(), validDuration(), ""),
+                "Creating an exam with an empty string creator is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown when creating an {@link Exam}
+     * with a blank string creator.
+     */
+    @Test
+    void testBlankStringCreator() {
+        Assertions.assertAll(
+                "Creating an exam with a blank string creator is being allowed.",
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Exam(validDescription(), validStartingMoment(), validDuration(), " "),
+                        "It is being allowed with a space"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Exam(validDescription(), validStartingMoment(), validDuration(), "\t"),
+                        "It is being allowed with a tab"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Exam(validDescription(), validStartingMoment(), validDuration(), "\n"),
+                        "It is being allowed with a newline character"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Exam(validDescription(), validStartingMoment(), validDuration(), "\n \t \n"),
+                        "It is being allowed with a combination of several blank characters"
+                )
         );
     }
 
@@ -426,6 +694,65 @@ class ExamTest {
     }
 
 
+    // ================================
+    // Add owner
+    // ================================
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown when adding a null creator to an {@link Exam}.
+     */
+    @Test
+    void testNullOwner() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> createExam().addOwner(null),
+                "Adding a null owner is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown when adding an empty string creator to an {@link Exam}.
+     */
+    @Test
+    void testEmptyStringOwner() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> createExam().addOwner(""),
+                "Adding an empty string owner is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown when adding a blank string creator to an {@link Exam}.
+     */
+    @Test
+    void testBlankStringOwner() {
+        Assertions.assertAll(
+                "Adding a blank string owner is being allowed.",
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> createExam().addOwner(" "),
+                        "It is being allowed with a space"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> createExam().addOwner("\t"),
+                        "It is being allowed with a tab"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> createExam().addOwner("\n"),
+                        "It is being allowed with a newline character"
+                ),
+                () -> Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> createExam().addOwner("\n \t \n"),
+                        "It is being allowed with a combination of several blank characters"
+                )
+        );
+    }
+
+
     // ================================================================================================================
     // Helpers
     // ================================================================================================================
@@ -443,7 +770,8 @@ class ExamTest {
         return new Exam(
                 validDescription(),
                 validStartingMoment(),
-                validDuration()
+                validDuration(),
+                validOwner()
         );
     }
 
@@ -480,6 +808,13 @@ class ExamTest {
      */
     private static Duration validDuration() {
         return Duration.ofMinutes(Faker.instance().number().numberBetween(15L, 240L));
+    }
+
+    /**
+     * @return A random username.
+     */
+    private static String validOwner() {
+        return Faker.instance().name().username();
     }
 
 
@@ -523,5 +858,17 @@ class ExamTest {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
                 ;
+    }
+
+    /**
+     * @return An invalid owner.
+     */
+    private static String invalidOwner() {
+        final List<String> invalidValues = new LinkedList<>();
+        invalidValues.add(null);
+        invalidValues.add("");
+        invalidValues.add(" \t\n");
+        final var index = (int) Faker.instance().number().numberBetween(0L, invalidValues.size());
+        return invalidValues.get(index);
     }
 }

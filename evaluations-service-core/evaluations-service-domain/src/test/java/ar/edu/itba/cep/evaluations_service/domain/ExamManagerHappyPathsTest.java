@@ -13,6 +13,9 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -89,13 +92,23 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
 
     /**
      * Tests that an {@link Exam} is created (i.e is saved) when arguments are valid.
+     *
+     * @param authentication  A mocked {@link Authentication} that will hold a mocked principal.
+     * @param securityContext A mocked {@link SecurityContext} to be retrieved from the {@link SecurityContextHolder}.
      */
     @Test
-    void testExamIsCreatedUsingValidArguments() {
+    void testExamIsCreatedUsingValidArguments(
+            @Mock(name = "authentication") final Authentication authentication,
+            @Mock(name = "securityContext") final SecurityContext securityContext) {
         final var description = TestHelper.validExamDescription();
         final var startingAt = TestHelper.validExamStartingMoment();
         final var duration = TestHelper.validExamDuration();
         when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
+        // Set the security context
+        when(authentication.getPrincipal()).thenReturn(TestHelper.validOwner());
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         final var exam = examManager.createExam(description, startingAt, duration);
         Assertions.assertAll("Exam properties are not the expected",
                 () -> Assertions.assertEquals(
@@ -120,6 +133,9 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
+
+        // Clear the security context
+        SecurityContextHolder.clearContext();
     }
 
 
