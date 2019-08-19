@@ -97,7 +97,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public Optional<ExamWithOwners> getExam(final long examId) {
         return examRepository.findById(examId).map(exam -> {
             exam.getOwners().size(); // Initialize Lazy Collection
@@ -107,7 +110,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')")
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
             throws IllegalArgumentException {
         final var exam = new Exam(description, startingAt, duration, AuthenticationHelper.currentUserUsername());
@@ -116,7 +122,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void modifyExam(final long examId,
                            final String description, final LocalDateTime startingAt, final Duration duration)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
@@ -127,7 +136,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void startExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
         // First verify that the exam has at least once exercise.
@@ -147,7 +159,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void finishExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
         exam.finishExam(); // The Exam verifies state by its own.
@@ -156,6 +171,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void addOwnerToExam(final long examId, final String owner)
             throws NoSuchEntityException, IllegalArgumentException {
         final var exam = loadExam(examId);
@@ -165,6 +184,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void removeOwnerFromExam(final long examId, final String owner)
             throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
@@ -174,7 +197,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void deleteExam(final long examId) throws IllegalEntityStateException {
         examRepository.findById(examId)
                 .ifPresent(exam -> {
@@ -191,7 +217,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     // ================================================================================================================
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public List<Exercise> getExercises(final long examId) throws NoSuchEntityException {
         final var exam = loadExam(examId);
         return exerciseRepository.getExamExercises(exam);
@@ -199,7 +228,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public void clearExercises(final long examId) throws NoSuchEntityException, IllegalEntityStateException {
         final var exam = loadExam(examId);
         performExamUpcomingStateVerification(exam);
@@ -209,7 +241,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
     public Exercise createExercise(
             final long examId,
             final String question,
@@ -225,14 +260,20 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public Optional<Exercise> getExercise(long exerciseId) {
         return exerciseRepository.findById(exerciseId);
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public void modifyExercise(
             final long exerciseId,
             final String question,
@@ -249,7 +290,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public void deleteExercise(final long exerciseId) throws IllegalEntityStateException {
         exerciseRepository.findById(exerciseId)
                 .ifPresent(exercise -> {
@@ -265,14 +309,20 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     // ================================================================================================================
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public List<TestCase> getPublicTestCases(final long exerciseId) throws NoSuchEntityException {
         final var exercise = loadExercise(exerciseId);
         return testCaseRepository.getExercisePublicTestCases(exercise);
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public List<TestCase> getPrivateTestCases(final long exerciseId) throws NoSuchEntityException {
         final var exercise = loadExercise(exerciseId);
         return testCaseRepository.getExercisePrivateTestCases(exercise);
@@ -280,7 +330,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public TestCase createTestCase(
             final long exerciseId,
             final TestCase.Visibility visibility,
@@ -294,7 +347,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @testCaseAuthorizationProvider.isOwner(#testCaseId, principal))"
+    )
     public Optional<TestCase> getTestCase(long testCaseId) {
         return testCaseRepository.findById(testCaseId).map(testCase -> {
             testCase.getInputs().size(); // Initialize Lazy Collection
@@ -305,7 +361,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @testCaseAuthorizationProvider.isOwner(#testCaseId, principal))"
+    )
     public void modifyTestCase(final long testCaseId,
                                final TestCase.Visibility visibility,
                                final Long timeout,
@@ -320,7 +379,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @testCaseAuthorizationProvider.isOwner(#testCaseId, principal))"
+    )
     public void deleteTestCase(final long testCaseId) throws IllegalEntityStateException {
         testCaseRepository.findById(testCaseId)
                 .ifPresent(testCase -> {
@@ -335,7 +397,10 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     // ================================================================================================================
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only allow if owner?
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+    )
     public Page<ExerciseSolution> listSolutions(final long exerciseId, final PagingRequest pagingRequest)
             throws NoSuchEntityException {
         final var exercise = loadExercise(exerciseId);
@@ -345,6 +410,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
     @Override
     @Transactional
+    // TODO: only allow students
     public ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
