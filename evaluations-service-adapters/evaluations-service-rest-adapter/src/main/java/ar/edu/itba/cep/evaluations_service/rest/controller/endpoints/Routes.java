@@ -13,6 +13,8 @@ public class Routes {
 
     public static final String EXAM_FINISH = "/exams/{examId : \\d+}/finish";
 
+    public static final String EXAM_OWNER = "/exams/{examId : \\d+}/owners/{owner : .+}";
+
     public static final String EXAM_EXERCISES = "/exams/{examId : \\d+}/exercises";
 
     public static final String EXERCISES = "/exercises";

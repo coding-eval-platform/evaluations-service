@@ -5,10 +5,12 @@ import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExamUploadDto;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import com.bellotapps.webapps_commons.config.JerseyController;
 import com.bellotapps.webapps_commons.data_transfer.jersey.annotations.PaginationParam;
+import com.bellotapps.webapps_commons.exceptions.IllegalParamValueException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import javax.validation.Valid;
 import javax.validation.groups.ConvertGroup;
@@ -17,6 +19,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.Collections;
 
 /**
  * Rest Adapter of {@link ExamService},
@@ -111,6 +114,25 @@ public class ExamEndpoint {
     public Response finishExam(@PathParam("examId") final long examId) {
         LOGGER.debug("Finishing exam with id {}", examId);
         examService.finishExam(examId);
+        return Response.noContent().build();
+    }
+
+    @PUT
+    @Path(Routes.EXAM_OWNER)
+    public Response addOwner(@PathParam("examId") final long examId, @PathParam("owner") final String owner) {
+        if (!StringUtils.hasText(owner)) {
+            throw new IllegalParamValueException(Collections.singletonList("owner"));
+        }
+        LOGGER.debug("Adding owner {} to exam with id {}", owner, examId);
+        examService.addOwnerToExam(examId, owner);
+        return Response.noContent().build();
+    }
+
+    @DELETE
+    @Path(Routes.EXAM_OWNER)
+    public Response removeOwner(@PathParam("examId") final long examId, @PathParam("owner") final String owner) {
+        LOGGER.debug("Removing owner {} to exam with id {}", owner, examId);
+        examService.removeOwnerFromExam(examId, owner);
         return Response.noContent().build();
     }
 
