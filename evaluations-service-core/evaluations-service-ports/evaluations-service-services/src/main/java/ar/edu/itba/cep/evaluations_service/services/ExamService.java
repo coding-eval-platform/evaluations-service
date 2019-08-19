@@ -27,7 +27,15 @@ public interface ExamService {
      * @param pagingRequest The {@link PagingRequest} containing paging data.
      * @return The requested {@link Page} of {@link Exam} (wrapped in {@link ExamWithoutOwners} instances).
      */
-    Page<ExamWithoutOwners> listExams(final PagingRequest pagingRequest);
+    Page<ExamWithoutOwners> listAllExams(final PagingRequest pagingRequest);
+
+    /**
+     * Lists all {@link Exam}s belonging to the currently authenticated user, in a paginated view.
+     *
+     * @param pagingRequest The {@link PagingRequest} containing paging data.
+     * @return The requested {@link Page} of {@link Exam} (wrapped in {@link ExamWithoutOwners} instances).
+     */
+    Page<ExamWithoutOwners> listMyExams(final PagingRequest pagingRequest);
 
     /**
      * Finds the {@link Exam} with the given {@code examId}.

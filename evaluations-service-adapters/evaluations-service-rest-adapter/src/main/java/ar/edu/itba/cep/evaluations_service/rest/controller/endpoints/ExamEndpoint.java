@@ -41,6 +41,7 @@ public class ExamEndpoint {
      */
     private final ExamService examService;
 
+
     /**
      * Constructor.
      *
@@ -56,7 +57,15 @@ public class ExamEndpoint {
     @Path(Routes.EXAMS)
     public Response listExams(@PaginationParam final PagingRequest pagingRequest) {
         LOGGER.debug("Getting exams");
-        final var exams = examService.listExams(pagingRequest).map(NoOwnersExamDownloadDto::new);
+        final var exams = examService.listAllExams(pagingRequest).map(NoOwnersExamDownloadDto::new);
+        return Response.ok(exams.content()).build();
+    }
+
+    @GET
+    @Path(Routes.MY_EXAMS)
+    public Response listMyExams(@PaginationParam final PagingRequest pagingRequest) {
+        LOGGER.debug("Getting exams owned by the currently authenticated user");
+        final var exams = examService.listMyExams(pagingRequest).map(NoOwnersExamDownloadDto::new);
         return Response.ok(exams.content()).build();
     }
 

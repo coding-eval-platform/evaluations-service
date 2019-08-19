@@ -7,6 +7,8 @@ public class Routes {
 
     public static final String EXAMS = "/exams";
 
+    public static final String MY_EXAMS = "/exams/mine";
+
     public static final String EXAM = "/exams/{examId : \\d+}";
 
     public static final String EXAM_START = "/exams/{examId : \\d+}/start";
@@ -31,13 +33,13 @@ public class Routes {
 
     public static final String EXERCISE_SOLUTIONS = "/exercises/{exerciseId : \\d+}/solutions";
 
-    public static final String TEST_CASES = "test-cases";
+    public static final String TEST_CASES = "/test-cases";
 
-    public static final String TEST_CASE = "test-cases/{testCaseId : \\d+}";
+    public static final String TEST_CASE = "/test-cases/{testCaseId : \\d+}";
 
-    public static final String TEST_CASE_VISIBILITY = "test-cases/{testCaseId : \\d+}/visibility";
+    public static final String TEST_CASE_VISIBILITY = "/test-cases/{testCaseId : \\d+}/visibility";
 
-    public static final String TEST_CASE_INPUTS = "test-cases/{testCaseId : \\d+}/inputs";
+    public static final String TEST_CASE_INPUTS = "/test-cases/{testCaseId : \\d+}/inputs";
 
-    public static final String TEST_CASE_EXPECTED_OUTPUTS = "test-cases/{testCaseId : \\d+}/expected-outputs";
+    public static final String TEST_CASE_EXPECTED_OUTPUTS = "/test-cases/{testCaseId : \\d+}/expected-outputs";
 }

@@ -3,6 +3,9 @@ package ar.edu.itba.cep.evaluations_service.spring_data;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
+import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
+import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.paging_and_sorting.PagingMapper;
 import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.BasicRepositoryAdapter;
 import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.PagingRepositoryAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,5 +49,17 @@ public class SpringDataExamRepositoryAdapter
     @Override
     public PagingAndSortingRepository<Exam, Long> getPagingAndSortingRepository() {
         return repository;
+    }
+
+
+    // ================================================================================================================
+    // ExamRepository specific methods
+    // ================================================================================================================
+
+    @Override
+    public Page<Exam> getOwnedBy(final String owner, final PagingRequest pagingRequest) {
+        final var pageable = PagingMapper.map(pagingRequest);
+        final var page = repository.findByOwners(owner, pageable);
+        return PagingMapper.map(page);
     }
 }

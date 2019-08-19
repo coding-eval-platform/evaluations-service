@@ -91,9 +91,18 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     // ================================================================================================================
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER')") // TODO: only list own exams?
-    public Page<ExamWithoutOwners> listExams(final PagingRequest pagingRequest) {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Page<ExamWithoutOwners> listAllExams(final PagingRequest pagingRequest) {
         return examRepository.findAll(pagingRequest).map(ExamWithoutOwners::new);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN') or (isFullyAuthenticated() and hasAuthority('TEACHER'))")
+    public Page<ExamWithoutOwners> listMyExams(final PagingRequest pagingRequest) {
+        return examRepository.getOwnedBy(
+                AuthenticationHelper.currentUserUsername(),
+                pagingRequest
+        ).map(ExamWithoutOwners::new);
     }
 
     @Override
