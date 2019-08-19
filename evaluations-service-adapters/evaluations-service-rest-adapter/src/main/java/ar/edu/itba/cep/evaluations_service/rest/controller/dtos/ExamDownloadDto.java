@@ -12,59 +12,31 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
- * Data transfer object for sending an {@link Exam}s data to an API consumer.
+ * Data transfer object for {@link Exam}s.
  */
-public class ExamDownloadDto {
+/* package */  abstract class ExamDownloadDto<W> {
 
     /**
-     * The {@link Exam}'s id.
+     * The wrapper of an {@link Exam} to be, in turn, wrapped in this DTO.
      */
-    private final long id;
-
-    /**
-     * The description of the exam (e.g mid-term exams, final exams, etc.).
-     */
-    private final String description;
-
-    /**
-     * {@link LocalDateTime} at which the exam starts.
-     */
-    private final LocalDateTime startingAt;
-
-    /**
-     * {@link Duration} of the exam.
-     */
-    private final Duration duration;
-
-    /**
-     * The exam's {@link Exam.State} (i.e upcoming, in progress or finished).
-     */
-    private final Exam.State state;
-
-    /**
-     * The actual {@link Instant} at which the exam really started.
-     */
-    private final Instant actualStartingMoment;
-
-    /**
-     * The actual {@link Duration} of the exam.
-     */
-    private final Duration actualDuration;
+    private final W examWrapper;
 
 
     /**
      * Constructor.
      *
-     * @param exam The {@link Exam} whose data will be transferred.
+     * @param examWrapper The wrapper of an {@link Exam} to be, in turn, wrapped in this DTO.
      */
-    public ExamDownloadDto(final Exam exam) {
-        this.id = exam.getId();
-        this.description = exam.getDescription();
-        this.startingAt = exam.getStartingAt();
-        this.duration = exam.getDuration();
-        this.state = exam.getState();
-        this.actualStartingMoment = exam.getActualStartingMoment();
-        this.actualDuration = exam.getActualDuration();
+    /* package */ ExamDownloadDto(final W examWrapper) {
+        this.examWrapper = examWrapper;
+    }
+
+
+    /**
+     * @return The wrapper of an {@link Exam} to be, in turn, wrapped in this DTO.
+     */
+    /* package */ W getExamWrapper() {
+        return examWrapper;
     }
 
 
@@ -72,59 +44,45 @@ public class ExamDownloadDto {
      * @return The {@link Exam}'s id.
      */
     @JsonProperty(value = "id", access = JsonProperty.Access.READ_ONLY)
-    public long getId() {
-        return id;
-    }
+    public abstract long getId();
 
     /**
      * @return The description for the exam (e.g mid-term exams, final exams, etc.).
      */
     @JsonProperty(value = "description", access = JsonProperty.Access.READ_ONLY)
-    public String getDescription() {
-        return description;
-    }
+    public abstract String getDescription();
 
     /**
      * @return {@link LocalDateTime} at which the exam starts.
      */
     @JsonProperty(value = "startingAt", access = JsonProperty.Access.READ_ONLY)
     @JsonSerialize(using = Java8ISOLocalDateTimeSerializer.class)
-    public LocalDateTime getStartingAt() {
-        return startingAt;
-    }
+    public abstract LocalDateTime getStartingAt();
 
     /**
      * @return {@link Duration} of the exam.
      */
     @JsonProperty(value = "duration", access = JsonProperty.Access.READ_ONLY)
     @JsonSerialize(using = Java8DurationToMinutesSerializer.class)
-    public Duration getDuration() {
-        return duration;
-    }
+    public abstract Duration getDuration();
 
     /**
      * @return The exam's {@link Exam.State} (i.e upcoming, in progress or finished).
      */
     @JsonProperty(value = "state", access = JsonProperty.Access.READ_ONLY)
-    public Exam.State getState() {
-        return state;
-    }
+    public abstract Exam.State getState();
 
     /**
      * @return The actual {@link Instant} at which the exam really started.
      */
     @JsonProperty(value = "actualStartingMoment", access = JsonProperty.Access.READ_ONLY)
     @JsonSerialize(using = Java8InstantToEpochTimeSerializer.class)
-    public Instant getActualStartingMoment() {
-        return actualStartingMoment;
-    }
+    public abstract Instant getActualStartingMoment();
 
     /**
      * @return The actual {@link Duration} of the exam.
      */
     @JsonProperty(value = "actualDuration", access = JsonProperty.Access.READ_ONLY)
     @JsonSerialize(using = Java8DurationToMinutesSerializer.class)
-    public Duration getActualDuration() {
-        return actualDuration;
-    }
+    public abstract Duration getActualDuration();
 }

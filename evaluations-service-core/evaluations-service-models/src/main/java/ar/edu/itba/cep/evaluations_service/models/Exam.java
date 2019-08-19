@@ -11,6 +11,9 @@ import org.springframework.util.Assert;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -56,6 +59,11 @@ public class Exam {
      */
     private Duration actualDuration;
 
+    /**
+     * A {@link Set} containing the owners of this exam.
+     */
+    private final Set<String> owners;
+
 
     /**
      * Default constructor.
@@ -63,6 +71,7 @@ public class Exam {
     /* package */ Exam() {
         // Initialize final fields with default values.
         this.id = 0;
+        this.owners = new HashSet<>();
     }
 
     /**
@@ -71,13 +80,15 @@ public class Exam {
      * @param description A description for the exam (e.g mid-term exams, final exams, etc.).
      * @param startingAt  {@link LocalDateTime} at which the exam starts.
      * @param duration    {@link Duration} of the exam.
+     * @param creator     The creator of this exam.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public Exam(final String description, final LocalDateTime startingAt, final Duration duration)
+    public Exam(final String description, final LocalDateTime startingAt, final Duration duration, final String creator)
             throws IllegalArgumentException {
         assertDescription(description);
         assertStartingAt(startingAt);
         assertDuration(duration);
+        assertOwner(creator);
         this.id = 0;
         this.description = description;
         this.startingAt = startingAt;
@@ -85,6 +96,16 @@ public class Exam {
         this.state = State.UPCOMING;
         this.actualStartingMoment = null;
         this.actualDuration = null;
+        this.owners = new HashSet<>();
+        owners.add(creator);
+    }
+
+
+    /**
+     * @return An unmodifiable {@link Set} containing the owners of this exam.
+     */
+    public Set<String> getOwners() {
+        return Collections.unmodifiableSet(owners);
     }
 
 
@@ -135,6 +156,31 @@ public class Exam {
         this.actualDuration = Duration.between(actualStartingMoment, Instant.now());
     }
 
+    /**
+     * Adds the given {@code owner} to this exam.
+     *
+     * @param owner The owner to be added.
+     * @throws IllegalArgumentException If the given {@code owner} is invalid.
+     * @apiNote This is an idempotent method.
+     */
+    public void addOwner(final String owner) throws IllegalArgumentException {
+        assertOwner(owner);
+        this.owners.add(owner);
+    }
+
+    /**
+     * Removes the given {@code owner} from this exam.
+     *
+     * @param owner The owner to be removed.
+     * @throws IllegalEntityStateException If when executing this method the exam has only one owner.
+     * @apiNote This is an idempotent method.
+     */
+    public void removeOwner(final String owner) throws IllegalEntityStateException {
+        if (owners.contains(owner)) {
+            verifyOwners();
+            this.owners.remove(owner);
+        }
+    }
 
     // ================================
     // Assertions
@@ -175,6 +221,16 @@ public class Exam {
         Assert.notNull(duration, "The duration is missing");
     }
 
+    /**
+     * Asserts that the given {@code owner} is valid.
+     *
+     * @param owner The owner to be checked.
+     * @throws IllegalArgumentException If the owner is not valid.
+     */
+    private static void assertOwner(final String owner) throws IllegalArgumentException {
+        Assert.hasText(owner, "The owner must have text");
+    }
+
 
     // ================================
     // Helpers
@@ -188,6 +244,17 @@ public class Exam {
     private void verifyStateForUpdate() throws IllegalEntityStateException {
         if (state != State.UPCOMING) {
             throw new IllegalEntityStateException(UPCOMING_STATE_FOR_MODIFICATIONS);
+        }
+    }
+
+    /**
+     * Checks whether an owner can be removed.
+     *
+     * @throws IllegalEntityStateException If an owner cannot be removed.
+     */
+    private void verifyOwners() throws IllegalEntityStateException {
+        if (owners.size() <= 1) {
+            throw new IllegalEntityStateException(LAST_OWNER);
         }
     }
 
@@ -237,4 +304,10 @@ public class Exam {
      */
     private static final IllegalEntityStateError IN_PROGRESS_STATE_FOR_FINISHING =
             new IllegalEntityStateError("The exam must be in progress to be finished", "state");
+
+    /**
+     * Indicates that an owner cannot be removed because it is the last owner in the {@code owners} {@link Set}.
+     */
+    private static final IllegalEntityStateError LAST_OWNER =
+            new IllegalEntityStateError("The exam has only one owner", "owners");
 }

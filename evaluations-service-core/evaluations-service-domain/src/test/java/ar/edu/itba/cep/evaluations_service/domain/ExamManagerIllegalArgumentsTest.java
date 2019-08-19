@@ -12,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 
@@ -56,9 +59,18 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
 
     /**
      * Tests that an {@link Exam} is not created (i.e is not saved) when arguments are not valid.
+     *
+     * @param authentication  A mocked {@link Authentication} that will hold a mocked principal.
+     * @param securityContext A mocked {@link SecurityContext} to be retrieved from the {@link SecurityContextHolder}.
      */
     @Test
-    void testExamIsNotCreatedUsingInvalidArguments() {
+    void testExamIsNotCreatedUsingInvalidArguments(
+            @Mock(name = "authentication") final Authentication authentication,
+            @Mock(name = "securityContext") final SecurityContext securityContext) {
+        // Set the security context
+        when(authentication.getPrincipal()).thenReturn(TestHelper.validOwner());
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> examManager.createExam(
@@ -70,6 +82,9 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         verifyNoInteractionWithAnyMockedRepository();
         verifyZeroInteractions(executorServiceCommandMessageProxy);
+
+        // Clear the security context
+        SecurityContextHolder.clearContext();
     }
 
 
@@ -92,6 +107,27 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 "Using invalid arguments when updating an Exam did not throw an IllegalArgumentException"
         );
         verify(exam, only()).update(newDescription, newStartingAt, newDuration);
+        verifyOnlyExamSearch(examId);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests that an {@link Exam} is not saved if trying to add an invalid owner.
+     *
+     * @param exam A mocked {@link Exam} (the one to which an owner is being set).
+     */
+    @Test
+    void testOwnerIsNotAddedWithInvalidArgument(@Mock(name = "exam") final Exam exam) {
+        final var examId = TestHelper.validExamId();
+        final var owner = TestHelper.invalidOwner();
+        doThrow(IllegalArgumentException.class).when(exam).addOwner(owner);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> examManager.addOwnerToExam(examId, owner),
+                "setting an invalid owner to an Exam did not throw an IllegalArgumentException"
+        );
+        verify(exam, only()).addOwner(owner);
         verifyOnlyExamSearch(examId);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
     }

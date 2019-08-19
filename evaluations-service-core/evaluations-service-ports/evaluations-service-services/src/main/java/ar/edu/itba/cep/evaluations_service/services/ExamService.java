@@ -25,17 +25,26 @@ public interface ExamService {
      * Lists all {@link Exam}s in a paginated view.
      *
      * @param pagingRequest The {@link PagingRequest} containing paging data.
-     * @return The requested {@link Page} of {@link Exam}.
+     * @return The requested {@link Page} of {@link Exam} (wrapped in {@link ExamWithoutOwners} instances).
      */
-    Page<Exam> listExams(final PagingRequest pagingRequest);
+    Page<ExamWithoutOwners> listAllExams(final PagingRequest pagingRequest);
+
+    /**
+     * Lists all {@link Exam}s belonging to the currently authenticated user, in a paginated view.
+     *
+     * @param pagingRequest The {@link PagingRequest} containing paging data.
+     * @return The requested {@link Page} of {@link Exam} (wrapped in {@link ExamWithoutOwners} instances).
+     */
+    Page<ExamWithoutOwners> listMyExams(final PagingRequest pagingRequest);
 
     /**
      * Finds the {@link Exam} with the given {@code examId}.
      *
      * @param examId The id of the {@link Exam} being requested.
-     * @return An {@link Optional} containing the requested {@link Exam} if it exists, or empty otherwise.
+     * @return An {@link Optional} containing the requested {@link Exam} if it exists
+     * (wrapped in an {@link ExamWithOwners} instance), or empty otherwise.
      */
-    Optional<Exam> getExam(final long examId);
+    Optional<ExamWithOwners> getExam(final long examId);
 
     /**
      * Creates an {@link Exam} with the given values.
@@ -68,7 +77,7 @@ public interface ExamService {
     /**
      * Starts the {@link Exam} with the given {@code examId}.
      *
-     * @param examId The id The id of the {@link Exam} to be started.
+     * @param examId The id of the {@link Exam} to be started.
      * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam}'s state is not {@link Exam.State#UPCOMING}.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#UPCOMING} state.
@@ -78,12 +87,33 @@ public interface ExamService {
     /**
      * Finishes the {@link Exam} with the given {@code examId}.
      *
-     * @param examId The id The id of the {@link Exam} to be finished.
+     * @param examId The id of the {@link Exam} to be finished.
      * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
      * @throws IllegalEntityStateException If the {@link Exam}'s state is not {@link Exam.State#FINISHED}.
      * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#IN_PROGRESS} state.
      */
     void finishExam(final long examId) throws NoSuchEntityException, IllegalEntityStateException;
+
+    /**
+     * Adds the given {@code owner} to the {@link Exam} with the given {@code examId}.
+     *
+     * @param examId The id of the {@link Exam} to which an owner will be added.
+     * @param owner  The owner to be added.
+     * @throws NoSuchEntityException    If there is no {@link Exam} with the given {@code examId}.
+     * @throws IllegalArgumentException If the given {@code owner} is invalid.
+     */
+    void addOwnerToExam(final long examId, final String owner) throws NoSuchEntityException, IllegalArgumentException;
+
+    /**
+     * Removes the given {@code owner} from the {@link Exam} with the given {@code examId}.
+     *
+     * @param examId The id of the {@link Exam} to which an owner will be removed.
+     * @param owner  The owner to be removed.
+     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
+     * @throws IllegalEntityStateException If when executing this method the exam has only one owner.
+     */
+    void removeOwnerFromExam(final long examId, final String owner)
+            throws NoSuchEntityException, IllegalEntityStateException;
 
     /**
      * Deletes the {@link Exam} with the given {@code examId}.

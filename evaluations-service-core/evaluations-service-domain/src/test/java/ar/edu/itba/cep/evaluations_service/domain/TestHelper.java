@@ -99,6 +99,14 @@ class TestHelper {
     }
 
     /**
+     * @return A random username.
+     */
+    /* package */
+    static String validOwner() {
+        return Faker.instance().name().username();
+    }
+
+    /**
      * @return A valid {@link Exercise} id.
      */
     /* package */
@@ -310,6 +318,19 @@ class TestHelper {
     /* package */
     static Duration invalidExamDuration() {
         return null;
+    }
+
+    /**
+     * @return An invalid owner.
+     */
+    /* package */
+    static String invalidOwner() {
+        final List<String> invalidValues = new LinkedList<>();
+        invalidValues.add(null);
+        invalidValues.add("");
+        invalidValues.add(" \t\n");
+        final var index = (int) Faker.instance().number().numberBetween(0L, invalidValues.size());
+        return invalidValues.get(index);
     }
 
     /**

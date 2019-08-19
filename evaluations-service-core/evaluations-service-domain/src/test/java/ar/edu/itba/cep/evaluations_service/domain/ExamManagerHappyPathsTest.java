@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.domain;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.hamcrest.Matchers;
@@ -13,6 +14,9 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -78,7 +82,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 ),
                 () -> Assertions.assertEquals(
                         examId,
-                        examOptional.map(Exam::getId).get().longValue(),
+                        examOptional.map(ExamWithOwners::getId).get().longValue(),
                         "The returned Exam id's is not the same as the requested"
                 )
         );
@@ -89,13 +93,23 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
 
     /**
      * Tests that an {@link Exam} is created (i.e is saved) when arguments are valid.
+     *
+     * @param authentication  A mocked {@link Authentication} that will hold a mocked principal.
+     * @param securityContext A mocked {@link SecurityContext} to be retrieved from the {@link SecurityContextHolder}.
      */
     @Test
-    void testExamIsCreatedUsingValidArguments() {
+    void testExamIsCreatedUsingValidArguments(
+            @Mock(name = "authentication") final Authentication authentication,
+            @Mock(name = "securityContext") final SecurityContext securityContext) {
         final var description = TestHelper.validExamDescription();
         final var startingAt = TestHelper.validExamStartingMoment();
         final var duration = TestHelper.validExamDuration();
         when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
+        // Set the security context
+        when(authentication.getPrincipal()).thenReturn(TestHelper.validOwner());
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         final var exam = examManager.createExam(description, startingAt, duration);
         Assertions.assertAll("Exam properties are not the expected",
                 () -> Assertions.assertEquals(
@@ -120,6 +134,9 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(executorServiceCommandMessageProxy);
+
+        // Clear the security context
+        SecurityContextHolder.clearContext();
     }
 
 
@@ -204,6 +221,60 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 "An unexpected exception was thrown"
         );
         verify(exam, only()).finishExam();
+        verify(examRepository, times(1)).findById(examId);
+        verify(examRepository, times(1)).save(exam);
+        verifyNoMoreInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests that adding an owner to an {@link Exam} works as expected.
+     *
+     * @param exam A mocked {@link Exam} (the one to which an owner is being set).
+     */
+    @Test
+    void testOwnerIsAdded(@Mock(name = "exam") final Exam exam) {
+        final var examId = TestHelper.validExamId();
+        final var owner = TestHelper.validOwner();
+        doNothing().when(exam).addOwner(owner);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.addOwnerToExam(examId, owner),
+                "An unexpected exception was thrown"
+        );
+        verify(exam, only()).addOwner(owner);
+        verify(examRepository, times(1)).findById(examId);
+        verify(examRepository, times(1)).save(exam);
+        verifyNoMoreInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(executorServiceCommandMessageProxy);
+    }
+
+    /**
+     * Tests that removing an owner from an {@link Exam} works as expected.
+     *
+     * @param exam A mocked {@link Exam} (the one from which an owner is being removed).
+     */
+    @Test
+    void testOwnerIsRemoved(@Mock(name = "exam") final Exam exam) {
+        final var examId = TestHelper.validExamId();
+        final var owner = TestHelper.validOwner();
+        doNothing().when(exam).removeOwner(owner);
+        when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
+        when(examRepository.save(any(Exam.class))).then(invocation -> invocation.getArgument(0));
+        Assertions.assertDoesNotThrow(
+                () -> examManager.removeOwnerFromExam(examId, owner),
+                "An unexpected exception was thrown"
+        );
+        verify(exam, only()).removeOwner(owner);
         verify(examRepository, times(1)).findById(examId);
         verify(examRepository, times(1)).save(exam);
         verifyNoMoreInteractions(examRepository);

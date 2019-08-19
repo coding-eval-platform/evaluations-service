@@ -35,6 +35,13 @@
                 <column name="actual_duration" nullable="true" insertable="true" updatable="true"/>
                 <convert converter="ar.edu.itba.cep.evaluations_service.spring_data.jpa.converters.DurationConverter"/>
             </basic>
+
+            <element-collection name="owners" fetch="LAZY">
+                <column name="owner" nullable="false" insertable="true" updatable="false"/>
+                <collection-table name="exam_owners">
+                    <join-column name="exam_id"/>
+                </collection-table>
+            </element-collection>
         </attributes>
     </entity>
 
