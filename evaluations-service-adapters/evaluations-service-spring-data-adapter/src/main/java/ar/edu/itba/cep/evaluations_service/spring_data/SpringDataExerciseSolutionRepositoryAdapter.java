@@ -3,7 +3,6 @@ package ar.edu.itba.cep.evaluations_service.spring_data;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionRepository;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
@@ -14,7 +13,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * A concrete implementation of a {@link ExerciseSolutionRepository}
+ * A concrete implementation of an {@link ExerciseSolutionRepository}
  * which acts as an adapter for a {@link SpringDataExerciseSolutionRepository}.
  */
 @Repository
@@ -22,14 +21,15 @@ public class SpringDataExerciseSolutionRepositoryAdapter
         implements ExerciseSolutionRepository, BasicRepositoryAdapter<ExerciseSolution, Long> {
 
     /**
-     * A {@link SpringDataExamRepository} to which all operations are delegated.
+     * A {@link SpringDataExerciseSolutionRepository} to which all operations are delegated.
      */
     private final SpringDataExerciseSolutionRepository repository;
+
 
     /**
      * Constructor.
      *
-     * @param repository A {@link SpringDataExamRepository} to which all operations are delegated.
+     * @param repository A {@link SpringDataExerciseSolutionRepository} to which all operations are delegated.
      */
     @Autowired
     public SpringDataExerciseSolutionRepositoryAdapter(final SpringDataExerciseSolutionRepository repository) {

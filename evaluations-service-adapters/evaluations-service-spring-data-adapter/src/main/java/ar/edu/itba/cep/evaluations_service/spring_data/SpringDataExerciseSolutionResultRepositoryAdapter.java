@@ -4,7 +4,6 @@ import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
-import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExamRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -13,21 +12,22 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A concrete implementation of a {@link ExerciseSolutionResultRepository}
+ * A concrete implementation of an {@link ExerciseSolutionResultRepository}
  * which acts as an adapter for a {@link SpringDataExerciseSolutionResultRepository}.
  */
 @Repository
 public class SpringDataExerciseSolutionResultRepositoryAdapter implements ExerciseSolutionResultRepository {
 
     /**
-     * A {@link SpringDataExamRepository} to which all operations are delegated.
+     * A {@link SpringDataExerciseSolutionResultRepository} to which all operations are delegated.
      */
     private final SpringDataExerciseSolutionResultRepository repository;
+
 
     /**
      * Constructor.
      *
-     * @param repository A {@link SpringDataExamRepository} to which all operations are delegated.
+     * @param repository A {@link SpringDataExerciseSolutionResultRepository} to which all operations are delegated.
      */
     @Autowired
     public SpringDataExerciseSolutionResultRepositoryAdapter(

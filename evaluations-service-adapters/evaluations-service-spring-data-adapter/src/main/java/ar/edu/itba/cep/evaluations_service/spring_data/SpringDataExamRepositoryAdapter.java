@@ -14,7 +14,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * A concrete implementation of a {@link ExamRepository}
+ * A concrete implementation of an {@link ExamRepository}
  * which acts as an adapter for a {@link SpringDataExamRepositoryAdapter}.
  */
 @Repository
@@ -25,6 +25,7 @@ public class SpringDataExamRepositoryAdapter
      * A {@link SpringDataExamRepository} to which all operations are delegated.
      */
     private final SpringDataExamRepository repository;
+
 
     /**
      * Constructor.
