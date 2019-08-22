@@ -8,8 +8,10 @@ import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithoutOwners;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
+import com.bellotapps.webapps_commons.errors.UniqueViolationError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
+import com.bellotapps.webapps_commons.exceptions.UniqueViolationException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,8 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
      * Repository for {@link TestCase}s.
      */
     private final TestCaseRepository testCaseRepository;
+    @Autowired
+    private ExamSolutionSubmissionRepository examSolutionSubmissionRepository; // TODO: add final
     /**
      * Repository for {@link ExerciseSolution}s.
      */
@@ -97,7 +101,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     @Override
-    @PreAuthorize("hasAuthority('ADMIN') or (isFullyAuthenticated() and hasAuthority('TEACHER'))")
+    @PreAuthorize("isFullyAuthenticated() and (hasAuthority('ADMIN') or hasAuthority('TEACHER'))")
     public Page<ExamWithoutOwners> listMyExams(final PagingRequest pagingRequest) {
         return examRepository.getOwnedBy(
                 AuthenticationHelper.currentUserUsername(),
@@ -120,8 +124,13 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     @Override
     @Transactional
     @PreAuthorize(
-            "hasAuthority('ADMIN')" +
-                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+            "isFullyAuthenticated()" +
+                    " and (" +
+                    "       hasAuthority('ADMIN')" +
+                    "       or (" +
+                    "           hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal)" +
+                    "       )" +
+                    ")"
     )
     public Exam createExam(final String description, final LocalDateTime startingAt, final Duration duration)
             throws IllegalArgumentException {
@@ -402,6 +411,59 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
 
 
     // ================================================================================================================
+    // Exam Solution Submission
+    // ================================================================================================================
+
+
+    @Override
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+    )
+    public Page<ExamSolutionSubmission> getSolutionSubmissionsForExam(long examId, PagingRequest pagingRequest)
+            throws NoSuchEntityException {
+        final var exam = loadExam(examId);
+        return examSolutionSubmissionRepository.getByExam(exam, pagingRequest);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize("isFullyAuthenticated() and hasAuthority('STUDENT')")
+    public ExamSolutionSubmission createExamSolutionSubmission(long examId)
+            throws NoSuchEntityException, IllegalArgumentException, IllegalStateException {
+        final var exam = loadExam(examId);
+        final var submitter = AuthenticationHelper.currentUserUsername();
+        // First check if there is a submission for the exam by the current user
+        if (examSolutionSubmissionRepository.existsSubmissionFor(exam, submitter)) {
+            throw new UniqueViolationException(List.of(SUBMISSION_ALREADY_EXISTS));
+        }
+        // Then check that the exam is in progress in order to create solutions for exercises owned by it.
+        performExamInProgressStateVerification(exam);
+
+        final var submission = new ExamSolutionSubmission(exam, AuthenticationHelper.currentUserUsername());
+        return examSolutionSubmissionRepository.save(submission);
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" + // TODO: should we allow this?
+                    " or (" +
+                    "   hasAuthority('STUDENT')" +
+                    "       and @examSolutionSubmissionAuthorizationProvider.isOwner(#submissionId, principal)" +
+                    ")"
+    )
+    public void submitSolution(long submissionId) throws NoSuchEntityException, IllegalStateException {
+        final var submission = loadExamSolutionSubmission(submissionId);
+        performExamInProgressStateVerification(submission.getExam()); // TODO: Not allow if finished?
+        // TODO: check if there still are exercises without solution?
+        submission.submit();
+        examSolutionSubmissionRepository.save(submission);
+        // TODO: send solutions to run
+    }
+
+
+    // ================================================================================================================
     // Solutions
     // ================================================================================================================
 
@@ -424,9 +486,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exercise = loadExercise(exerciseId);
         // Verify that the exam is in progress in order to create solutions for exercises owned by it.
-        if (exercise.getExam().getState() != Exam.State.IN_PROGRESS) {
-            throw new IllegalEntityStateException(EXAM_IS_NOT_IN_PROGRESS);
-        }
+        performExamInProgressStateVerification(exercise.getExam());
         final var solution = exerciseSolutionRepository.save(new ExerciseSolution(exercise, answer));
         final var privateTestCases = testCaseRepository.getExercisePrivateTestCases(exercise);
         final var publicTestCases = testCaseRepository.getExercisePublicTestCases(exercise);
@@ -506,6 +566,17 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     /**
+     * Loads the {@link ExamSolutionSubmission} with the given {@code id} if it exists.
+     *
+     * @param id The {@link ExamSolutionSubmission}'s id.
+     * @return The {@link ExamSolutionSubmission} with the given {@code id}.
+     * @throws NoSuchEntityException If there is no {@link ExamSolutionSubmission} with the given {@code id}.
+     */
+    private ExamSolutionSubmission loadExamSolutionSubmission(final long id) throws NoSuchEntityException {
+        return loadEntity(examSolutionSubmissionRepository::findById, id);
+    }
+
+    /**
      * Loads the {@link ExerciseSolution} with the given {@code id} if it exists.
      *
      * @param id The {@link ExerciseSolution}'s id.
@@ -550,7 +621,7 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
     }
 
     /**
-     * Performs the {@link Exam} state verification (i.e checks if the given {@code exam} can be modified,
+     * Performs an {@link Exam} state verification (i.e checks if the given {@code exam} can be modified,
      * throwing an {@link IllegalEntityStateError} if its state is not upcoming).
      *
      * @param exam The {@link Exam} to be checked.
@@ -560,6 +631,20 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
         Assert.notNull(exam, "The exam to be checked must not be null");
         if (exam.getState() != Exam.State.UPCOMING) {
             throw new IllegalEntityStateException(EXAM_IS_NOT_UPCOMING);
+        }
+    }
+
+    /**
+     * Performs an {@link Exam} state verification (i.e checks if solutions for the given {@code exam} can be submitted,
+     * throwing an {@link IllegalEntityStateError} if its state is not upcoming).
+     *
+     * @param exam The {@link Exam} to be checked.
+     * @throws IllegalEntityStateException If the given {@link Exam}'s state is not {@link Exam.State#UPCOMING}.
+     */
+    private static void performExamInProgressStateVerification(final Exam exam) throws IllegalEntityStateException {
+        Assert.notNull(exam, "The exam to be checked must not be null");
+        if (exam.getState() != Exam.State.IN_PROGRESS) {
+            throw new IllegalEntityStateException(EXAM_IS_NOT_IN_PROGRESS);
         }
     }
 
@@ -643,4 +728,12 @@ public class ExamManager implements ExamService, ExecutionResultProcessor {
      */
     private final static IllegalEntityStateError EXAM_CONTAIN_EXERCISE_WITHOUT_TEST_CASE =
             new IllegalEntityStateError("The exam contains an exercise without any private test case");
+
+
+    /**
+     * An {@link UniqueViolationError} that indicates that an {@link ExamSolutionSubmission} already exists
+     * for a given {@link Exam} and {@code submitter}.
+     */
+    private final static UniqueViolationError SUBMISSION_ALREADY_EXISTS =
+            new UniqueViolationError("An Exam Solution Submission already exists", "exam", "submitter");
 }
