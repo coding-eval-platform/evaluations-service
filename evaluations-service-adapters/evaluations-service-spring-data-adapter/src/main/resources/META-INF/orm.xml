@@ -136,10 +136,14 @@
                 <generated-value strategy="IDENTITY"/>
             </id>
             <basic name="answer">
-                <column name="answer" nullable="false" insertable="true" updatable="false"/>
+                <column name="answer" nullable="false" insertable="true" updatable="true"/>
             </basic>
+            <many-to-one name="submission" fetch="LAZY" optional="false">
+                <join-column name="submission_id"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
             <many-to-one name="exercise" fetch="LAZY" optional="false">
-                <join-column name="belongs_to"
+                <join-column name="exercise_id"
                              referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
             </many-to-one>
         </attributes>

@@ -48,4 +48,23 @@ public class ExamSolutionSubmissionAuthorizationProvider {
                 .isPresent()
                 ;
     }
+
+    /**
+     * Indicates whether the {@link ExamSolutionSubmission}'s {@link ar.edu.itba.cep.evaluations_service.models.Exam}'s
+     * owner matches with the given {@code principal}.
+     *
+     * @param submissionId The id of the {@link ExamSolutionSubmission} being accessed.
+     * @param principal    The username of the user used to check ownership.
+     * @return {@code true} if the {@link ExamSolutionSubmission} with the given {@code submissionId}'s
+     * {@link ar.edu.itba.cep.evaluations_service.models.Exam}'s
+     * belongs to the user whose username is the given {@code principal}.
+     */
+    @Transactional(readOnly = true)
+    public boolean isExamOwner(final long submissionId, final String principal) {
+        return examSolutionSubmissionRepository.findById(submissionId)
+                .map(ExamSolutionSubmission::getExam)
+                .filter(exam -> AuthorizationHelper.isExamOwner(exam, principal))
+                .isPresent()
+                ;
+    }
 }

@@ -51,6 +51,12 @@ public class SpringDataTestCaseRepositoryAdapter
     // TestCaseRepository specific methods
     // ================================================================================================================
 
+
+    @Override
+    public List<TestCase> getAllTestCases(final Exercise exercise) {
+        return repository.getByExercise(exercise);
+    }
+
     @Override
     public List<TestCase> getExercisePublicTestCases(final Exercise exercise) {
         return repository.getByBelongsToAndVisibility(exercise, TestCase.Visibility.PUBLIC);

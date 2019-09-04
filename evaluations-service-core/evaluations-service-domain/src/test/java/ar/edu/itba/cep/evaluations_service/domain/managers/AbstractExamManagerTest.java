@@ -1,10 +1,11 @@
-package ar.edu.itba.cep.evaluations_service.domain;
+package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import org.mockito.Mockito;
 
 /**
@@ -31,22 +32,6 @@ abstract class AbstractExamManagerTest {
      * This reference is saved in order to configure its behaviour in each test.
      */
     /* package */ final TestCaseRepository testCaseRepository;
-    /**
-     * An {@link ExerciseSolutionRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    /* package */ final ExerciseSolutionRepository exerciseSolutionRepository;
-    /**
-     * An {@link ExerciseSolutionResultRepository} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    /* package */ final ExerciseSolutionResultRepository exerciseSolutionResultRepository;
-
-    /**
-     * An {@link ExecutorServiceCommandMessageProxy} that is injected to the {@link ExamManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
-    /* package */ final ExecutorServiceCommandMessageProxy executorServiceCommandMessageProxy;
 
 
     // ================================================================================================================
@@ -66,40 +51,18 @@ abstract class AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository                     An {@link ExamRepository}
-     *                                           that is injected to the {@link ExamManager}.
-     * @param exerciseRepository                 An {@link ExerciseRepository}
-     *                                           that is injected to the {@link ExamManager}.
-     * @param testCaseRepository                 A {@link TestCaseRepository}
-     *                                           that is injected to the {@link ExamManager}.
-     * @param exerciseSolutionRepository         An {@link ExerciseSolutionRepository}
-     *                                           that is injected to the {@link ExamManager}.
-     * @param exerciseSolutionResultRepository   An {@link ExerciseSolutionResultRepository}
-     *                                           that is injected to the {@link ExamManager}.
-     * @param executorServiceCommandMessageProxy An {@link ExecutorServiceCommandMessageProxy}
-     *                                           that is injected to the {@link ExamManager}.
+     * @param examRepository     An {@link ExamRepository} that is injected to the {@link ExamManager}.
+     * @param exerciseRepository An {@link ExerciseRepository} that is injected to the {@link ExamManager}.
+     * @param testCaseRepository A {@link TestCaseRepository} that is injected to the {@link ExamManager}.
      */
     AbstractExamManagerTest(
             final ExamRepository examRepository,
             final ExerciseRepository exerciseRepository,
-            final TestCaseRepository testCaseRepository,
-            final ExerciseSolutionRepository exerciseSolutionRepository,
-            final ExerciseSolutionResultRepository exerciseSolutionResultRepository,
-            final ExecutorServiceCommandMessageProxy executorServiceCommandMessageProxy) {
+            final TestCaseRepository testCaseRepository) {
         this.examRepository = examRepository;
         this.exerciseRepository = exerciseRepository;
         this.testCaseRepository = testCaseRepository;
-        this.exerciseSolutionRepository = exerciseSolutionRepository;
-        this.exerciseSolutionResultRepository = exerciseSolutionResultRepository;
-        this.executorServiceCommandMessageProxy = executorServiceCommandMessageProxy;
-        this.examManager = new ExamManager(
-                examRepository,
-                exerciseRepository,
-                testCaseRepository,
-                exerciseSolutionRepository,
-                exerciseSolutionResultRepository,
-                executorServiceCommandMessageProxy
-        );
+        this.examManager = new ExamManager(examRepository, exerciseRepository, testCaseRepository);
     }
 
     /**
@@ -109,8 +72,6 @@ abstract class AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(examRepository);
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
     }
 
     /**
@@ -122,8 +83,6 @@ abstract class AbstractExamManagerTest {
         Mockito.verify(examRepository, Mockito.only()).findById(examId);
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
     }
 
     /**
@@ -135,8 +94,6 @@ abstract class AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(examRepository);
         Mockito.verify(exerciseRepository, Mockito.only()).findById(exerciseId);
         Mockito.verifyZeroInteractions(testCaseRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
     }
 
     /**
@@ -148,7 +105,5 @@ abstract class AbstractExamManagerTest {
         Mockito.verifyZeroInteractions(examRepository);
         Mockito.verifyZeroInteractions(exerciseRepository);
         Mockito.verify(testCaseRepository, Mockito.only()).findById(testCaseId);
-        Mockito.verifyZeroInteractions(exerciseSolutionRepository);
-        Mockito.verifyZeroInteractions(exerciseSolutionResultRepository);
     }
 }

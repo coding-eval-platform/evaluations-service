@@ -1,9 +1,11 @@
 package ar.edu.itba.cep.evaluations_service.services;
 
-import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.Language;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
-import com.bellotapps.webapps_commons.exceptions.UniqueViolationException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 
@@ -300,79 +302,4 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void deleteTestCase(final long testCaseId) throws IllegalEntityStateException;
-
-
-    // ================================================================================================================
-    // Exam Solution Submission
-    // ================================================================================================================
-
-    /**
-     * Returns all the {@link ExamSolutionSubmission}s for the {@link Exam} with the given {@code examId},
-     * in a paginated view.
-     *
-     * @param examId        The id of the {@link Exam} to which the returned {@link ExamSolutionSubmission} belongs to.
-     * @param pagingRequest The {@link PagingRequest} containing paging data.
-     * @return The requested {@link Page} of {@link ExamSolutionSubmission}s.
-     * @throws NoSuchEntityException If there is no {@link Exam} with the given {@code examId}.
-     */
-    Page<ExamSolutionSubmission> getSolutionSubmissionsForExam(final long examId, final PagingRequest pagingRequest)
-            throws NoSuchEntityException;
-
-    /**
-     * Creates an {@link ExamSolutionSubmission} for the {@link Exam} with the given {@code examId}.
-     *
-     * @param examId The id of the {@link Exam} for which the {@link ExamSolutionSubmission} is created.
-     * @return The created {@link ExamSolutionSubmission}.
-     * @throws NoSuchEntityException       If there is no {@link Exam} with the given {@code examId}.
-     * @throws UniqueViolationException    If the currently authenticated user
-     *                                     already created an {@link ExamSolutionSubmission} for the {@link Exam}
-     *                                     with the given {@code examId}.
-     * @throws IllegalEntityStateException If the {@link Exam} is not in {@link Exam.State#IN_PROGRESS} state.
-     * @apiNote It cannot be executed if the {@link Exam} is not in {@link Exam.State#IN_PROGRESS} state.
-     */
-    ExamSolutionSubmission createExamSolutionSubmission(final long examId)
-            throws NoSuchEntityException, UniqueViolationException, IllegalStateException;
-
-    /**
-     * Submits the {@link ExamSolutionSubmission} with the given {@code submissionId}.
-     *
-     * @param submissionId The id of the {@link ExamSolutionSubmission} to be submitted.
-     * @throws NoSuchEntityException If there is no {@link ExamSolutionSubmission} with the given {@code submissionId}.
-     * @throws IllegalStateException If the {@link Exam} to which the {@link ExamSolutionSubmission} belongs to
-     *                               is not in {@link Exam.State#IN_PROGRESS} state.
-     * @apiNote It cannot be executed if the {@link Exam}  to which the {@link ExamSolutionSubmission} belongs to
-     * is not in {@link Exam.State#IN_PROGRESS} state.
-     */
-    void submitSolution(final long submissionId) throws NoSuchEntityException, IllegalStateException;
-
-    // ================================================================================================================
-    // Solutions
-    // ================================================================================================================
-
-    /**
-     * Lists all {@link ExerciseSolution}s for the {@link Exercise} with the given {@code exerciseId},
-     * in a paginated view.
-     *
-     * @param exerciseId    The The id of the {@link Exercise} whose {@link ExerciseSolution}s are being requested.
-     * @param pagingRequest The {@link PagingRequest} containing paging data.
-     * @return The requested {@link Page} of {@link ExerciseSolution}.
-     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
-     */
-    Page<ExerciseSolution> listSolutions(final long exerciseId, PagingRequest pagingRequest)
-            throws NoSuchEntityException;
-
-    /**
-     * Creates an {@link ExerciseSolution} for the {@link Exercise} with the given {@code exerciseId}.
-     *
-     * @param exerciseId The id of the {@link Exercise} for which an {@link ExerciseSolution} will be created.
-     * @param answer     The answer to the question of the {@link Exercise}.
-     * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     is not in {@link Exam.State#IN_PROGRESS} state.
-     * @throws IllegalArgumentException    If any argument is not valid.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
-     * is not in {@link Exam.State#IN_PROGRESS} state.
-     */
-    ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 }

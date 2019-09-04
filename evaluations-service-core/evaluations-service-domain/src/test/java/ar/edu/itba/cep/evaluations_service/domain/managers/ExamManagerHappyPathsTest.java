@@ -1,29 +1,24 @@
-package ar.edu.itba.cep.evaluations_service.domain;
+package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
-import ar.edu.itba.cep.evaluations_service.models.*;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
+import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.internal.hamcrest.HamcrestArgumentMatcher;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
 
@@ -37,26 +32,15 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
-     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExerciseSolutionRepository} passed to super class.
-     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
-     * @param executorServiceProxy       A mocked {@link ExecutorServiceCommandMessageProxy} passed to super class.
+     * @param examRepository     A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
      */
     ExamManagerHappyPathsTest(
-            @Mock(name = "examRep") final ExamRepository examRepository,
-            @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
-            @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep,
-            @Mock(name = "executorServiceProxy") final ExecutorServiceCommandMessageProxy executorServiceProxy) {
-        super(examRepository,
-                exerciseRepository,
-                testCaseRepository,
-                exerciseSolutionRepository,
-                exerciseSolResultRep,
-                executorServiceProxy);
+            @Mock(name = "examRepository") final ExamRepository examRepository,
+            @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
+        super(examRepository, exerciseRepository, testCaseRepository);
     }
 
 
@@ -87,9 +71,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 )
         );
         verifyOnlyExamSearch(examId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
-
 
     /**
      * Tests that an {@link Exam} is created (i.e is saved) when arguments are valid.
@@ -131,9 +113,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).save(any(Exam.class));
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
 
         // Clear the security context
         SecurityContextHolder.clearContext();
@@ -164,9 +143,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -199,9 +175,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -226,9 +199,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -253,9 +223,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -280,9 +247,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -305,9 +269,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verify(exerciseRepository, only()).deleteExamExercises(exam);
         verify(testCaseRepository, only()).deleteExamTestCases(exam);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -337,9 +298,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(id);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -359,9 +317,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).deleteExamExercises(exam);
         verify(testCaseRepository, only()).deleteExamTestCases(exam);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -411,9 +366,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).save(any(Exercise.class));
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -439,7 +391,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 )
         );
         verifyOnlyExerciseSearch(exerciseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -475,9 +426,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(exerciseRepository, times(1)).save(exercise);
         verifyNoMoreInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -506,9 +454,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(exerciseRepository, times(1)).delete(exercise);
         verifyNoMoreInteractions(exerciseRepository);
         verify(testCaseRepository, only()).deleteExerciseTestCases(exercise);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -538,9 +483,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(examRepository);
         verify(exerciseRepository, only()).findById(exerciseId);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -565,9 +507,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(examRepository);
         verify(exerciseRepository, only()).findById(exerciseId);
         verify(testCaseRepository, only()).getExercisePublicTestCases(exercise);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -622,9 +561,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(examRepository);
         verify(exerciseRepository, only()).findById(exerciseId);
         verify(testCaseRepository, only()).save(any(TestCase.class));
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -650,7 +586,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 )
         );
         verifyOnlyTestCaseSearch(testCaseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -690,9 +625,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(testCaseRepository, times(1)).findById(testCaseId);
         verify(testCaseRepository, times(1)).save(testCase);
         verifyNoMoreInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -725,423 +657,5 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(testCaseRepository, times(1)).findById(testCaseId);
         verify(testCaseRepository, times(1)).delete(testCase);
         verifyNoMoreInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-
-    // ================================================================================================================
-    // Solutions
-    // ================================================================================================================
-
-    /**
-     * Tests that listing an exercise's solutions is performed as expected.
-     *
-     * @param exercise           A mocked {@link Exercise} (the owner of the {@link TestCase}s).
-     * @param pagingRequest      A mocked {@link PagingRequest} to be passed to the {@link ExerciseSolutionRepository}.
-     * @param mockedExeSolutions A mocked {@link Page} of {@link ExerciseSolution}s belonging to the {@link Exercise}.
-     */
-    @Test
-    void testListExerciseSolutions(
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "pagingRequest") final PagingRequest pagingRequest,
-            @Mock(name = "mockedSolutions") final Page<ExerciseSolution> mockedExeSolutions) {
-        final var exerciseId = TestHelper.validExerciseId();
-        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        when(exerciseSolutionRepository.getExerciseSolutions(exercise, pagingRequest)).thenReturn(mockedExeSolutions);
-        final var solutions = examManager.listSolutions(exerciseId, pagingRequest);
-        Assertions.assertEquals(
-                mockedExeSolutions,
-                solutions,
-                "The returned solutions is not the one returned by the repository"
-        );
-        verifyZeroInteractions(examRepository);
-        verify(exerciseRepository, only()).findById(exerciseId);
-        verifyZeroInteractions(testCaseRepository);
-        verify(exerciseSolutionRepository, only()).getExerciseSolutions(exercise, pagingRequest);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests that creating a solution for an exercise belonging to an in progress exam is performed as expected.
-     *
-     * @param exam     A mocked {@link Exercise} (the owner of the {@link Exercise}s).
-     * @param exercise A mocked {@link Exercise} (the future owner of the {@link ExerciseSolution}).
-     */
-    @Test
-    void testCreateSolutionForExerciseBelongingToInProgressExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise) {
-        final var answer = TestHelper.validExerciseSolutionAnswer();
-        final var language = TestHelper.validLanguage();
-        final var exerciseId = TestHelper.validExerciseId();
-        when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
-        when(exercise.getExam()).thenReturn(exam);
-        when(exercise.getLanguage()).thenReturn(language);
-        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        when(exerciseSolutionRepository.save(any(ExerciseSolution.class))).then(invocation -> invocation.getArgument(0));
-        final var privateTestCases = mockTestCases();
-        final var publicTestCases = mockTestCases();
-        final var allTestCases = Stream.concat(
-                privateTestCases.stream(),
-                publicTestCases.stream()
-        ).collect(Collectors.toList());
-        when(testCaseRepository.getExercisePrivateTestCases(exercise)).thenReturn(privateTestCases);
-        when(testCaseRepository.getExercisePublicTestCases(exercise)).thenReturn(publicTestCases);
-        final var solution = examManager.createExerciseSolution(exerciseId, answer);
-        Assertions.assertAll("ExerciseSolution properties are not the expected",
-                () -> Assertions.assertEquals(
-                        answer,
-                        solution.getAnswer(),
-                        "There is a mismatch in the answer"
-                ),
-                () -> Assertions.assertEquals(
-                        exercise,
-                        solution.getExercise(),
-                        "There is a mismatch in the owner"
-                )
-
-        );
-        verify(exam, only()).getState();
-        verify(exercise, times(1)).getExam();
-        verify(exercise, times(allTestCases.size())).getLanguage(); // Call per test case to be sent to run
-        verifyNoMoreInteractions(exercise);
-        verifyZeroInteractions(examRepository);
-        verify(exerciseRepository, only()).findById(exerciseId);
-        verify(testCaseRepository, times(1)).getExercisePrivateTestCases(exercise);
-        verify(testCaseRepository, times(1)).getExercisePublicTestCases(exercise);
-        verifyNoMoreInteractions(testCaseRepository);
-        verify(exerciseSolutionRepository, only()).save(any(ExerciseSolution.class));
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        allTestCases.forEach(testCase -> {
-            final var request = new ExecutionRequest(answer, testCase.getInputs(), testCase.getTimeout(), language);
-            final var replyData = new ExecutionResultReplyData(solution.getId(), testCase.getId());
-            verify(executorServiceCommandMessageProxy, times(1))
-                    .requestExecution(request, replyData);
-        });
-        verifyNoMoreInteractions(executorServiceCommandMessageProxy);
-    }
-
-
-    // ================================================================================================================
-    // Solution Results
-    // ================================================================================================================
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link FinishedExecutionResult} with a non zero exit code.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link FinishedExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithFinishedExecutionResultWithNonZeroExitCode(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-
-        when(executionResult.getExitCode()).thenReturn(TestHelper.validNonZeroExerciseSolutionExitCode());
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a finished execution result with a non zero exit code"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verify(exerciseSolutionResultRepository, only())
-                .save(argThat(withResult(ExerciseSolutionResult.Result.FAILED)))
-        ;
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link FinishedExecutionResult} with a zero exit code,
-     * but a non empty standard error output.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link FinishedExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeAndNonEmptyStderr(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-        final var stderr = TestHelper.validExerciseSolutionResultList();
-
-        when(executionResult.getExitCode()).thenReturn(0);
-        when(executionResult.getStderr()).thenReturn(stderr);
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a finished execution result with a non empty stderr list"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verify(exerciseSolutionResultRepository, only())
-                .save(argThat(withResult(ExerciseSolutionResult.Result.FAILED)))
-        ;
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link FinishedExecutionResult} with a non zero exit code,
-     * no standard error output and standard output equal to the expected output.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link FinishedExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeEmptyStderrAndDifferentOutput(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-        final var outputs = TestHelper.validExerciseSolutionResultList();
-        final var anotherOutputs = new LinkedList<>(outputs);
-        Collections.shuffle(anotherOutputs);
-
-        when(testCase.getExpectedOutputs()).thenReturn(outputs);
-        when(executionResult.getExitCode()).thenReturn(0);
-        when(executionResult.getStderr()).thenReturn(Collections.emptyList());
-        when(executionResult.getStdout()).thenReturn(anotherOutputs);
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a finished execution result with not expected outputs"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verify(exerciseSolutionResultRepository, only())
-                .save(argThat(withResult(ExerciseSolutionResult.Result.FAILED)))
-        ;
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link FinishedExecutionResult} with a non zero exit code,
-     * no standard error output and standard output equal to the expected output.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link FinishedExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeAndEmptyStderrAndExpectedOutput(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-        final var outputs = TestHelper.validExerciseSolutionResultList();
-
-        when(testCase.getExpectedOutputs()).thenReturn(outputs);
-        when(executionResult.getExitCode()).thenReturn(0);
-        when(executionResult.getStderr()).thenReturn(Collections.emptyList());
-        when(executionResult.getStdout()).thenReturn(outputs);
-
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a finished execution result with the expected outputs"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verify(exerciseSolutionResultRepository, only())
-                .save(argThat(withResult(ExerciseSolutionResult.Result.APPROVED)))
-        ;
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link TimedOutExecutionResult}.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithTimedOutExecutionResult(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final TimedOutExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a timed-out execution result"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verify(exerciseSolutionResultRepository, only())
-                .save(argThat(withResult(ExerciseSolutionResult.Result.TIMED_OUT)))
-        ;
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is a {@link CompileErrorExecutionResult}.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithNotCompiledExecutionResult(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final CompileErrorExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a timed-out execution result"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verify(exerciseSolutionResultRepository, only())
-                .save(argThat(withResult(ExerciseSolutionResult.Result.NOT_COMPILED)))
-        ;
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is an {@link InitializationErrorExecutionResult}.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithInitializationErrorExecutionResult(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final InitializationErrorExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a timed-out execution result"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
-     * Tests the processing of an execution result
-     * when the {@link ExecutionResult} is an {@link InitializationErrorExecutionResult}.
-     *
-     * @param exerciseSolution The {@link ExerciseSolution} being executed.
-     * @param testCase         The {@link TestCase} used in the execution.
-     * @param executionResult  The {@link TimedOutExecutionResult} being analyzed.
-     */
-    @Test
-    void testProcessExecutionWithUnknownErrorExecutionResult(
-            @Mock(name = "solution") final ExerciseSolution exerciseSolution,
-            @Mock(name = "testCase") final TestCase testCase,
-            @Mock(name = "executionResult") final UnknownErrorExecutionResult executionResult) {
-        final var testCaseId = TestHelper.validTestCaseId();
-        final var solutionId = TestHelper.validExerciseSolutionId();
-
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(exerciseSolution));
-        Assertions.assertDoesNotThrow(
-                () -> examManager.processExecution(solutionId, testCaseId, executionResult),
-                "An exception was thrown when processing a timed-out execution result"
-        );
-
-        verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseRepository);
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-
-    // ================================================================================================================
-    // Helpers
-    // ================================================================================================================
-
-    /**
-     * Creates a {@link List} of mocked {@link TestCase}s.
-     *
-     * @return A {@link List} of mocked {@link TestCase}s.
-     */
-    private static List<TestCase> mockTestCases() {
-        return TestHelper
-                .randomLengthStream(ignored -> mock(TestCase.class))
-                .peek(mock -> when(mock.getId()).thenReturn(TestHelper.validTestCaseId()))
-                .peek(mock -> when(mock.getTimeout()).thenReturn(TestHelper.validTestCaseTimeout()))
-                .peek(mock -> when(mock.getInputs()).thenReturn(TestHelper.validTestCaseList()))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Creates an {@link ArgumentMatcher} of {@link ExerciseSolutionResult} that expects the
-     * {@link ExerciseSolutionResult} has a {@code result} property whose value is the given {@code result}.
-     *
-     * @param result The expected {@link ExerciseSolutionResult.Result}.
-     * @return The created {@link ArgumentMatcher} of {@link ExerciseSolutionResult}.
-     */
-    private static ArgumentMatcher<ExerciseSolutionResult> withResult(final ExerciseSolutionResult.Result result) {
-        return new HamcrestArgumentMatcher<>(Matchers.hasProperty("result", Matchers.equalTo(result)));
     }
 }
