@@ -325,17 +325,12 @@ class ExerciseTest {
      * @return A random valid solution template.
      */
     private static String validSolutionTemplate() {
-        // Can be null or any string
-        final List<String> possibleSolutionTemplates = new LinkedList<>();
-        possibleSolutionTemplates.add(null);
-        possibleSolutionTemplates.add(
-                Faker.instance()
-                        .lorem()
-                        .characters(ValidationConstants.ANSWER_MIN_LENGTH, Short.MAX_VALUE)
-        );
-
-        final var index = (int) Faker.instance().number().numberBetween(0L, possibleSolutionTemplates.size());
-        return possibleSolutionTemplates.get(index);
+        final List<String> values = new LinkedList<>();
+        values.add(null);
+        values.add("");
+        values.add(Faker.instance().lorem().characters());
+        final var index = (int) Faker.instance().number().numberBetween(0L, values.size());
+        return values.get(index);
     }
 
     /**

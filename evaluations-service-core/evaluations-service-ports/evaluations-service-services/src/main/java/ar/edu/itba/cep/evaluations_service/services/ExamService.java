@@ -1,6 +1,9 @@
 package ar.edu.itba.cep.evaluations_service.services;
 
-import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.Language;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
@@ -299,36 +302,4 @@ public interface ExamService {
      * is not in {@link Exam.State#UPCOMING} state.
      */
     void deleteTestCase(final long testCaseId) throws IllegalEntityStateException;
-
-
-    // ================================================================================================================
-    // Solutions
-    // ================================================================================================================
-
-    /**
-     * Lists all {@link ExerciseSolution}s for the {@link Exercise} with the given {@code exerciseId},
-     * in a paginated view.
-     *
-     * @param exerciseId    The The id of the {@link Exercise} whose {@link ExerciseSolution}s are being requested.
-     * @param pagingRequest The {@link PagingRequest} containing paging data.
-     * @return The requested {@link Page} of {@link ExerciseSolution}.
-     * @throws NoSuchEntityException If there is no {@link Exercise} with the given {@code exerciseId}.
-     */
-    Page<ExerciseSolution> listSolutions(final long exerciseId, PagingRequest pagingRequest)
-            throws NoSuchEntityException;
-
-    /**
-     * Creates an {@link ExerciseSolution} for the {@link Exercise} with the given {@code exerciseId}.
-     *
-     * @param exerciseId The id of the {@link Exercise} for which an {@link ExerciseSolution} will be created.
-     * @param answer     The answer to the question of the {@link Exercise}.
-     * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
-     * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
-     *                                     is not in {@link Exam.State#IN_PROGRESS} state.
-     * @throws IllegalArgumentException    If any argument is not valid.
-     * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
-     * is not in {@link Exam.State#IN_PROGRESS} state.
-     */
-    ExerciseSolution createExerciseSolution(final long exerciseId, final String answer)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 }

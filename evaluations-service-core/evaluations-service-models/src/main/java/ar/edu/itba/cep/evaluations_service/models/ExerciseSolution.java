@@ -2,13 +2,17 @@ package ar.edu.itba.cep.evaluations_service.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.springframework.util.Assert;
+
+import java.util.Objects;
 
 /**
  * Represents a solution of an exercise.
  */
 @Getter
+@Setter
 @EqualsAndHashCode(of = "id")
 @ToString(doNotUseGetters = true, callSuper = true)
 public class ExerciseSolution {
@@ -18,13 +22,17 @@ public class ExerciseSolution {
      */
     private final long id;
     /**
+     * The {@link ExamSolutionSubmission} to which this solution is submitted to.
+     */
+    private final ExamSolutionSubmission submission;
+    /**
      * The {@link Exercise} to which it belongs to.
      */
     private final Exercise exercise;
     /**
      * The answer to the question of the {@link Exercise} (i.e the code written by the student).
      */
-    private final String answer;
+    private String answer;
 
 
     /**
@@ -33,6 +41,7 @@ public class ExerciseSolution {
     /* package */ ExerciseSolution() {
         // Initialize final fields with default values.
         this.id = 0;
+        this.submission = null;
         this.exercise = null;
         this.answer = null;
     }
@@ -40,22 +49,37 @@ public class ExerciseSolution {
     /**
      * Constructor.
      *
-     * @param exercise The {@link Exercise} to which it belongs to.
-     * @param answer   The answer to the question of the {@link Exercise} (i.e the code written by the student).
+     * @param submission The {@link ExamSolutionSubmission} to which this solution is submitted to.
+     * @param exercise   The {@link Exercise} to which it belongs to.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public ExerciseSolution(final Exercise exercise, final String answer) throws IllegalArgumentException {
+    public ExerciseSolution(
+            final ExamSolutionSubmission submission,
+            final Exercise exercise) throws IllegalArgumentException {
+        assertSubmission(submission);
         assertExercise(exercise);
-        assertAnswer(answer);
+        assertSameExam(submission, exercise);
         this.id = 0;
+        this.submission = submission;
         this.exercise = exercise;
-        this.answer = answer;
+        this.answer = exercise.getSolutionTemplate();
     }
 
 
     // ================================
     // Assertions
     // ================================
+
+    /**
+     * Asserts that the given {@code submission} is valid.
+     *
+     * @param submission The {@link ExamSolutionSubmission} to be checked.
+     * @throws IllegalArgumentException If the submission is not valid.
+     */
+    private static void assertSubmission(final ExamSolutionSubmission submission)
+            throws IllegalArgumentException {
+        Assert.notNull(submission, "The submission is missing");
+    }
 
     /**
      * Asserts that the given {@code exercise} is valid.
@@ -68,14 +92,18 @@ public class ExerciseSolution {
     }
 
     /**
-     * Asserts that the given {@code answer} is valid.
+     * Asserts that the given {@code submission} and {@code exercise} have the same {@link Exam}.
      *
-     * @param answer The answer to be checked.
-     * @throws IllegalArgumentException If the answer is not valid.
+     * @param submission The {@link ExamSolutionSubmission} to be checked.
+     * @param exercise   The {@link Exercise} to be checked.
+     * @throws IllegalArgumentException If the {@link Exam}
+     *                                  of both the {@code submission} and {@code exercise} is the same.
      */
-    private static void assertAnswer(final String answer) throws IllegalArgumentException {
-        Assert.notNull(answer, "The answer is missing");
-        Assert.isTrue(answer.length() >= ValidationConstants.ANSWER_MIN_LENGTH,
-                "The answer is too short");
+    private static void assertSameExam(final ExamSolutionSubmission submission, final Exercise exercise)
+            throws IllegalArgumentException {
+        Assert.isTrue(
+                Objects.equals(submission.getExam(), exercise.getExam()),
+                "The exam of the submission and the exercise must be the same"
+        );
     }
 }

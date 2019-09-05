@@ -17,6 +17,19 @@ import java.util.List;
 public interface SpringDataTestCaseRepository extends CrudRepository<TestCase, Long> {
 
     /**
+     * Retrieves the {@link TestCase}s belonging to the given {@code exercise}.
+     *
+     * @param exercise The {@link Exercise} owning the {@link TestCase}s being returned.
+     * @return The {@link TestCase}s belonging to the given {@code exercise}.
+     */
+    @Query(value = "SELECT DISTINCT tc " +
+            "       FROM TestCase tc " +
+            "           LEFT JOIN FETCH tc.inputs " +
+            "           LEFT JOIN FETCH tc.expectedOutputs " +
+            "       WHERE tc.exercise = :exercise")
+    List<TestCase> getByExercise(@Param("exercise") final Exercise exercise);
+
+    /**
      * Retrieves the {@link TestCase}s belonging to the given {@code exercise}, applying visibility filter.
      *
      * @param exercise   The {@link Exercise} owning the {@link TestCase}s being returned.

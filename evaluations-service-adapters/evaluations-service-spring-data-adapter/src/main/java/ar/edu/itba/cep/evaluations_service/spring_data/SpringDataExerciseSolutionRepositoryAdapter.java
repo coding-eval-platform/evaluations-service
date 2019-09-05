@@ -1,22 +1,22 @@
 package ar.edu.itba.cep.evaluations_service.spring_data;
 
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.spring_data.interfaces.SpringDataExerciseSolutionRepository;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
-import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.paging_and_sorting.PagingMapper;
 import com.bellotapps.webapps_commons.persistence.spring_data.repository_utils_adapters.repositories.BasicRepositoryAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * A concrete implementation of an {@link ExerciseSolutionRepository}
  * which acts as an adapter for a {@link SpringDataExerciseSolutionRepository}.
  */
 @Repository
+@AllArgsConstructor
 public class SpringDataExerciseSolutionRepositoryAdapter
         implements ExerciseSolutionRepository, BasicRepositoryAdapter<ExerciseSolution, Long> {
 
@@ -24,17 +24,6 @@ public class SpringDataExerciseSolutionRepositoryAdapter
      * A {@link SpringDataExerciseSolutionRepository} to which all operations are delegated.
      */
     private final SpringDataExerciseSolutionRepository repository;
-
-
-    /**
-     * Constructor.
-     *
-     * @param repository A {@link SpringDataExerciseSolutionRepository} to which all operations are delegated.
-     */
-    @Autowired
-    public SpringDataExerciseSolutionRepositoryAdapter(final SpringDataExerciseSolutionRepository repository) {
-        this.repository = repository;
-    }
 
 
     // ================================================================================================================
@@ -51,10 +40,9 @@ public class SpringDataExerciseSolutionRepositoryAdapter
     // ExerciseSolutionRepository specific methods
     // ================================================================================================================
 
+
     @Override
-    public Page<ExerciseSolution> getExerciseSolutions(final Exercise exercise, final PagingRequest pagingRequest) {
-        final var pageable = PagingMapper.map(pagingRequest);
-        final var page = repository.getByExercise(exercise, pageable);
-        return PagingMapper.map(page);
+    public List<ExerciseSolution> getExerciseSolutions(final ExamSolutionSubmission submission) {
+        return repository.getBySubmission(submission);
     }
 }

@@ -1,10 +1,10 @@
 package ar.edu.itba.cep.evaluations_service.repositories;
 
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import com.bellotapps.webapps_commons.persistence.repository_utils.repositories.BasicRepository;
+
+import java.util.List;
 
 /**
  * A port out of the application that allows {@link ExerciseSolution} persistence.
@@ -12,12 +12,10 @@ import com.bellotapps.webapps_commons.persistence.repository_utils.repositories.
 public interface ExerciseSolutionRepository extends BasicRepository<ExerciseSolution, Long> {
 
     /**
-     * Returns a {@link Page} of {@link ExerciseSolution} according to the given {@code pagingRequest},
-     * for the given {@link Exercise}.
+     * Returns a {@link List} of {@link ExerciseSolution} for the given {@code submission}.
      *
-     * @param exercise      The {@link Exercise} being answered by the returned {@link ExerciseSolution}s.
-     * @param pagingRequest The {@link PagingRequest} that indicates page number, size, sorting options, etc.
-     * @return A {@link Page} of {@link ExerciseSolution}s.
+     * @param submission The {@link ExamSolutionSubmission} to which the returned {@link ExerciseSolution}s belongs to.
+     * @return A {@link List} with the {@link ExerciseSolution}.
      */
-    Page<ExerciseSolution> getExerciseSolutions(final Exercise exercise, final PagingRequest pagingRequest);
+    List<ExerciseSolution> getExerciseSolutions(final ExamSolutionSubmission submission);
 }

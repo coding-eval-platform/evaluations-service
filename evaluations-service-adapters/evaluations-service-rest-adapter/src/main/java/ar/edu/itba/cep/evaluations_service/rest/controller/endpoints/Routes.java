@@ -23,23 +23,25 @@ public class Routes {
 
     public static final String EXERCISE = "/exercises/{exerciseId : \\d+}";
 
-    public static final String EXERCISE_QUESTION = "/exercises/{exerciseId : \\d+}/question";
-
     public static final String EXERCISE_TEST_CASES = "/exercises/{exerciseId : \\d+}/test-cases";
 
     public static final String EXERCISE_PUBLIC_TEST_CASES = "/exercises/{exerciseId : \\d+}/test-cases/public";
 
     public static final String EXERCISE_PRIVATE_TEST_CASES = "/exercises/{exerciseId : \\d+}/test-cases/private";
 
-    public static final String EXERCISE_SOLUTIONS = "/exercises/{exerciseId : \\d+}/solutions";
-
     public static final String TEST_CASES = "/test-cases";
 
     public static final String TEST_CASE = "/test-cases/{testCaseId : \\d+}";
 
-    public static final String TEST_CASE_VISIBILITY = "/test-cases/{testCaseId : \\d+}/visibility";
+    public static final String EXAM_SOLUTIONS_SUBMISSIONS_BY_EXAM = "/exams/{examId : \\d+}/solutions-submissions";
 
-    public static final String TEST_CASE_INPUTS = "/test-cases/{testCaseId : \\d+}/inputs";
+    public static final String EXAM_SOLUTIONS_SUBMISSIONS = "/solutions-submissions";
 
-    public static final String TEST_CASE_EXPECTED_OUTPUTS = "/test-cases/{testCaseId : \\d+}/expected-outputs";
+    public static final String EXAM_SOLUTIONS_SUBMISSION = "/solutions-submissions/{submissionId : \\d+}";
+
+    public static final String SUBMIT_SOLUTION = "/solutions-submissions/{submissionId : \\d+}/submit";
+
+    public static final String SOLUTIONS = "/solutions-submissions/{submissionId : \\d+}/solutions";
+
+    public static final String SOLUTION = "/solutions/{solutionId : \\d+}";
 }

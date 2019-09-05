@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 /**
  * Data transfer object for {@link Exam}s.
  */
-/* package */  abstract class ExamDownloadDto<W> {
+/* package */ abstract class ExamDownloadDto<W> {
 
     /**
      * The wrapper of an {@link Exam} to be, in turn, wrapped in this DTO.

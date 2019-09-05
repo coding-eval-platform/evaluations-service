@@ -1,10 +1,12 @@
-package ar.edu.itba.cep.evaluations_service.domain;
+package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
+import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,26 +34,15 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
-     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExerciseSolutionRepository} passed to super class.
-     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
-     * @param executorServiceProxy       A mocked {@link ExecutorServiceCommandMessageProxy} passed to super class.
+     * @param examRepository     A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
      */
     ExamManagerIllegalStateTest(
-            @Mock(name = "examRep") final ExamRepository examRepository,
-            @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
-            @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep,
-            @Mock(name = "executorServiceProxy") final ExecutorServiceCommandMessageProxy executorServiceProxy) {
-        super(examRepository,
-                exerciseRepository,
-                testCaseRepository,
-                exerciseSolutionRepository,
-                exerciseSolResultRep,
-                executorServiceProxy);
+            @Mock(name = "examRepository") final ExamRepository examRepository,
+            @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
+        super(examRepository, exerciseRepository, testCaseRepository);
     }
 
 
@@ -109,9 +100,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -141,9 +129,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -168,9 +153,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verifyZeroInteractions(testCaseRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -409,37 +391,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
 
 
     // ================================================================================================================
-    // Solutions
-    // ================================================================================================================
-
-    /**
-     * Tests that creating a solution for an exercise belonging to an upcoming exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the one for which the solution is being created).
-     */
-    @Test
-    void testCreateSolutionForExerciseOfUpcomingExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise) {
-        testExerciseSolutionCreation(exam, exercise, Exam.State.UPCOMING);
-    }
-
-    /**
-     * Tests that creating a solution for an exercise belonging to a finished exam is not allowed.
-     *
-     * @param exam     A mocked {@link Exam} (the owner of the exercise).
-     * @param exercise A mocked {@link Exercise} (the one for which the solution is being created).
-     */
-    @Test
-    void testCreateSolutionForExerciseOfFinishedExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise) {
-        testExerciseSolutionCreation(exam, exercise, Exam.State.FINISHED);
-    }
-
-
-    // ================================================================================================================
     // Helpers
     // ================================================================================================================
 
@@ -584,34 +535,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
     }
 
     /**
-     * Tests that creating a solution for an exercise belonging to an exam with the given {@code state}
-     * is not allowed.
-     *
-     * @param exam     The {@link Exam} owning the exercise.
-     * @param exercise The {@link Exercise} for which a solution is being tried to be created.
-     * @param state    The {@link Exam.State} being tested.
-     */
-    private void testExerciseSolutionCreation(final Exam exam, final Exercise exercise, final Exam.State state) {
-        final var exerciseId = TestHelper.validExerciseId();
-        when(exam.getState()).thenReturn(state);
-        when(exercise.getExam()).thenReturn(exam);
-        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        Assertions.assertThrows(
-                IllegalEntityStateException.class,
-                () -> examManager.createExerciseSolution(
-                        exerciseId,
-                        TestHelper.validExerciseSolutionAnswer()
-                ),
-                "Creating a solution for an exercise that belongs to an exam" +
-                        " with " + state + " state is being allosed"
-        );
-        verify(exam, only()).getState();
-        verify(exercise, only()).getExam();
-        verifyOnlyExerciseSearch(exerciseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-    /**
      * Performs a test over the {@link ExamManager} action that involves directly interacting with an {@link Exam},
      * when this throws an {@link IllegalEntityStateException}.
      *
@@ -636,7 +559,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         );
         examActionVerification.accept(verify(exam));
         verifyOnlyExamSearch(examId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -661,7 +583,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                 message
         );
         verifyOnlyExamSearch(examId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -691,7 +612,6 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(exam, only()).getState();
         verify(exercise, only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -725,6 +645,5 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(exercise, only()).getExam();
         verify(testCase, only()).getExercise();
         verifyOnlyTestCaseSearch(testCaseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 }

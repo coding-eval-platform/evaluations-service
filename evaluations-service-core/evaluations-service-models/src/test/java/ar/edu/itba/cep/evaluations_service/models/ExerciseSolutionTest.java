@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import static org.mockito.Mockito.*;
 
 
 /**
@@ -18,17 +17,35 @@ import java.util.Optional;
 class ExerciseSolutionTest {
 
     /**
+     * A mocked {@link Exam} that will be the owner of the {@link #mockedExercise}} and the {@link #mockedSubmission}.
+     */
+    private final Exam mockedExam;
+    /**
      * A mocked {@link Exercise} that will own the created {@link ExerciseSolution}s to be tested.
      */
     private final Exercise mockedExercise;
+    /**
+     * A mocked {@link ExamSolutionSubmission} that will own the created {@link ExerciseSolution}s to be tested.
+     */
+    private final ExamSolutionSubmission mockedSubmission;
 
     /**
      * Constructor.
      *
-     * @param mockedExercise A mocked {@link Exercise} that will own the created {@link ExerciseSolution}s to be tested.
+     * @param mockedExam       A mocked {@link Exam}
+     *                         that will be the owner of the {@code mockedExercise}} and the {@code mockedSubmission}.
+     * @param mockedExercise   A mocked {@link Exercise}
+     *                         that will own the created {@link ExerciseSolution}s to be tested.
+     * @param mockedSubmission A mocked {@link ExamSolutionSubmission}
+     *                         that will own the created {@link ExerciseSolution}s to be tested.
      */
-    ExerciseSolutionTest(@Mock final Exercise mockedExercise) {
+    ExerciseSolutionTest(
+            @Mock(name = "exam") final Exam mockedExam,
+            @Mock(name = "exercise") final Exercise mockedExercise,
+            @Mock(name = "submission") final ExamSolutionSubmission mockedSubmission) {
+        this.mockedExam = mockedExam;
         this.mockedExercise = mockedExercise;
+        this.mockedSubmission = mockedSubmission;
     }
 
 
@@ -42,11 +59,89 @@ class ExerciseSolutionTest {
      */
     @Test
     void testAcceptableArguments() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
         Assertions.assertDoesNotThrow(
                 this::createExerciseSolution,
                 "Exercise solutions with acceptable arguments are not being created"
         );
-        Mockito.verifyZeroInteractions(mockedExercise);
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+        verify(mockedSubmission, only()).getExam();
+    }
+
+    /**
+     * Tests that an {@link ExerciseSolution} has a {@code null} answer when it is created.
+     */
+    @Test
+    void testAnswerHasTheExerciseSolutionTemplateWhenCreated() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        Assertions.assertEquals(
+                solutionTemplate,
+                solution.getAnswer(),
+                "The solution's answer must be the Exercise's solution template when created.");
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that setting a {@code null} value for an answer of an {@link ExerciseSolution} is allowed.
+     */
+    @Test
+    void testNullAnswerIsSet() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        solution.setAnswer(null);
+        Assertions.assertNull(solution.getAnswer(), "The expected answer is null");
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that setting an empty {@link String} as an answer of an {@link ExerciseSolution} is allowed.
+     */
+    @Test
+    void testEmptyAnswerIsSet() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        solution.setAnswer("");
+        Assertions.assertTrue(solution.getAnswer().isEmpty(), "The expected answer is an empty String");
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that setting a random {@link String} as an answer of an {@link ExerciseSolution} is allowed.
+     */
+    @Test
+    void testRandomAnswerIsSet() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        final var answer = Faker.instance().lorem().characters();
+        solution.setAnswer(answer);
+        Assertions.assertEquals(answer, solution.getAnswer(), "The returned answer is not the expected");
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
     }
 
 
@@ -63,42 +158,50 @@ class ExerciseSolutionTest {
      * when creating an {@link ExerciseSolution} with a null {@link Exercise}.
      */
     @Test
+    void testNullSubmissionOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new ExerciseSolution(null, mockedExercise),
+                "Creating an exercise solution with a null exercise is being allowed"
+        );
+        verifyZeroInteractions(mockedExercise);
+        verifyZeroInteractions(mockedSubmission);
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating an {@link ExerciseSolution} with a null {@link Exercise}.
+     */
+    @Test
     void testNullExerciseOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new ExerciseSolution(null, validAnswer()),
+                () -> new ExerciseSolution(mockedSubmission, null),
                 "Creating an exercise solution with a null exercise is being allowed"
         );
-        Mockito.verifyZeroInteractions(mockedExercise);
+        verifyZeroInteractions(mockedExercise);
+        verifyZeroInteractions(mockedSubmission);
     }
-
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
-     * when creating an {@link ExerciseSolution} with a null answer.
+     * when creating an {@link ExerciseSolution} with an {@link Exercise} and an {@link ExamSolutionSubmission}
+     * both belonging to different {@link Exam}s.
      */
     @Test
-    void testNullAnswerOnCreation() {
+    void testDifferentExams() {
+        final var exam1 = mock(Exam.class);
+        final var exam2 = mock(Exam.class);
+        when(mockedExercise.getExam()).thenReturn(exam1);
+        when(mockedSubmission.getExam()).thenReturn(exam2);
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new ExerciseSolution(mockedExercise, null),
-                "Creating an exercise solution with a null answer is being allowed"
+                () -> new ExerciseSolution(mockedSubmission, mockedExercise),
+                "Creating an exercise solution with an exercise and a submission with different exams" +
+                        " is being allowed"
         );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when creating an {@link ExerciseSolution} with a too short answer.
-     */
-    @Test
-    void testShortAnswerOnCreation() {
-        shortAnswer().ifPresent(
-                answer -> Assertions.assertThrows(
-                        IllegalArgumentException.class,
-                        () -> new ExerciseSolution(mockedExercise, answer),
-                        "Creating an exercise solution with a too short answer is being allowed"
-                )
-        );
+        verify(mockedExercise, only()).getExam();
+        verify(mockedSubmission, only()).getExam();
     }
 
 
@@ -116,44 +219,6 @@ class ExerciseSolutionTest {
      * @return An {@link ExerciseSolution}.
      */
     private ExerciseSolution createExerciseSolution() {
-        return new ExerciseSolution(
-                mockedExercise,
-                validAnswer()
-        );
-    }
-
-
-    // ========================================
-    // Valid values
-    // ========================================
-
-    /**
-     * @return A random answer whose length is between the valid limits.
-     */
-    private static String validAnswer() {
-        // There is no such max value for answers, but it is needed for creating a value with Faker
-        final var maxLength = Short.MAX_VALUE;
-        return Faker.instance()
-                .lorem()
-                .characters(ValidationConstants.ANSWER_MIN_LENGTH, maxLength);
-    }
-
-
-    // ========================================
-    // Invalid values
-    // ========================================
-
-    /**
-     * @return An {@link Optional} containing an answer whose length is below the valid limit
-     * if there is such limit (i.e th min length is positive). Otherwise, an empty {@link Optional} is returned.
-     */
-    private static Optional<String> shortAnswer() {
-        if (ValidationConstants.ANSWER_MIN_LENGTH > 0) {
-            final var answer = Faker.instance()
-                    .lorem()
-                    .fixedString(ValidationConstants.ANSWER_MIN_LENGTH - 1);
-            return Optional.of(answer);
-        }
-        return Optional.empty();
+        return new ExerciseSolution(mockedSubmission, mockedExercise);
     }
 }

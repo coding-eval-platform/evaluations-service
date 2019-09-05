@@ -1,11 +1,11 @@
 package ar.edu.itba.cep.evaluations_service.spring_data.interfaces;
 
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
+import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * A repository for {@link ExerciseSolution}s.
@@ -14,13 +14,10 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataExerciseSolutionRepository extends CrudRepository<ExerciseSolution, Long> {
 
     /**
-     * Retrieves the {@link ExerciseSolution}s that answers the question of the given {@code exercise},
-     * in a paginated view.
+     * Returns a {@link List} of {@link ExerciseSolution} for the given {@code submission}.
      *
-     * @param exercise The {@link Exercise} being answered by the returned {@link ExerciseSolution}s.
-     * @param pageable The {@link Pageable} containing paging and sorting data.
-     * @return A {@link Page} of {@link ExerciseSolution} answering the given {@link Exercise}'s question,
-     * meeting the paging and sorting information of the given {@link Pageable}.
+     * @param submission The {@link ExamSolutionSubmission} to which the returned {@link ExerciseSolution}s belongs to.
+     * @return A {@link List} with the {@link ExerciseSolution}.
      */
-    Page<ExerciseSolution> getByExercise(final Exercise exercise, Pageable pageable);
+    List<ExerciseSolution> getBySubmission(final ExamSolutionSubmission submission);
 }

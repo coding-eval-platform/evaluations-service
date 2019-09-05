@@ -13,6 +13,14 @@ import java.util.List;
 public interface TestCaseRepository extends BasicRepository<TestCase, Long> {
 
     /**
+     * Retrieves the {@link TestCase}s belonging to the given {@code exercise}.
+     *
+     * @param exercise The {@link Exercise} owning the {@link TestCase}s being returned.
+     * @return The {@link TestCase}s belonging to the given {@code exercise}.
+     */
+    List<TestCase> getAllTestCases(final Exercise exercise);
+
+    /**
      * Returns a {@link List} of public {@link TestCase}s belonging to the given {@code exercise}.
      *
      * @param exercise The {@link Exercise} to which all the public {@link TestCase}s to be returned belongs to.

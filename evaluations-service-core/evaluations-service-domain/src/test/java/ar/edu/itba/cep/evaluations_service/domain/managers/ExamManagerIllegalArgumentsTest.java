@@ -1,12 +1,12 @@
-package ar.edu.itba.cep.evaluations_service.domain;
+package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
+import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
-import ar.edu.itba.cep.evaluations_service.repositories.*;
+import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,26 +30,15 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository             A mocked {@link ExamRepository} passed to super class.
-     * @param exerciseRepository         A mocked {@link ExerciseRepository} passed to super class.
-     * @param testCaseRepository         A mocked {@link TestCaseRepository} passed to super class.
-     * @param exerciseSolutionRepository A mocked {@link ExerciseSolutionRepository} passed to super class.
-     * @param exerciseSolResultRep       A mocked {@link ExerciseSolutionResultRepository} passed to super class.
-     * @param executorServiceProxy       A mocked {@link ExecutorServiceCommandMessageProxy} passed to super class.
+     * @param examRepository     A mocked {@link ExamRepository} passed to super class.
+     * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
+     * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
      */
     ExamManagerIllegalArgumentsTest(
-            @Mock(name = "examRep") final ExamRepository examRepository,
-            @Mock(name = "exerciseRep") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRep") final TestCaseRepository testCaseRepository,
-            @Mock(name = "exerciseSolutionRep") final ExerciseSolutionRepository exerciseSolutionRepository,
-            @Mock(name = "exerciseSolutionResultRep") final ExerciseSolutionResultRepository exerciseSolResultRep,
-            @Mock(name = "executorServiceProxy") final ExecutorServiceCommandMessageProxy executorServiceProxy) {
-        super(examRepository,
-                exerciseRepository,
-                testCaseRepository,
-                exerciseSolutionRepository,
-                exerciseSolResultRep,
-                executorServiceProxy);
+            @Mock(name = "examRepository") final ExamRepository examRepository,
+            @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
+        super(examRepository, exerciseRepository, testCaseRepository);
     }
 
 
@@ -81,7 +70,6 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 "Using invalid arguments when creating an Exam did not throw an IllegalArgumentException"
         );
         verifyNoInteractionWithAnyMockedRepository();
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
 
         // Clear the security context
         SecurityContextHolder.clearContext();
@@ -108,7 +96,6 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         verify(exam, only()).update(newDescription, newStartingAt, newDuration);
         verifyOnlyExamSearch(examId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -129,7 +116,6 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         verify(exam, only()).addOwner(owner);
         verifyOnlyExamSearch(examId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -160,7 +146,6 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         verify(exam, only()).getState();
         verifyOnlyExamSearch(examId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -199,7 +184,6 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         verify(exercise, times(1)).update(question, language, solutionTemplate, awardedScore);
         verifyNoMoreInteractions(exercise);
         verifyOnlyExerciseSearch(exerciseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
 
@@ -235,7 +219,6 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         verify(exam, only()).getState();
         verify(exercise, only()).getExam();
         verifyOnlyExerciseSearch(exerciseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
     }
 
     /**
@@ -286,62 +269,5 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         );
         verifyNoMoreInteractions(testCase);
         verifyOnlyTestCaseSearch(testCaseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-
-    // ================================================================================================================
-    // Solutions
-    // ================================================================================================================
-
-    /**
-     * Tests that creating a solution for an exercise belonging to an in progress exam is performed as expected.
-     *
-     * @param exam     A mocked {@link Exercise} (the owner of the {@link Exercise}s).
-     * @param exercise A mocked {@link Exercise} (the future owner of the {@link ExerciseSolution}).
-     */
-    @Test
-    void testCreateSolutionForExerciseBelongingToInProgressExam(
-            @Mock(name = "exam") final Exam exam,
-            @Mock(name = "exercise") final Exercise exercise) {
-        final var exerciseId = TestHelper.validExerciseId();
-        when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
-        when(exercise.getExam()).thenReturn(exam);
-        when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.createExerciseSolution(
-                        exerciseId,
-                        TestHelper.invalidExerciseSolutionAnswer()
-                ),
-                "Using invalid arguments when creating an ExerciseSolution" +
-                        " did not throw an IllegalArgumentException"
-        );
-        verify(exam, only()).getState();
-        verify(exercise, only()).getExam();
-        verifyOnlyExerciseSearch(exerciseId);
-        verifyZeroInteractions(executorServiceCommandMessageProxy);
-    }
-
-
-    // ================================================================================================================
-    // Solution Results
-    // ================================================================================================================
-
-    /**
-     * Tests the processing of an execution result when using a {@code null} {@link ExecutionResult}.
-     */
-    @Test
-    void testProcessExecutionWithNullExecutionResult() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> examManager.processExecution(
-                        TestHelper.validExerciseSolutionId(),
-                        TestHelper.validTestCaseId(),
-                        null
-                ),
-                "Using null stdout or null stderr is being allowed"
-        );
-        verifyNoInteractionWithAnyMockedRepository();
     }
 }

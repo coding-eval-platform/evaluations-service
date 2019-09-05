@@ -107,6 +107,27 @@
         </attributes>
     </entity>
 
+    <entity class="ExamSolutionSubmission" access="FIELD">
+        <table name="exam_solution_submission"/>
+        <attributes>
+            <id name="id">
+                <column name="id" nullable="false" updatable="false"/>
+                <generated-value strategy="IDENTITY"/>
+            </id>
+            <basic name="submitter">
+                <column name="submitter" nullable="false" insertable="true" updatable="false"/>
+            </basic>
+            <basic name="state">
+                <column name="state" nullable="false" insertable="true" updatable="true"/>
+                <enumerated>STRING</enumerated>
+            </basic>
+            <many-to-one name="exam" fetch="LAZY" optional="false">
+                <join-column name="exam_id"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
+        </attributes>
+    </entity>
+
     <entity class="ExerciseSolution" access="FIELD">
         <table name="exercise_solutions"/>
         <attributes>
@@ -115,10 +136,14 @@
                 <generated-value strategy="IDENTITY"/>
             </id>
             <basic name="answer">
-                <column name="answer" nullable="false" insertable="true" updatable="false"/>
+                <column name="answer" nullable="false" insertable="true" updatable="true"/>
             </basic>
+            <many-to-one name="submission" fetch="LAZY" optional="false">
+                <join-column name="submission_id"
+                             referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
+            </many-to-one>
             <many-to-one name="exercise" fetch="LAZY" optional="false">
-                <join-column name="belongs_to"
+                <join-column name="exercise_id"
                              referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
             </many-to-one>
         </attributes>
