@@ -92,7 +92,8 @@ public class ExamEndpoint {
                 dto.getStartingAt(),
                 dto.getDuration()
         );
-        final var location = uriInfo.getAbsolutePathBuilder()
+        final var location = uriInfo.getBaseUriBuilder()
+                .path(Routes.EXAMS)
                 .path(Long.toString(exam.getId()))
                 .build();
         return Response.created(location).build();

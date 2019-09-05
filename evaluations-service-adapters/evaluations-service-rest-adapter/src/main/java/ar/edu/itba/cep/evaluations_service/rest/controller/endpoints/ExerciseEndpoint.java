@@ -80,7 +80,8 @@ public class ExerciseEndpoint {
                 dto.getSolutionTemplate(),
                 dto.getAwardedScore()
         );
-        final var location = uriInfo.getAbsolutePathBuilder()
+        final var location = uriInfo.getBaseUriBuilder()
+                .path(Routes.EXERCISES)
                 .path(Long.toString(exercise.getId()))
                 .build();
         return Response.created(location).build();

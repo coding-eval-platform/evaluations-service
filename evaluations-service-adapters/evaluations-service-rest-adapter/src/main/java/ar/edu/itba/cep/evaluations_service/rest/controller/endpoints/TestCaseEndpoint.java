@@ -82,7 +82,8 @@ public class TestCaseEndpoint {
                 dto.getInputs(),
                 dto.getExpectedOutputs()
         );
-        final var location = uriInfo.getAbsolutePathBuilder()
+        final var location = uriInfo.getBaseUriBuilder()
+                .path(Routes.TEST_CASES)
                 .path(Long.toString(testCase.getId()))
                 .build();
         return Response.created(location).build();
