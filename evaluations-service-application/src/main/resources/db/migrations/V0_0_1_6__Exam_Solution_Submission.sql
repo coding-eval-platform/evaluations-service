@@ -3,6 +3,7 @@ CREATE TABLE exam_solution_submission
     id        BIGSERIAL PRIMARY KEY NOT NULL,
     exam_id   BIGINT,
     submitter VARCHAR,
+    state     VARCHAR,
     FOREIGN KEY (exam_id) REFERENCES exams (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
