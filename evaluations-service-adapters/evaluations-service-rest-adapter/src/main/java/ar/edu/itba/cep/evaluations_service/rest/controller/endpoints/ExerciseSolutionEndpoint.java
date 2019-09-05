@@ -1,23 +1,23 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.endpoints;
 
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import ar.edu.itba.cep.evaluations_service.services.ExamService;
+import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExerciseSolutionDownloadDto;
+import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExerciseSolutionUploadDto;
+import ar.edu.itba.cep.evaluations_service.services.SolutionService;
 import com.bellotapps.webapps_commons.config.JerseyController;
-import com.bellotapps.webapps_commons.data_transfer.jersey.annotations.PaginationParam;
-import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.Valid;
+import javax.validation.groups.ConvertGroup;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import java.util.stream.Collectors;
 
 /**
- * Rest Adapter of {@link ExamService},
- * encapsulating {@link ExerciseSolution} management.
+ * Rest Adapter of {@link SolutionService}, encapsulating {@link ExerciseSolution} management.
  */
 @Path("")
 @Produces(MediaType.APPLICATION_JSON)
@@ -30,48 +30,50 @@ public class ExerciseSolutionEndpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExerciseSolutionEndpoint.class);
 
     /**
-     * The {@link ExamService} being wrapped.
+     * The {@link SolutionService} being wrapped.
      */
-    private final ExamService examService;
+    private final SolutionService solutionService;
 
     /**
      * Constructor.
      *
-     * @param examService The {@link ExamService} being wrapped.
+     * @param solutionService The {@link SolutionService} being wrapped.
      */
     @Autowired
-    public ExerciseSolutionEndpoint(final ExamService examService) {
-        this.examService = examService;
+    public ExerciseSolutionEndpoint(final SolutionService solutionService) {
+        this.solutionService = solutionService;
     }
 
     @GET
-    @Path(Routes.EXERCISE_SOLUTIONS)
-    public Response listSolutions(
-            @PathParam("exerciseId") final long exerciseId,
-            @PaginationParam final PagingRequest pagingRequest) {
-//        LOGGER.debug("Getting solutions for exercise with id {}", exerciseId);
-//        final var solutions = examService.listSolutions(exerciseId, pagingRequest)
-//                .map(ExerciseSolutionDownloadDto::new)
-//                .content();
-//        return Response.ok(solutions).build();
-        return Response.noContent().build();
+    @Path(Routes.SOLUTIONS)
+    public Response listSolutionsForSubmission(@PathParam("submissionId") final long submissionId) {
+        LOGGER.debug("Getting solutions for submission with id {}", submissionId);
+        final var solutions = solutionService.getSolutionsForSubmission(submissionId)
+                .stream()
+                .map(ExerciseSolutionDownloadDto::new)
+                .collect(Collectors.toList());
+        return Response.ok(solutions).build();
     }
 
-    @POST
-    @Path(Routes.EXERCISE_SOLUTIONS)
+    @GET
+    @Path(Routes.SOLUTION)
+    public Response getSolution(@PathParam("solutionId") final long solutionId) {
+        LOGGER.debug("Getting solution with id {}", solutionId);
+        return solutionService.getSolution(solutionId)
+                .map(ExerciseSolutionDownloadDto::new)
+                .map(Response::ok)
+                .orElse(Response.status(Response.Status.NOT_FOUND).entity(""))
+                .build();
+    }
+
+    @PUT
+    @Path(Routes.SOLUTION)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createSolution(
-            @Context final UriInfo uriInfo,
-            @PathParam("exerciseId") final long exerciseId
-//            ,
-//            @Valid @ConvertGroup(to = ExerciseSolutionUploadDto.Create.class) final ExerciseSolutionUploadDto dto
-    ) {
-//        LOGGER.debug("Creating a solution for exercise with id {}", exerciseId);
-//        final var solution = examService.createExerciseSolution(exerciseId, dto.getAnswer());
-//        final var location = uriInfo.getAbsolutePathBuilder()
-//                .path(Long.toString(solution.getId()))
-//                .build();
-//        return Response.created(location).build();
+    public Response updateSolution(
+            @PathParam("solutionId") final long solutionId,
+            @Valid @ConvertGroup(to = ExerciseSolutionUploadDto.Modify.class) final ExerciseSolutionUploadDto dto) {
+        LOGGER.debug("Updating solution with id {}", solutionId);
+        solutionService.modifySolution(solutionId, dto.getAnswer());
         return Response.noContent().build();
     }
 }
