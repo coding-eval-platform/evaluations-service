@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.ValidationConstants;
 import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8DurationToMinutesDeserializer;
+import ar.edu.itba.cep.evaluations_service.rest.controller.validation.PositiveDuration;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.IllegalValue;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.MissingValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -66,6 +67,12 @@ public class ExamUploadDto {
      * {@link Duration} of the exam.
      */
     @NotNull(message = "The duration is missing", payload = MissingValue.class,
+            groups = {
+                    Create.class,
+                    Update.class,
+            }
+    )
+    @PositiveDuration(message = "The duration must be positive", payload = IllegalValue.class,
             groups = {
                     Create.class,
                     Update.class,

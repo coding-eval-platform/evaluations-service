@@ -270,9 +270,7 @@ public final class TestHelper {
                             .fixedString(ValidationConstants.DESCRIPTION_MIN_LENGTH - 1)
             );
         }
-        final var index = Faker.instance()
-                .number()
-                .numberBetween(0, possibleValues.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, possibleValues.size());
         return possibleValues.get(index);
     }
 
@@ -294,9 +292,7 @@ public final class TestHelper {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime()
         );
-        final var index = Faker.instance()
-                .number()
-                .numberBetween(0, possibleValues.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, possibleValues.size());
         return possibleValues.get(index);
     }
 
@@ -304,7 +300,12 @@ public final class TestHelper {
      * @return An invalid {@link Exam} duration.
      */
     public static Duration invalidExamDuration() {
-        return null;
+        final List<Duration> invalidValues = new LinkedList<>();
+        invalidValues.add(null);
+        invalidValues.add(Duration.ZERO);
+        invalidValues.add(Duration.ofMinutes(Faker.instance().number().numberBetween(Short.MIN_VALUE, 0L)));
+        final var index = (int) Faker.instance().number().numberBetween(0L, invalidValues.size());
+        return invalidValues.get(index);
     }
 
     /**
@@ -334,9 +335,7 @@ public final class TestHelper {
                             .fixedString(ValidationConstants.QUESTION_MIN_LENGTH - 1)
             );
         }
-        final var index = Faker.instance()
-                .number()
-                .numberBetween(0, possibleValues.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, possibleValues.size());
         return possibleValues.get(index);
     }
 
@@ -381,9 +380,7 @@ public final class TestHelper {
         Collections.shuffle(listWithNulls); // Perform shuffling to be sure that check is performed in all the list
         possibleValues.add(listWithNulls);
 
-        final var index = Faker.instance()
-                .number()
-                .numberBetween(0, possibleValues.size());
+        final var index = (int) Faker.instance().number().numberBetween(0L, possibleValues.size());
         return possibleValues.get(index);
     }
 

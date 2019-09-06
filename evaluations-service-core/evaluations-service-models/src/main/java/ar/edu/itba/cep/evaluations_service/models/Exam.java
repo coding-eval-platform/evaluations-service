@@ -219,6 +219,7 @@ public class Exam {
      */
     private static void assertDuration(final Duration duration) throws IllegalArgumentException {
         Assert.notNull(duration, "The duration is missing");
+        Assert.isTrue(!(duration.isNegative() || duration.isZero()), "The duration must be positive");
     }
 
     /**

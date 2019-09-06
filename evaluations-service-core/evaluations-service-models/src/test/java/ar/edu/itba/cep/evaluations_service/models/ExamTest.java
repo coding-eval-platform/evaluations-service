@@ -547,6 +547,32 @@ class ExamTest {
     }
 
     /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating an {@link Exam} with a zero {@link Duration} duration.
+     */
+    @Test
+    void testZeroDurationOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new Exam(validDescription(), validStartingMoment(), Duration.ZERO, validOwner()),
+                "Creating an exam with a zero duration is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when creating an {@link Exam} with a zero {@link Duration} duration.
+     */
+    @Test
+    void testNegativeDurationOnCreation() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> new Exam(validDescription(), validStartingMoment(), negativeDuration(), validOwner()),
+                "Creating an exam with a negative duration is being allowed."
+        );
+    }
+
+    /**
      * Tests that an {@link IllegalArgumentException} is thrown when creating an {@link Exam} with a null creator.
      */
     @Test
@@ -690,6 +716,34 @@ class ExamTest {
                 IllegalArgumentException.class,
                 () -> exam.update(validDescription(), validStartingMoment(), null),
                 "Updating an exam with a null duration is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating an {@link Exam} with a zero {@link Duration} duration.
+     */
+    @Test
+    void testZeroDurationOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> exam.update(validDescription(), validStartingMoment(), Duration.ZERO),
+                "Updating an exam with a zero duration is being allowed."
+        );
+    }
+
+    /**
+     * Tests that an {@link IllegalArgumentException} is thrown
+     * when updating an {@link Exam} with a zero {@link Duration} duration.
+     */
+    @Test
+    void testNegativeDurationOnUpdate() {
+        final var exam = createExam();
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> exam.update(validDescription(), validStartingMoment(), negativeDuration()),
+                "Updating an exam with a negative duration is being allowed."
         );
     }
 
@@ -858,6 +912,14 @@ class ExamTest {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
                 ;
+    }
+
+    /**
+     * @return A {@link Duration} that is invalid to be used in an {@link Exam} as a duration because it is negative.
+     */
+    private static Duration negativeDuration() {
+        final var number = Faker.instance().number().numberBetween(Short.MIN_VALUE, 0L);
+        return Duration.ofMinutes(number);
     }
 
     /**
