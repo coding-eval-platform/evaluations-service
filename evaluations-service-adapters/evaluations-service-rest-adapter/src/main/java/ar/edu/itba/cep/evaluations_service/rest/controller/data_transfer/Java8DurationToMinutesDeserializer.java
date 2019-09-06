@@ -1,6 +1,5 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -23,11 +22,8 @@ public class Java8DurationToMinutesDeserializer extends StdDeserializer<Duration
 
     @Override
     public Duration deserialize(final JsonParser p, final DeserializationContext context) throws IOException {
-        final var durationString = p.getText();
-        try {
-            return Duration.ofMinutes(Long.parseLong(durationString));
-        } catch (final NumberFormatException e) {
-            throw new JsonParseException(p, "Unable to deserialize a duration", e);
-        }
+        final var durationAsText = p.getText();
+        final var durationAsLong = Long.parseLong(durationAsText);
+        return Duration.ofMinutes(durationAsLong);
     }
 }
