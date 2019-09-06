@@ -2,8 +2,7 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8DurationToMinutesSerializer;
-import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8ISOLocalDateTimeSerializer;
-import ar.edu.itba.cep.evaluations_service.rest.controller.data_transfer.Java8InstantToEpochTimeSerializer;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -56,7 +55,7 @@ import java.time.LocalDateTime;
      * @return {@link LocalDateTime} at which the exam starts.
      */
     @JsonProperty(value = "startingAt", access = JsonProperty.Access.READ_ONLY)
-    @JsonSerialize(using = Java8ISOLocalDateTimeSerializer.class)
+    @JsonFormat(pattern = Constants.STARTING_AT_DATE_PATTERN, timezone = Constants.STARTING_AT_TIME_ZONE)
     public abstract LocalDateTime getStartingAt();
 
     /**
@@ -76,7 +75,7 @@ import java.time.LocalDateTime;
      * @return The actual {@link Instant} at which the exam really started.
      */
     @JsonProperty(value = "actualStartingMoment", access = JsonProperty.Access.READ_ONLY)
-    @JsonSerialize(using = Java8InstantToEpochTimeSerializer.class)
+    @JsonFormat(pattern = Constants.STARTING_AT_DATE_PATTERN, timezone = Constants.STARTING_AT_TIME_ZONE)
     public abstract Instant getActualStartingMoment();
 
     /**
