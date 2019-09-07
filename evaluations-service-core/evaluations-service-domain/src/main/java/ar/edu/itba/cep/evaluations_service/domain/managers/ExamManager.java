@@ -73,10 +73,7 @@ public class ExamManager implements ExamService {
     }
 
     @Override
-    @PreAuthorize(
-            "hasAuthority('ADMIN')" +
-                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
-    )
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('TEACHER') or hasAuthority('STUDENT')")
     public Optional<ExamWithOwners> getExam(final long examId) {
         return examRepository.findById(examId).map(exam -> {
             exam.getOwners().size(); // Initialize Lazy Collection
@@ -193,7 +190,8 @@ public class ExamManager implements ExamService {
     @Override
     @PreAuthorize(
             "hasAuthority('ADMIN')" +
-                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
+                    " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))" +
+                    " or (hasAuthority('STUDENT') and @examAuthorizationProvider.hasStarted(#examId))"
     )
     public List<Exercise> getExercises(final long examId) throws NoSuchEntityException {
         final var exam = DataLoadingHelper.loadExam(examRepository, examId);
@@ -236,7 +234,8 @@ public class ExamManager implements ExamService {
     @Override
     @PreAuthorize(
             "hasAuthority('ADMIN')" +
-                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))" +
+                    " or (hasAuthority('STUDENT') and @exerciseAuthorizationProvider.examHasStarted(#exerciseId))"
     )
     public Optional<Exercise> getExercise(long exerciseId) {
         return exerciseRepository.findById(exerciseId);
@@ -285,7 +284,8 @@ public class ExamManager implements ExamService {
     @Override
     @PreAuthorize(
             "hasAuthority('ADMIN')" +
-                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))"
+                    " or (hasAuthority('TEACHER') and @exerciseAuthorizationProvider.isOwner(#exerciseId, principal))" +
+                    " or (hasAuthority('STUDENT') and @exerciseAuthorizationProvider.examHasStarted(#exerciseId))"
     )
     public List<TestCase> getPublicTestCases(final long exerciseId) throws NoSuchEntityException {
         final var exercise = DataLoadingHelper.loadExercise(exerciseRepository, exerciseId);
@@ -323,7 +323,8 @@ public class ExamManager implements ExamService {
     @Override
     @PreAuthorize(
             "hasAuthority('ADMIN')" +
-                    " or (hasAuthority('TEACHER') and @testCaseAuthorizationProvider.isOwner(#testCaseId, principal))"
+                    " or (hasAuthority('TEACHER') and @testCaseAuthorizationProvider.isOwner(#testCaseId, principal))" +
+                    " or (hasAuthority('STUDENT') and @testCaseAuthorizationProvider.examHasStarted(#testCaseId))"
     )
     public Optional<TestCase> getTestCase(long testCaseId) {
         return testCaseRepository.findById(testCaseId).map(testCase -> {

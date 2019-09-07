@@ -48,4 +48,21 @@ public class ExerciseAuthorizationProvider {
                 .isPresent()
                 ;
     }
+
+    /**
+     * Indicates whether the {@link Exam} owning the {@link Exercise} with the given {@code exerciseId} has started.
+     *
+     * @param exerciseId The id of {@link Exercise} to be checked.
+     * @return {@code true} if the {@link Exam} owning the {@link Exercise}
+     * with the given {@code exerciseId} has started
+     * (i.e has {@link Exam.State#IN_PROGRESS} or {@link Exam.State#FINISHED} state, or {@code false} otherwise).
+     */
+    @Transactional(readOnly = true)
+    public boolean examHasStarted(final long exerciseId) {
+        return exerciseRepository.findById(exerciseId)
+                .map(Exercise::getExam)
+                .filter(AuthorizationHelper::examHasStarted)
+                .isPresent()
+                ;
+    }
 }

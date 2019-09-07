@@ -46,4 +46,19 @@ public class ExamAuthorizationProvider {
                 .isPresent()
                 ;
     }
+
+    /**
+     * Indicates whether the {@link Exam} with the given {@code examId} has started.
+     *
+     * @param examId The id of {@link Exam} to be checked.
+     * @return {@code true} if the {@link Exam} with the given {@code examId} has started
+     * (i.e has {@link Exam.State#IN_PROGRESS} or {@link Exam.State#FINISHED} state, or {@code false} otherwise).
+     */
+    @Transactional(readOnly = true)
+    public boolean hasStarted(final long examId) {
+        return examRepository.findById(examId)
+                .filter(AuthorizationHelper::examHasStarted)
+                .isPresent()
+                ;
+    }
 }

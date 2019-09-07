@@ -50,4 +50,23 @@ public class TestCaseAuthorizationProvider {
                 .isPresent()
                 ;
     }
+
+    /**
+     * Indicates whether the {@link Exam} owning the {@link Exercise} owning the {@link TestCase}
+     * with the given {@code testCaseId} has started.
+     *
+     * @param testCaseId The id of {@link TestCase} to be checked.
+     * @return {@code true} if the {@link Exam} owning the {@link Exercise} owning the {@link TestCase}
+     * with the given {@code testCaseId} has started
+     * (i.e has {@link Exam.State#IN_PROGRESS} or {@link Exam.State#FINISHED} state, or {@code false} otherwise).
+     */
+    @Transactional(readOnly = true)
+    public boolean examHasStarted(final long testCaseId) {
+        return testCaseRepository.findById(testCaseId)
+                .map(TestCase::getExercise)
+                .map(Exercise::getExam)
+                .filter(AuthorizationHelper::examHasStarted)
+                .isPresent()
+                ;
+    }
 }

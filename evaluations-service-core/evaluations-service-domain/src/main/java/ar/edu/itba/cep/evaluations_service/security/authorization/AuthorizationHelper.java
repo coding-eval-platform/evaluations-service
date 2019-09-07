@@ -33,4 +33,20 @@ import java.util.Optional;
                 .isPresent()
                 ;
     }
+
+    /**
+     * Indicates whether the given {@code exam} has started.
+     *
+     * @param exam The {@link Exam} to be checked.
+     * @return {@code true} if the given {@code exam} has started
+     * (i.e has {@link Exam.State#IN_PROGRESS} or {@link Exam.State#FINISHED} state, or {@code false} otherwise).
+     */
+    /* package */
+    static boolean examHasStarted(final Exam exam) {
+        return Optional.ofNullable(exam)
+                .map(Exam::getState)
+                .filter(state -> state == Exam.State.IN_PROGRESS || state == Exam.State.FINISHED)
+                .isPresent()
+                ;
+    }
 }
