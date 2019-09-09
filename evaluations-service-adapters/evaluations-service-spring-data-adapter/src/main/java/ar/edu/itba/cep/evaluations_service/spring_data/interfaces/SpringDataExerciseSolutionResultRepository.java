@@ -29,6 +29,17 @@ public interface SpringDataExerciseSolutionResultRepository extends CrudReposito
     );
 
     /**
+     * Retrieves the {@link ExerciseSolutionResult} that matches the given {@code testCase} - {@code solution} tuple,
+     * searching by those entities' ids.
+     *
+     * @param solutionId The {@link ExerciseSolution}'s id.
+     * @param testCaseId The {@link TestCase}'s id.
+     * @return An {@link Optional} containing the matching {@link ExerciseSolutionResult} if it exists,
+     * or empty otherwise.
+     */
+    Optional<ExerciseSolutionResult> findBySolutionIdAndTestCaseId(final long solutionId, final long testCaseId);
+
+    /**
      * Retrieves all the {@link ExerciseSolutionResult}s belonging to the given {@code solution}.
      *
      * @param solution The {@link ExerciseSolution} owning the {@link ExerciseSolutionResult}s being returned.

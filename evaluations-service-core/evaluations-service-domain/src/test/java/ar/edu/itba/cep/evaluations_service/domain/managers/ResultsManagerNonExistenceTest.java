@@ -3,8 +3,6 @@ package ar.edu.itba.cep.evaluations_service.domain.managers;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
-import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
@@ -50,69 +48,19 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
 
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test, with a non existence {@link ExerciseSolution}.
+     * Performs an {@link ExecutionResultArrivedEvent} received test,
+     * checking the condition in which the {@link ExerciseSolutionResultRepository} returns an empty {@link Optional}
+     * when trying to retrieve the corresponding
+     * {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult}
+     * for the data that arrived with the event.
      *
-     * @param event           The {@link ExecutionResultArrivedEvent} that contains entities that do not exist.
-     * @param testCase        An {@link TestCase} to be retrieved by the {@link TestCaseRepository}.
+     * @param event           The {@link ExecutionResultArrivedEvent} that contains ids of entities that do not exist.
      * @param executionResult An {@link ExecutionResult} to be retrieved from the event.
      */
     @Test
-    void testReceiveExecutionResultWhenSolutionDoesNotExist(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "executionResult") final ExecutionResult executionResult,
-            @Mock(name = "testCase") final TestCase testCase) {
-        testReceiveExecutionResultWhenEntitiesDoNotExist(event, null, testCase, executionResult);
-    }
-
-    /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test, with a non existence {@link TestCase}.
-     *
-     * @param event           The {@link ExecutionResultArrivedEvent} that contains entities that do not exist.
-     * @param solution        An {@link ExerciseSolution} to be retrieved by the {@link ExerciseSolutionRepository}.
-     * @param executionResult An {@link ExecutionResult} to be retrieved from the event.
-     */
-    @Test
-    void testReceiveExecutionResultWhenTestCaseDoesNotExist(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "executionResult") final ExecutionResult executionResult,
-            @Mock(name = "solution") final ExerciseSolution solution) {
-        testReceiveExecutionResultWhenEntitiesDoNotExist(event, solution, null, executionResult);
-    }
-
-    /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test, with entities that do not exist.
-     *
-     * @param event           The {@link ExecutionResultArrivedEvent} that contains entities that do not exist.
-     * @param executionResult An {@link ExecutionResult} to be retrieved from the event.
-     */
-    @Test
-    void testReceiveExecutionResultWhenSolutionAndTestCaseDoNotExist(
+    void test(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
             @Mock(name = "executionResult") final ExecutionResult executionResult) {
-        testReceiveExecutionResultWhenEntitiesDoNotExist(event, null, null, executionResult);
-    }
-
-
-    // ================================================================================================================
-    // Helpers
-    // ================================================================================================================
-
-    /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test, with entities that do not exist.
-     *
-     * @param event           The {@link ExecutionResultArrivedEvent} that contains entities that do not exist.
-     * @param solution        An {@link ExerciseSolution} to be mocked
-     *                        (can be {@code null}, meaning this entity does not exist).
-     * @param testCase        A {@link TestCase} to be mocked
-     *                        (can be {@code null}, meaning this entity does not exist).
-     * @param executionResult An {@link ExecutionResult} to be retrieved from the event.
-     */
-    private void testReceiveExecutionResultWhenEntitiesDoNotExist(
-            final ExecutionResultArrivedEvent event,
-            final ExerciseSolution solution,
-            final TestCase testCase,
-            final ExecutionResult executionResult) {
-
         final var solutionId = TestHelper.validExerciseId();
         final var testCaseId = TestHelper.validTestCaseId();
 
@@ -121,23 +69,21 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
         when(event.getSolutionId()).thenReturn(solutionId);
         when(event.getResult()).thenReturn(executionResult);
 
-        // Setup repositories
-        when(testCaseRepository.findById(solutionId)).thenReturn(Optional.ofNullable(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.ofNullable(solution));
+        // Setup repository
+        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.empty());
 
         // Call the method to be tested
         Assertions.assertThrows(
                 NoSuchEntityException.class,
                 () -> resultsManager.receiveExecutionResult(event),
-                "Trying to handle an execution result arrived event that contains entities that do not exist" +
-                        " does not throw a NoSuchEntityException"
+                "Trying to handle an execution result arrived event that contains data of entities" +
+                        " that do not exist does not throw a NoSuchEntityException"
         );
 
         // Verifications
-        verify(testCaseRepository, atMost(1)).findById(testCaseId);
-        verify(exerciseSolutionRepository, atMost(1)).findById(solutionId);
-        verifyNoMoreInteractions(testCaseRepository, exerciseSolutionRepository);
-        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(testCaseRepository);
         verifyZeroInteractions(publisher);
     }
 }

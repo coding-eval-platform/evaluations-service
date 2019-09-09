@@ -4,7 +4,6 @@ import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
-import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
 import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
@@ -14,9 +13,6 @@ import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRe
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -26,9 +22,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult.Result.*;
 
 
 /**
@@ -105,216 +102,128 @@ public class ResultsManager {
     private void processExamSolutionSubmission(final ExamSolutionSubmission submission)
             throws IllegalArgumentException {
         Assert.notNull(submission, "The submission must not be null");
-
-        final var solutions = exerciseSolutionRepository.getExerciseSolutions(submission)
+        exerciseSolutionRepository.getExerciseSolutions(submission)
                 .stream()
-                .map(this::createContainerForSolution)
-                .collect(Collectors.groupingBy(AnswerCondition::fromContainer));
-
-        Optional.ofNullable(solutions.get(AnswerCondition.ANSWERED))
-                .stream()
+                .map(this::createResultsFor) // This will set the "not answered" mark accordingly
                 .flatMap(Collection::stream)
-                .map(ResultsManager::createExecutionRequestedEvents)
-                .flatMap(Collection::stream)
-                .forEach(publisher::publishEvent);
-        Optional.ofNullable(solutions.get(AnswerCondition.NOT_ANSWERED))
-                .stream()
-                .flatMap(Collection::stream)
-                .map(ResultsManager::createFailed)
-                .flatMap(Collection::stream)
-                .forEach(exerciseSolutionResultRepository::save);
+                .peek(exerciseSolutionResultRepository::save)
+                .filter(result -> !result.isMarked())
+                .map(result -> ExecutionRequestedEvent.create(result.getSolution(), result.getTestCase()))
+                .forEach(publisher::publishEvent)
+        ;
     }
+
+    /**
+     * Builds a {@link List} of {@link ExerciseSolutionResult} corresponding to the given {@code solution}.
+     * {@link TestCase}s are retrieved from the {@link TestCaseRepository} using the given {@code solution}'s owner
+     * {@link ar.edu.itba.cep.evaluations_service.models.Exercise}.
+     * If the {@code solution} is not answered, the returned {@link ExerciseSolutionResult}s will be marked as
+     * {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult.Result#NOT_ANSWERED}.
+     *
+     * @param solution The {@link ExerciseSolution}.
+     * @return The created {@link ExerciseSolutionResult}s {@link List}.
+     */
+    private List<ExerciseSolutionResult> createResultsFor(final ExerciseSolution solution) {
+        final var answered = StringUtils.hasText(solution.getAnswer());
+        return testCaseRepository.getAllTestCases(solution.getExercise())
+                .stream()
+                .map(testCase -> new ExerciseSolutionResult(solution, testCase))
+                .peek(solutionResult -> {
+                    if (!answered) {
+                        solutionResult.mark(NOT_ANSWERED);
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
 
     /**
      * Processes the execution of the {@link ExerciseSolution} with the given {@code solutionId}
      * when being evaluated with the {@link TestCase} with the given {@code testCaseId}.
      * Processes is performed by checking the encapsulated data in the given {@code executionResult}.
      *
-     * @param solutionId The id of the referenced {@link ExerciseSolution}.
-     * @param testCaseId The id of the referenced {@link TestCase}.
-     * @param result     An {@link ExecutionResult} with data to be processed.
+     * @param solutionId      The id of the referenced {@link ExerciseSolution}.
+     * @param testCaseId      The id of the referenced {@link TestCase}.
+     * @param executionResult An {@link ExecutionResult} with data to be processed.
      * @throws NoSuchEntityException    If there is no {@link ExerciseSolution} with the given {@code solutionId},
      *                                  or if there is no {@link TestCase} with the given {@code testCaseId}.
-     * @throws IllegalArgumentException If the given {@code result} is {@code null}.
+     * @throws IllegalArgumentException If the given {@code executionResult} is {@code null}.
      */
-    private void processResult(final long solutionId, final long testCaseId, final ExecutionResult result)
+    private void processResult(final long solutionId, final long testCaseId, final ExecutionResult executionResult)
             throws NoSuchEntityException, IllegalArgumentException {
-        Assert.notNull(result, "Event without result");
-
-        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
-        final var testCase = DataLoadingHelper.loadTestCase(testCaseRepository, testCaseId);
-
-        // State validation is not needed because the existence of a solution proves state validity
-
-        // Get the ExerciseSolutionResultCreator corresponding to the given executionResult,
-        // and then create the ExerciseSolutionResult to be saved.
-        // If the ExecutionResult is an InitializationErrorExecutionResult or an UnknownErrorExecutionResult,
-        // the returned Optional will be empty and nothing will happen.
-        getResultCreator(result)
-                .map(creator -> creator.apply(solution, testCase))
-                .ifPresent(exerciseSolutionResultRepository::save)
-        ;
+        Assert.notNull(executionResult, "Event without executionResult");
+        exerciseSolutionResultRepository.find(solutionId, testCaseId)
+                .ifPresentOrElse(
+                        solutionResult -> {
+                            final var result = getResultFor(
+                                    executionResult,
+                                    () -> solutionResult.getTestCase().getExpectedOutputs()
+                            );
+                            solutionResult.mark(result);
+                            exerciseSolutionResultRepository.save(solutionResult);
+                        },
+                        () -> {
+                            // TODO: This should not happen as the ExerciseSolutionResult
+                            //  is created when the exam is submitted,
+                            //  which also means that both the test case and solution exist.
+                            //  If this case is given, it can be that by an unknown reason
+                            //  the test case, the solution, or the result have been deleted.
+                            //  This should be reported accordingly.
+                            throw new NoSuchEntityException(
+                                    "A TestCase an ExerciseSolution or an ExerciseSolutionResult is missing"
+                            );
+                        }
+                );
     }
 
     /**
-     * Creates a {@link SolutionAndTestCases} instance from the given {@code solution}.
+     * Gets the {@link ExerciseSolutionResult.Result} according to the given {@code executionResult},
+     * using the given {@code expectedOutputsSupplier} to retrieve the expected results
+     * if the given {@index executionResult} is a {@link FinishedExecutionResult}.
      *
-     * @param solution The {@link ExerciseSolution}.
-     * @return The created {@link SolutionAndTestCases} container instance.
+     * @param executionResult         The {@link ExecutionResult} to be analyzed.
+     * @param expectedOutputsSupplier The expected outputs to check if the execution is approved or failed
+     *                                in case it is a {@link FinishedExecutionResult}.
+     * @return The corresponding {@link ExerciseSolutionResult.Result}.
+     * @throws IllegalArgumentException If the given {@link ExecutionResult} is not a known subtype.
+     *                                  This can happen if a new subtype is added and it is not handled here.
      */
-    private SolutionAndTestCases createContainerForSolution(final ExerciseSolution solution) {
-        return SolutionAndTestCases.create(solution, testCaseRepository.getAllTestCases(solution.getExercise()));
-    }
-
-    /**
-     * Converts the given {@link SolutionAndTestCases} {@code container}
-     * into a {@link List} of {@link ExecutionRequestedEvent}s
-     *
-     * @param container The {@link SolutionAndTestCases} to be converted.
-     * @return A {@link List} with an {@link ExecutionRequestedEvent}
-     * for each {@link TestCase} in the {@code container}.
-     */
-    private static List<ExecutionRequestedEvent> createExecutionRequestedEvents(final SolutionAndTestCases container) {
-        return container.getTestCases()
-                .stream()
-                .map(testCase -> ExecutionRequestedEvent.create(container.getSolution(), testCase))
-                .collect(Collectors.toList())
-                ;
-    }
-
-    /**
-     * Convenient method that maps the given {@link SolutionAndTestCases} container to a {@link List} of failed
-     * {@link ExerciseSolutionResult}s.
-     *
-     * @param container The {@link SolutionAndTestCases} to be converted.
-     * @return A {@link List} with failed {@link ExerciseSolutionResult}s corresponding to the given {@code container}.
-     */
-    private static List<ExerciseSolutionResult> createFailed(final SolutionAndTestCases container) {
-        return container.getTestCases()
-                .stream()
-                .map(testCase -> failed(container.getSolution(), testCase))
-                .collect(Collectors.toList())
-                ;
-    }
-
-    /**
-     * Gets the {@link ExerciseSolutionResultCreator} corresponding to the given {@link ExecutionResult}.
-     *
-     * @param result The {@link ExecutionResult} to be analyzed in order to know which
-     *               {@link ExerciseSolutionResultCreator} must be returned.
-     * @return The {@link ExerciseSolutionResultCreator} corresponding to the given {@link ExecutionResult}.
-     */
-    private static Optional<ExerciseSolutionResultCreator> getResultCreator(final ExecutionResult result) {
-        if (result instanceof FinishedExecutionResult) {
-            return Optional.of((s, t) -> createForFinished(s, t, (FinishedExecutionResult) result));
+    private ExerciseSolutionResult.Result getResultFor(
+            final ExecutionResult executionResult,
+            final Supplier<List<String>> expectedOutputsSupplier) throws IllegalArgumentException {
+        if (executionResult instanceof FinishedExecutionResult) {
+            return isApproved((FinishedExecutionResult) executionResult, expectedOutputsSupplier) ? APPROVED : FAILED;
         }
-        if (result instanceof TimedOutExecutionResult) {
-            return Optional.of((s, t) -> new ExerciseSolutionResult(s, t, ExerciseSolutionResult.Result.TIMED_OUT));
+        if (executionResult instanceof TimedOutExecutionResult) {
+            return TIMED_OUT;
         }
-        if (result instanceof CompileErrorExecutionResult) {
-            return Optional.of((s, t) -> new ExerciseSolutionResult(s, t, ExerciseSolutionResult.Result.NOT_COMPILED));
+        if (executionResult instanceof CompileErrorExecutionResult) {
+            return NOT_COMPILED;
         }
-        if (result instanceof InitializationErrorExecutionResult || result instanceof UnknownErrorExecutionResult) {
-            return Optional.empty(); // TODO: maybe make a solution result for this special cases? retry?
+        if (executionResult instanceof InitializationErrorExecutionResult) {
+            return INITIALIZATION_ERROR;
         }
-        throw new IllegalArgumentException("Unknown subtype");
+        if (executionResult instanceof UnknownErrorExecutionResult) {
+            return UNKNOWN_ERROR;
+        }
+        throw new IllegalArgumentException("Unknown subtype. Have you added a new subtype of ExecutionResult?");
     }
 
     /**
-     * Creates an {@link ExerciseSolutionResult} for a {@link FinishedExecutionResult}.
+     * Checks whether the given {@code result} is approved.
      *
-     * @param solution        The {@link ExerciseSolution} corresponding to the created {@link ExerciseSolutionResult}.
-     * @param testCase        The {@link TestCase} corresponding to the created {@link ExerciseSolutionResult}.
-     * @param executionResult The {@link FinishedExecutionResult} from where execution stuff is taken.
-     * @return The created {@link ExerciseSolutionResult} for a {@link FinishedExecutionResult}.
+     * @param result                  The {@link FinishedExecutionResult} from where execution stuff is taken.
+     * @param expectedOutputsSupplier A {@link Supplier} of the expected outputs for the execution
+     *                                in order to be considered approved.
+     * @return {@code true} if the execution is approved, or {@code false} otherwise.
+     * @implNote The method checks whether the exit code of the {@link FinishedExecutionResult} is 0, if there is
+     * no data in the standard error output, and if the outputs match the given {@code expectedOutputs}.
      */
-    private static ExerciseSolutionResult createForFinished(
-            final ExerciseSolution solution,
-            final TestCase testCase,
-            final FinishedExecutionResult executionResult) {
-
-        if (executionResult.getExitCode() == 0
-                && executionResult.getStderr().isEmpty()
-                && testCase.getExpectedOutputs().equals(executionResult.getStdout())) {
-            return approved(solution, testCase);
-        }
-        return failed(solution, testCase);
-    }
-
-    /**
-     * Creates an approved {@link ExerciseSolutionResult} with the given {@code solution} and {@code testCase}.
-     *
-     * @param solution The {@link ExerciseSolution}.
-     * @param testCase The {@link TestCase}.
-     * @return The created approved {@link ExerciseSolutionResult}.
-     */
-    private static ExerciseSolutionResult approved(final ExerciseSolution solution, final TestCase testCase) {
-        return new ExerciseSolutionResult(solution, testCase, ExerciseSolutionResult.Result.APPROVED);
-    }
-
-    /**
-     * Creates a failed {@link ExerciseSolutionResult} with the given {@code solution} and {@code testCase}.
-     *
-     * @param solution The {@link ExerciseSolution}.
-     * @param testCase The {@link TestCase}.
-     * @return The created failed {@link ExerciseSolutionResult}.
-     */
-    private static ExerciseSolutionResult failed(final ExerciseSolution solution, final TestCase testCase) {
-        return new ExerciseSolutionResult(solution, testCase, ExerciseSolutionResult.Result.FAILED);
-    }
-
-
-    /**
-     * A container class that holds an {@link ExerciseSolution} together with the {@link TestCase}s belonging to
-     * the {@link ar.edu.itba.cep.evaluations_service.models.Exercise} to which the said {@link ExerciseSolution}
-     * belongs to.
-     */
-    @Getter
-    @ToString(doNotUseGetters = true)
-    @EqualsAndHashCode(doNotUseGetters = true)
-    @AllArgsConstructor(staticName = "create")
-    private static final class SolutionAndTestCases {
-        /**
-         * The wrapped {@link ExerciseSolution}.
-         */
-        private final ExerciseSolution solution;
-        /**
-         * The wrapped {@link TestCase}s.
-         */
-        private final List<TestCase> testCases;
-    }
-
-    /**
-     * Enum holding the possible conditions regarding the answer state of an {@link ExerciseSolution}.
-     */
-    private enum AnswerCondition {
-        /**
-         * Indicates that an {@link ExerciseSolution} has answer.
-         */
-        ANSWERED,
-        /**
-         * Indicates that an {@link ExerciseSolution} has no answer.
-         */
-        NOT_ANSWERED,
-        ;
-
-        /**
-         * Retrieves the {@link AnswerCondition} corresponding for the given {@code container}.
-         *
-         * @param container The {@link SolutionAndTestCases} to be analyzed.
-         * @return {@link #ANSWERED} if the {@link ExerciseSolution} in the container has an answer,
-         * or {@link #NOT_ANSWERED} otherwise.
-         */
-        public static AnswerCondition fromContainer(final SolutionAndTestCases container) {
-            return StringUtils.hasText(container.getSolution().getAnswer()) ? ANSWERED : NOT_ANSWERED;
-        }
-    }
-
-    /**
-     * Defines behaviour for an object that can create an {@link ExerciseSolutionResult}
-     * from an {@link ExerciseSolution} and a {@link TestCase}.
-     */
-    private interface ExerciseSolutionResultCreator
-            extends BiFunction<ExerciseSolution, TestCase, ExerciseSolutionResult> {
+    private static boolean isApproved(
+            final FinishedExecutionResult result,
+            final Supplier<List<String>> expectedOutputsSupplier) {
+        return result.getExitCode() == 0
+                && result.getStderr().isEmpty()
+                && expectedOutputsSupplier.get().equals(result.getStdout());
     }
 }
