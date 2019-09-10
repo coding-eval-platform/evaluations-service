@@ -15,7 +15,7 @@ import java.util.Optional;
 
 
 /**
- * A port into the application that allows {@link Exam} management.
+ * A port into the application that allows {@link ExamSolutionSubmission} and {@link ExerciseSolution} management.
  */
 public interface SolutionService {
 
