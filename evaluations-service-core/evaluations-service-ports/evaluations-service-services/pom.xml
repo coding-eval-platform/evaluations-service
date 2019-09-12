@@ -27,6 +27,11 @@
         </dependency>
 
         <!-- Third party libraries -->
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
         <!-- Repository Utils to have access to Paging and Sorting stuff -->
         <dependency>
             <groupId>com.bellotapps.webapps</groupId>
