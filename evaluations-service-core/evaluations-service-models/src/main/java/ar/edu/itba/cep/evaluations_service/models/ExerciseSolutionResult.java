@@ -84,6 +84,13 @@ public class ExerciseSolutionResult {
         this.result = result;
     }
 
+    /**
+     * Removes the {@code result}.
+     */
+    public void unmark() {
+        this.result = null;
+    }
+
 
     // ================================
     // Assertions

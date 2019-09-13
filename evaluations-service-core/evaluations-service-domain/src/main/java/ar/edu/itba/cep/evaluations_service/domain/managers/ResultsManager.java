@@ -4,6 +4,7 @@ import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
 import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
@@ -11,6 +12,9 @@ import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
+import ar.edu.itba.cep.evaluations_service.services.ResultsService;
+import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
+import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -35,7 +39,7 @@ import static ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult.
 @Component
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class ResultsManager {
+public class ResultsManager implements ResultsService {
 
     /**
      * The {@link ExerciseSolutionRepository}.
@@ -55,6 +59,65 @@ public class ResultsManager {
      */
     private final ApplicationEventPublisher publisher;
 
+
+    // ================================================================================================================
+    // ResultsService
+    // ================================================================================================================
+
+    @Override
+    public List<ExerciseSolutionResult> getResultsForSolution(final long solutionId)
+            throws NoSuchEntityException, IllegalEntityStateException {
+        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
+        checkSubmitted(solution);
+        return exerciseSolutionResultRepository.find(solution);
+    }
+
+    @Override
+    public ExerciseSolutionResult getResultFor(final long solutionId, final long testCaseId)
+            throws NoSuchEntityException, IllegalEntityStateException {
+        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
+        final var testCase = DataLoadingHelper.loadTestCase(testCaseRepository, testCaseId);
+        checkSubmitted(solution);
+        // If the Optional is empty, something unexpected has happened (must exist if solution is submitted).
+        // Throw an IllegalStateException which is not part of the API, in order to be reported.
+        return exerciseSolutionResultRepository.find(solution, testCase).orElseThrow(IllegalStateException::new);
+    }
+
+
+    @Override
+    public void retryForSolution(final long solutionId) throws NoSuchEntityException, IllegalEntityStateException {
+        // TODO: check that solution exist, that results exist for all test cases (or that solutions are submitted)
+        //  and that they are all marked.
+    }
+
+    @Override
+    @Transactional
+    public void retryForSolutionAndTestCase(final long solutionId, final long testCaseId)
+            throws NoSuchEntityException, IllegalEntityStateException {
+        if (!exerciseSolutionRepository.existsById(solutionId) || !testCaseRepository.existsById(testCaseId)) {
+            throw new NoSuchEntityException();
+        }
+        // If the result does not exist, it means that the solution has not been submitted yet.
+        final var result = exerciseSolutionResultRepository.find(solutionId, testCaseId)
+                .orElseThrow(() -> new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED));
+
+        // TODO: should we allow resending to run while it is running?
+        if (!result.isMarked()) {
+            throw new IllegalEntityStateException(NOT_MARKED);
+        }
+
+        // Remove mark (this indicates that the solution is being sent to run again).
+        result.unmark();
+        exerciseSolutionResultRepository.save(result);
+
+        final var event = ExecutionRequestedEvent.create(result.getSolution(), result.getTestCase());
+        publisher.publishEvent(event);
+    }
+
+
+    // ================================================================================================================
+    // Event Listeners
+    // ================================================================================================================
 
     /**
      * Handles the given {@code event}.
@@ -91,6 +154,20 @@ public class ResultsManager {
     // ================================================================================================================
     // Helpers
     // ================================================================================================================
+
+    /**
+     * Checks that the {@link ExamSolutionSubmission} to which the given {@code solution} belongs to
+     * is already submitted.
+     *
+     * @param solution The {@link ExerciseSolution} to be checked.
+     * @throws IllegalEntityStateException If the {@link ExamSolutionSubmission} is not submitted.
+     */
+    private static void checkSubmitted(final ExerciseSolution solution) throws IllegalEntityStateException {
+        // Then check the submission's state
+        if (solution.getSubmission().getState() != ExamSolutionSubmission.State.SUBMITTED) {
+            throw new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED);
+        }
+    }
 
     /**
      * Sends to run the given {@code submission}
@@ -226,4 +303,16 @@ public class ResultsManager {
                 && result.getStderr().isEmpty()
                 && expectedOutputsSupplier.get().equals(result.getStdout());
     }
+
+    /**
+     * An {@link IllegalStateException} that indicates that an {@link ExamSolutionSubmission} is not submitted yet.
+     */
+    private final static IllegalEntityStateError SOLUTION_NOT_SUBMITTED =
+            new IllegalEntityStateError("Solutions not submitted yet", "state");
+
+    /**
+     * An {@link IllegalStateException} that indicates that an {@link ExamSolutionSubmission} is not submitted yet.
+     */
+    private final static IllegalEntityStateError NOT_MARKED =
+            new IllegalEntityStateError("Exercise Solution Result is not marked yet", "result");
 }
