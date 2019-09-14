@@ -58,13 +58,11 @@ public interface ResultsService {
      *
      * @param solutionId The {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolution}'s id.
      * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} with the given {@code solutionId}.
-     * @throws IllegalEntityStateException If there is an
-     *                                     {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult}
-     *                                     for the {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolution}
-     *                                     that is not marked yet, or if the
+     * @throws IllegalEntityStateException If the
      *                                     {@link ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission}
      *                                     to which the {@link ExerciseSolution} with the given {@code solutionId}
      *                                     belongs is not submitted yet.
+     * @apiNote This method will retry executions only for those that are not being executed when the method is called.
      */
     void retryForSolution(final long solutionId) throws NoSuchEntityException, IllegalEntityStateException;
 
@@ -79,12 +77,10 @@ public interface ResultsService {
      *                                     or {@link ar.edu.itba.cep.evaluations_service.models.TestCase}
      *                                     with the given {@code solutionId} or {@code testCaseId} respectively.
      * @throws IllegalEntityStateException If the
-     *                                     {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult}
-     *                                     corresponding to the given {@code solutionId} and {@code testCaseId}
-     *                                     is not marked yet, or if the
      *                                     {@link ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission}
      *                                     to which the {@link ExerciseSolution} with the given {@code solutionId}
      *                                     belongs is not submitted yet.
+     * @apiNote If there is an execution being performed when the method is called, then nothing happens.
      */
     void retryForSolutionAndTestCase(final long solutionId, final long testCaseId)
             throws NoSuchEntityException, IllegalEntityStateException;

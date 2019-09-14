@@ -86,8 +86,24 @@ public class ResultsManager implements ResultsService {
 
     @Override
     public void retryForSolution(final long solutionId) throws NoSuchEntityException, IllegalEntityStateException {
-        // TODO: check that solution exist, that results exist for all test cases (or that solutions are submitted)
-        //  and that they are all marked.
+        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
+        checkSubmitted(solution);
+        // Check if the solution is answered
+        if (!isAnswered(solution)) {
+            return; // Do nothing if not answered.
+        }
+        // Get the results and stay only with those that are marked (no execution is taking place)
+        // For those results, unmark them and store the new state in the repository
+        // Finally, send to run by publishing the event.
+        exerciseSolutionResultRepository.find(solution)
+                .stream()
+                .filter(ExerciseSolutionResult::isMarked)
+                .peek(ExerciseSolutionResult::unmark)
+                .peek(exerciseSolutionResultRepository::save)
+                .map(ExecutionRequestedEvent::fromResult)
+                .forEach(publisher::publishEvent)
+        ;
+
     }
 
     @Override
@@ -101,17 +117,20 @@ public class ResultsManager implements ResultsService {
         final var result = exerciseSolutionResultRepository.find(solutionId, testCaseId)
                 .orElseThrow(() -> new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED));
 
-        // TODO: should we allow resending to run while it is running?
+        // If the result is marked, then it means that it is not being executed right now.
         if (!result.isMarked()) {
-            throw new IllegalEntityStateException(NOT_MARKED);
+            return; // Skip if execution is taking place right now.
+        }
+
+        // Then check if it is answered.
+        if (!isAnswered(result.getSolution())) {
+            return; // Skip if not answered.
         }
 
         // Remove mark (this indicates that the solution is being sent to run again).
         result.unmark();
         exerciseSolutionResultRepository.save(result);
-
-        final var event = ExecutionRequestedEvent.create(result.getSolution(), result.getTestCase());
-        publisher.publishEvent(event);
+        publisher.publishEvent(ExecutionRequestedEvent.fromResult(result));
     }
 
 
@@ -185,7 +204,7 @@ public class ResultsManager implements ResultsService {
                 .flatMap(Collection::stream)
                 .peek(exerciseSolutionResultRepository::save)
                 .filter(result -> !result.isMarked())
-                .map(result -> ExecutionRequestedEvent.create(result.getSolution(), result.getTestCase()))
+                .map(ExecutionRequestedEvent::fromResult)
                 .forEach(publisher::publishEvent)
         ;
     }
@@ -201,7 +220,7 @@ public class ResultsManager implements ResultsService {
      * @return The created {@link ExerciseSolutionResult}s {@link List}.
      */
     private List<ExerciseSolutionResult> createResultsFor(final ExerciseSolution solution) {
-        final var answered = StringUtils.hasText(solution.getAnswer());
+        final var answered = isAnswered(solution);
         return testCaseRepository.getAllTestCases(solution.getExercise())
                 .stream()
                 .map(testCase -> new ExerciseSolutionResult(solution, testCase))
@@ -284,6 +303,16 @@ public class ResultsManager implements ResultsService {
             return UNKNOWN_ERROR;
         }
         throw new IllegalArgumentException("Unknown subtype. Have you added a new subtype of ExecutionResult?");
+    }
+
+    /**
+     * Indicates whether the given {@code solution} is answered.
+     *
+     * @param solution The {@link ExerciseSolution} to be checked.
+     * @return {@code true} if it is answered, or {@code false} otherwise.
+     */
+    private static boolean isAnswered(final ExerciseSolution solution) {
+        return StringUtils.hasText(solution.getAnswer());
     }
 
     /**
