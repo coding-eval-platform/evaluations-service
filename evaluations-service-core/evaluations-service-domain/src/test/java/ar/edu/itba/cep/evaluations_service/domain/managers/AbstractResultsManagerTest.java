@@ -1,5 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
+import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
@@ -78,5 +80,29 @@ abstract class AbstractResultsManagerTest {
                 exerciseSolutionResultRepository,
                 publisher
         );
+    }
+
+
+    // ================================================================================================================
+    // Helpers
+    // ================================================================================================================
+
+    /**
+     * A functional interface to pass actions over a {@link ResultsManager}
+     * that takes an {@link ExerciseSolution} and a {@link TestCase} id.
+     */
+    @FunctionalInterface
+            /* package */ interface ResultsManagerSolutionTestCaseAction {
+
+        /**
+         * Performs an action over the given {@code manager} with the given {@code solutionId} and {@code testCaseId}.
+         *
+         * @param manager    The {@link ResultsManager} over which the method will operate.
+         * @param solutionId An {@link ExerciseSolution} id
+         *                   to be passed to the action being performed over the {@code manager}.
+         * @param testCaseId A {@link TestCase} id
+         *                   to be passed to the action being performed over the {@code manager}.
+         */
+        void accept(final ResultsManager manager, final long solutionId, final long testCaseId);
     }
 }

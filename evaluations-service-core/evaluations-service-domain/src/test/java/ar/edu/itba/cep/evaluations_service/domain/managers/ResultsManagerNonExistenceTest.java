@@ -3,6 +3,8 @@ package ar.edu.itba.cep.evaluations_service.domain.managers;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
+import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static org.mockito.Mockito.*;
 
@@ -48,6 +51,83 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
 
 
     /**
+     * Tests that trying to get all results for an {@link ExerciseSolution} that does not exist
+     * throws a {@link NoSuchEntityException}
+     */
+    @Test
+    void testGetAllResultsForNonExistenceSolution() {
+        testAllForNonExistenceSolution(
+                ResultsManager::getResultsForSolution,
+                "Trying to get results for a solution that does not exists does not throw a NoSuchEntityException");
+    }
+
+    /**
+     * Tests that trying to get a result for an {@link ExerciseSolution} and a {@link TestCase}
+     * when the {@link ExerciseSolution} does not exist, throws a {@link NoSuchEntityException}
+     */
+    @Test
+    void testGetAResultForNonExistenceSolution() {
+        testSomethingForNonExistenceSolution(
+                ResultsManager::getResultFor,
+                "Trying to get results for a solution that does not exists" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
+
+    /**
+     * Tests that trying to get a result for an {@link ExerciseSolution} and a {@link TestCase}
+     * when the {@link TestCase} does not exist, throws a {@link NoSuchEntityException}
+     */
+    @Test
+    void testGetAResultForNonExistenceTestCase() {
+        testSomethingForNonExistenceTestCase(
+                ResultsManager::getResultFor,
+                "Trying to get results for a solution that does not exists" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
+
+
+    /**
+     * Tests that trying to retry all executions for an {@link ExerciseSolution} that does not exist
+     * throws a {@link NoSuchEntityException}
+     */
+    @Test
+    void testRetryAllExecutionForNonExistenceSolution() {
+        testAllForNonExistenceSolution(
+                ResultsManager::retryForSolution,
+                "Trying to retry all executions for a solution that does not exists" +
+                        " does not throw a NoSuchEntityException");
+    }
+
+    /**
+     * Tests that trying to retry an execution for an {@link ExerciseSolution} and a {@link TestCase}
+     * when the {@link ExerciseSolution} does not exist, throws a {@link NoSuchEntityException}
+     */
+    @Test
+    void testRetryAnExecutionForNonExistenceSolution() {
+        testSomethingForNonExistenceSolution(
+                ResultsManager::retryForSolutionAndTestCase,
+                "Trying to retry execution for a solution that does not exists" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
+
+    /**
+     * Tests that trying to get a result for an {@link ExerciseSolution} and a {@link TestCase}
+     * when the {@link TestCase} does not exist, throws a {@link NoSuchEntityException}
+     */
+    @Test
+    void testRetryAnExecutionForNonExistenceTestCase() {
+        testSomethingForNonExistenceTestCase(
+                ResultsManager::retryForSolutionAndTestCase,
+                "Trying to retry execution for a test case that does not exists" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
+
+
+    /**
      * Performs an {@link ExecutionResultArrivedEvent} received test,
      * checking the condition in which the {@link ExerciseSolutionResultRepository} returns an empty {@link Optional}
      * when trying to retrieve the corresponding
@@ -58,10 +138,10 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
      * @param executionResult An {@link ExecutionResult} to be retrieved from the event.
      */
     @Test
-    void test(
+    void testReceiveExecutionResult(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
             @Mock(name = "executionResult") final ExecutionResult executionResult) {
-        final var solutionId = TestHelper.validExerciseId();
+        final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
 
         // Configure the event
@@ -84,6 +164,92 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
         verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
         verifyZeroInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
+    }
+
+
+    // ================================================================================================================
+    // Helpers
+    // ================================================================================================================
+
+    /**
+     * Performs a test for a {@link ResultsManager}'s action that accesses entities belonging to
+     * a non existence {@link ExerciseSolution}, checking that is throws a {@link NoSuchEntityException}.
+     *
+     * @param resultsManagerAction The {@link ResultsManager}'s action.
+     * @param message              An assertion message to display in case of failure.
+     */
+    private void testAllForNonExistenceSolution(
+            final BiConsumer<ResultsManager, Long> resultsManagerAction,
+            final String message) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(
+                NoSuchEntityException.class,
+                () -> resultsManagerAction.accept(resultsManager, solutionId),
+                message
+        );
+
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(publisher);
+    }
+
+    /**
+     * Performs a test for a {@link ResultsManager}'s action that accesses an entity belonging to an
+     * {@link ExerciseSolution} and a {@link TestCase}, when the {@link ExerciseSolution} does not exist.
+     *
+     * @param resultsManagerAction The {@link ResultsManager}'s action.
+     * @param message              An assertion message to display in case of failure.
+     */
+    private void testSomethingForNonExistenceSolution(
+            final ResultsManagerSolutionTestCaseAction resultsManagerAction,
+            final String message) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validExerciseId();
+        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(false);
+        when(testCaseRepository.existsById(solutionId)).thenReturn(true);
+
+        Assertions.assertThrows(
+                NoSuchEntityException.class,
+                () -> resultsManagerAction.accept(resultsManager, solutionId, testCaseId),
+                message
+        );
+
+        verify(exerciseSolutionRepository, atMost(1)).existsById(solutionId);
+        verify(testCaseRepository, atMost(1)).existsById(testCaseId);
+        verifyNoMoreInteractions(exerciseSolutionResultRepository, testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(publisher);
+    }
+
+    /**
+     * Performs a test for a {@link ResultsManager}'s action that accesses an entity belonging to an
+     * {@link ExerciseSolution} and a {@link TestCase}, when the {@link TestCase} does not exist.
+     *
+     * @param resultsManagerAction The {@link ResultsManager}'s action.
+     * @param message              An assertion message to display in case of failure.
+     */
+    private void testSomethingForNonExistenceTestCase(
+            final ResultsManagerSolutionTestCaseAction resultsManagerAction,
+            final String message) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validExerciseId();
+        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
+        when(testCaseRepository.existsById(solutionId)).thenReturn(false);
+
+        Assertions.assertThrows(
+                NoSuchEntityException.class,
+                () -> resultsManagerAction.accept(resultsManager, solutionId, testCaseId),
+                message
+        );
+
+        verify(exerciseSolutionRepository, atMost(1)).existsById(solutionId);
+        verify(testCaseRepository, atMost(1)).existsById(testCaseId);
+        verifyNoMoreInteractions(exerciseSolutionResultRepository, testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(publisher);
     }
 }

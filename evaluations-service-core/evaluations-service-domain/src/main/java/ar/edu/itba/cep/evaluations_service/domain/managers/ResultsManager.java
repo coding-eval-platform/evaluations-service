@@ -75,12 +75,7 @@ public class ResultsManager implements ResultsService {
     @Override
     public ExerciseSolutionResult getResultFor(final long solutionId, final long testCaseId)
             throws NoSuchEntityException, IllegalEntityStateException {
-        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
-        final var testCase = DataLoadingHelper.loadTestCase(testCaseRepository, testCaseId);
-        checkSubmitted(solution);
-        // If the Optional is empty, something unexpected has happened (must exist if solution is submitted).
-        // Throw an IllegalStateException which is not part of the API, in order to be reported.
-        return exerciseSolutionResultRepository.find(solution, testCase).orElseThrow(IllegalStateException::new);
+        return loadResultFor(solutionId, testCaseId);
     }
 
 
@@ -110,12 +105,7 @@ public class ResultsManager implements ResultsService {
     @Transactional
     public void retryForSolutionAndTestCase(final long solutionId, final long testCaseId)
             throws NoSuchEntityException, IllegalEntityStateException {
-        if (!exerciseSolutionRepository.existsById(solutionId) || !testCaseRepository.existsById(testCaseId)) {
-            throw new NoSuchEntityException();
-        }
-        // If the result does not exist, it means that the solution has not been submitted yet.
-        final var result = exerciseSolutionResultRepository.find(solutionId, testCaseId)
-                .orElseThrow(() -> new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED));
+        final var result = loadResultFor(solutionId, testCaseId);
 
         // If the result is marked, then it means that it is not being executed right now.
         if (!result.isMarked()) {
@@ -186,6 +176,31 @@ public class ResultsManager implements ResultsService {
         if (solution.getSubmission().getState() != ExamSolutionSubmission.State.SUBMITTED) {
             throw new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED);
         }
+    }
+
+    /**
+     * Loads the {@link ExerciseSolutionResult}
+     * for the {@link ExerciseSolution} and {@link TestCase} with the given ids.
+     *
+     * @param solutionId The {@link ExerciseSolution} id.
+     * @param testCaseId The {@link TestCase} id.
+     * @return The corresponding {@link ExerciseSolutionResult}.
+     * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} or {@link TestCase}
+     *                                     with the given ids.
+     * @throws IllegalEntityStateException If there is no {@link ExerciseSolutionResult}
+     *                                     for the {@link ExerciseSolution} and {@link TestCase} with the given ids
+     *                                     (In this manager, trying to load an {@link ExerciseSolutionResult} that
+     *                                     does not exist means that the corresponding {@link ExamSolutionSubmission}
+     *                                     is not submitted yet).
+     */
+    private ExerciseSolutionResult loadResultFor(final long solutionId, final long testCaseId)
+            throws NoSuchEntityException, IllegalEntityStateException {
+        if (!exerciseSolutionRepository.existsById(solutionId) || !testCaseRepository.existsById(testCaseId)) {
+            throw new NoSuchEntityException();
+        }
+        // If the result does not exist, it means that the solution has not been submitted yet.
+        return exerciseSolutionResultRepository.find(solutionId, testCaseId)
+                .orElseThrow(() -> new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED));
     }
 
     /**

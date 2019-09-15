@@ -113,6 +113,20 @@ class ExerciseSolutionResultTest {
         Mockito.verifyZeroInteractions(mockedTestCase);
     }
 
+    /**
+     * Tests the unmarking process
+     */
+    @Test
+    void testUnmark() {
+        final var result = createExerciseSolutionResult();
+        result.unmark();
+
+        Assertions.assertAll(
+                "Unmarking is not working as expected.",
+                () -> Assertions.assertFalse(result.isMarked(), "It indicates that is not marked"),
+                () -> Assertions.assertNull(result.getResult(), "The result is not null")
+        );
+    }
 
     // ================================================================================================================
     // Constraint testing
