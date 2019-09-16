@@ -61,14 +61,76 @@ class ExerciseSolutionResultTest {
         Mockito.verifyZeroInteractions(mockedTestCase);
     }
 
+    /**
+     * Tests that an {@link ExerciseSolutionResult} has the result with a {@code null} value when created.
+     */
+    @Test
+    void testResultIsNullWhenCreated() {
+        Assertions.assertNull(
+                createExerciseSolutionResult().getResult(),
+                "The result must be null when creating an exercise solution result"
+        );
+        Mockito.verifyZeroInteractions(mockedExerciseSolution);
+        Mockito.verifyZeroInteractions(mockedTestCase);
+    }
+
+    /**
+     * Tests that an {@link ExerciseSolutionResult} reports that it is not marked when created.
+     */
+    @Test
+    void testNotMarkedWhenCreated() {
+        Assertions.assertFalse(
+                createExerciseSolutionResult().isMarked(),
+                "The exercise solution result must report unmarked when created"
+        );
+        Mockito.verifyZeroInteractions(mockedExerciseSolution);
+        Mockito.verifyZeroInteractions(mockedTestCase);
+    }
+
+    /**
+     * Tests the marking process.
+     */
+    @Test
+    void testMarking() {
+        final var exerciseSolutionResult = createExerciseSolutionResult();
+        final var result = validResult();
+        exerciseSolutionResult.mark(result);
+
+        Assertions.assertAll(
+                "Marking a result does not work as expected",
+                () -> Assertions.assertTrue(
+                        exerciseSolutionResult.isMarked(),
+                        "The result is not marked"
+                ),
+                () -> Assertions.assertEquals(
+                        result,
+                        exerciseSolutionResult.getResult(),
+                        "The set result is not the expected"
+                )
+        );
+
+        Mockito.verifyZeroInteractions(mockedExerciseSolution);
+        Mockito.verifyZeroInteractions(mockedTestCase);
+    }
+
+    /**
+     * Tests the unmarking process
+     */
+    @Test
+    void testUnmark() {
+        final var result = createExerciseSolutionResult();
+        result.unmark();
+
+        Assertions.assertAll(
+                "Unmarking is not working as expected.",
+                () -> Assertions.assertFalse(result.isMarked(), "It indicates that is not marked"),
+                () -> Assertions.assertNull(result.getResult(), "The result is not null")
+        );
+    }
 
     // ================================================================================================================
     // Constraint testing
     // ================================================================================================================
-
-    // ================================
-    // Creation
-    // ================================
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
@@ -78,7 +140,7 @@ class ExerciseSolutionResultTest {
     void testNullExerciseSolutionOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new ExerciseSolutionResult(null, mockedTestCase, validResult()),
+                () -> new ExerciseSolutionResult(null, mockedTestCase),
                 "Creating an exercise solution result with a null exercise solution is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedTestCase);
@@ -92,27 +154,25 @@ class ExerciseSolutionResultTest {
     void testNullTestCaseOnCreation() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new ExerciseSolutionResult(mockedExerciseSolution, null, validResult()),
+                () -> new ExerciseSolutionResult(mockedExerciseSolution, null),
                 "Creating an exercise solution result with a null test case is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExerciseSolution);
     }
 
     /**
-     * Tests that an {@link IllegalArgumentException} is thrown
-     * when creating an {@link ExerciseSolutionResult} with a null {@link ExerciseSolutionResult.Result}.
+     * Tests that setting a {@code null} value as a mark throws an {@link IllegalArgumentException}.
      */
     @Test
-    void testNullResultOnCreation() {
+    void testNullResult() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> new ExerciseSolutionResult(mockedExerciseSolution, mockedTestCase, null),
-                "Creating an exercise solution result with a null result is being allowed"
+                () -> createExerciseSolutionResult().mark(null),
+                "Marking with a null value is being allowed"
         );
         Mockito.verifyZeroInteractions(mockedExerciseSolution);
         Mockito.verifyZeroInteractions(mockedTestCase);
     }
-
 
     // ================================================================================================================
     // Helpers
@@ -130,8 +190,7 @@ class ExerciseSolutionResultTest {
     private ExerciseSolutionResult createExerciseSolutionResult() {
         return new ExerciseSolutionResult(
                 mockedExerciseSolution,
-                mockedTestCase,
-                validResult()
+                mockedTestCase
         );
     }
 

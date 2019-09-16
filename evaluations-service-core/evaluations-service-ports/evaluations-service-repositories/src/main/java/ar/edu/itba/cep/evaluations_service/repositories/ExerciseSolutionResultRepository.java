@@ -33,6 +33,17 @@ public interface ExerciseSolutionResultRepository {
     Optional<ExerciseSolutionResult> find(final ExerciseSolution solution, final TestCase testCase);
 
     /**
+     * Finds the {@link ExerciseSolutionResult} for the given {@code testCase} - {@code solution} tuple,
+     * searching by those entities' ids.
+     *
+     * @param solutionId The {@link ExerciseSolution}'s id.
+     * @param testCaseId The {@link TestCase}'s id.
+     * @return An {@link Optional} containing the matching {@link ExerciseSolutionResult} if it exists,
+     * or empty otherwise.
+     */
+    Optional<ExerciseSolutionResult> find(final long solutionId, final long testCaseId);
+
+    /**
      * Finds all the {@link ExerciseSolutionResult} for a given {@code solution}.
      *
      * @param solution The {@link ExerciseSolution} referenced in the returned {@link ExerciseSolutionResult}s.

@@ -14,20 +14,22 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.*;
 
 /**
@@ -55,6 +57,220 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
             @Mock(name = "resultRepository") final ExerciseSolutionResultRepository exerciseSolutionResultRepository,
             @Mock(name = "eventPublisher") final ApplicationEventPublisher publisher) {
         super(testCaseRepository, exerciseSolutionRepository, exerciseSolutionResultRepository, publisher);
+    }
+
+
+    // ================================================================================================================
+    // ResultsService methods
+    // ================================================================================================================
+
+    // ================================================
+    // Results retrieval
+    // ================================================
+
+    /**
+     * Tests the retrieval of all the {@link ExerciseSolutionResult} of a given {@link ExerciseSolution}.
+     *
+     * @param solution A {@link ExerciseSolution} mock (with deep stubs enabled)
+     *                 that owns the returned {@link ExerciseSolutionResult}s.
+     * @param results  A {@link List} of {@link ExerciseSolutionResult} (the one being retrieved).
+     */
+    @Test
+    void testGetAllResultsForSolution(
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "results") final List<ExerciseSolutionResult> results) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(exerciseSolutionResultRepository.find(solution)).thenReturn(results);
+
+        Assertions.assertEquals(
+                results,
+                resultsManager.getResultsForSolution(solutionId),
+                "Getting all results for a solution is not returned the list returned by the repository"
+        );
+
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verifyZeroInteractions(testCaseRepository);
+        verify(exerciseSolutionResultRepository, only()).find(solution);
+        verifyZeroInteractions(publisher);
+    }
+
+    /**
+     * Tests retrieving an {@link ExerciseSolutionResult} for an {@link ExerciseSolution} and {@link TestCase}.
+     *
+     * @param result An {@link ExerciseSolutionResult} mock (the one being returned).
+     */
+    @Test
+    void testGetResultsForSolutionAndTestCase(@Mock(name = "result") final ExerciseSolutionResult result) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validTestCaseId();
+        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
+        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
+        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+
+        Assertions.assertEquals(
+                result,
+                resultsManager.getResultFor(solutionId, testCaseId),
+                "Getting a result for a solution and test case is not returned the one returned by the repository"
+        );
+
+        verify(exerciseSolutionRepository, only()).existsById(solutionId);
+        verify(testCaseRepository, only()).existsById(testCaseId);
+        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verifyZeroInteractions(publisher);
+    }
+
+
+    // ================================================
+    // Retrying execution
+    // ================================================
+
+    /**
+     * Tests retrying executions for an {@link ExerciseSolution} that is not answered.
+     *
+     * @param solution An {@link ExerciseSolution} mock (the one without answer).
+     */
+    @Test
+    void testRetryExecutionForNotAnsweredSolution(
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(solution.getAnswer()).thenReturn(null);
+
+        resultsManager.retryForSolution(solutionId);
+
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(publisher);
+    }
+
+
+    /**
+     * Tests retrying executions for an {@link ExerciseSolution} that is answered, which contains
+     * marked and unmarked results.
+     *
+     * @param solution        An {@link ExerciseSolution} mock (the one whose execution must be retried).
+     * @param testCase        The {@link TestCase} belonging to the result that is marked.
+     * @param markedResult    The {@link ExerciseSolutionResult} that is marked.
+     * @param nonMarkedResult The {@link ExerciseSolutionResult} that is not marked.
+     */
+
+    @Test
+    void testRetryExecutionForAnsweredSolution(
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "markedResult") final ExerciseSolutionResult markedResult,
+            @Mock(name = "nonMarkedResult") final ExerciseSolutionResult nonMarkedResult) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(solution.getAnswer()).thenReturn(createAnswer());
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(markedResult.isMarked()).thenReturn(true);
+        when(markedResult.getSolution()).thenReturn(solution);
+        when(markedResult.getTestCase()).thenReturn(testCase);
+        doNothing().when(markedResult).unmark();
+        when(nonMarkedResult.isMarked()).thenReturn(false);
+        when(exerciseSolutionResultRepository.save(nonMarkedResult)).thenReturn(nonMarkedResult);
+        when(exerciseSolutionResultRepository.find(solution)).thenReturn(List.of(markedResult, nonMarkedResult));
+
+        resultsManager.retryForSolution(solutionId);
+
+        verify(markedResult, times(1)).unmark();
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verifyZeroInteractions(testCaseRepository);
+        verify(exerciseSolutionResultRepository, times(1)).find(solution);
+        verify(exerciseSolutionResultRepository, times(1)).save(markedResult);
+        verifyNoMoreInteractions(exerciseSolutionResultRepository);
+        verify(publisher, only()).publishEvent(argThat(eventIsWellFormed(solution, testCase)));
+    }
+
+
+    /**
+     * Tests retrying execution for an {@link ExerciseSolution} and a {@link TestCase},
+     * when the corresponding {@link ExerciseSolutionResult} is already marked.
+     *
+     * @param result An {@link ExerciseSolutionResult} mock (the one being checked if answered).
+     */
+    @Test
+    void testRetryExecutionForSolutionAndTestCaseWithUnmarkedResult(
+            @Mock(name = "result") final ExerciseSolutionResult result) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validTestCaseId();
+        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
+        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
+        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(result.isMarked()).thenReturn(false);
+
+        resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
+
+        verify(exerciseSolutionRepository, only()).existsById(solutionId);
+        verify(testCaseRepository, only()).existsById(testCaseId);
+        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verifyZeroInteractions(publisher);
+    }
+
+    /**
+     * Tests retrying execution for an {@link ExerciseSolution} and a {@link TestCase},
+     * when the said {@link ExerciseSolution} is not answered.
+     *
+     * @param result An {@link ExerciseSolutionResult} mock
+     *               (the one owning the {@link ExerciseSolution} without answer).
+     */
+    @Test
+    void testRetryExecutionForSolutionAndTestCaseWithNotAnsweredSolution(
+            @Mock(name = "result", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult result) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validTestCaseId();
+        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
+        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
+        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(result.isMarked()).thenReturn(true);
+        when(result.getSolution().getAnswer()).thenReturn(null);
+
+        resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
+
+        verify(exerciseSolutionRepository, only()).existsById(solutionId);
+        verify(testCaseRepository, only()).existsById(testCaseId);
+        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verifyZeroInteractions(publisher);
+    }
+
+    /**
+     * Tests retrying execution for an {@link ExerciseSolution} and a {@link TestCase},
+     * when the said {@link ExerciseSolution} is not answered.
+     *
+     * @param result An {@link ExerciseSolutionResult} mock
+     *               (the one owning the {@link ExerciseSolution} without answer).
+     */
+    @Test
+    void testRetryExecutionForSolutionAndTestCaseInIdealConditions(
+            @Mock(name = "result") final ExerciseSolutionResult result,
+            @Mock(name = "solution") final ExerciseSolution solution,
+            @Mock(name = "testCase") final TestCase testCase) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validTestCaseId();
+        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
+        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
+        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(exerciseSolutionResultRepository.save(result)).thenReturn(result);
+        when(result.isMarked()).thenReturn(true);
+        when(result.getSolution()).thenReturn(solution);
+        when(result.getTestCase()).thenReturn(testCase);
+        when(solution.getAnswer()).thenReturn(createAnswer());
+        doNothing().when(result).unmark();
+
+        resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
+
+        verify(result, times(1)).unmark();
+        verify(exerciseSolutionRepository, only()).existsById(solutionId);
+        verify(testCaseRepository, only()).existsById(testCaseId);
+        verify(exerciseSolutionResultRepository, times(1)).find(solutionId, testCaseId);
+        verify(exerciseSolutionResultRepository, times(1)).save(result);
+        verifyNoMoreInteractions(exerciseSolutionResultRepository);
+        verify(publisher, only()).publishEvent(argThat(eventIsWellFormed(solution, testCase)));
     }
 
 
@@ -99,16 +315,14 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                         testCase1a,
                         testCase1b,
                         solutionWithAnswer,
-                        createAnswer(),
-                        this::verifyExecutionRequestEventsArePublishedForSolutionsWithAnswer
+                        createAnswer()
                 ),
                 SolutionData.create(
                         exercise2,
                         testCase2a,
                         testCase2b,
                         solutionWithoutAnswer,
-                        null,
-                        this::verifyFailedResultIsSavedForSolutionsWithoutAnswer
+                        null
                 )
         );
     }
@@ -148,16 +362,14 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                         testCase1a,
                         testCase1b,
                         solution1,
-                        createAnswer(),
-                        this::verifyExecutionRequestEventsArePublishedForSolutionsWithAnswer
+                        createAnswer()
                 ),
                 SolutionData.create(
                         exercise2,
                         testCase2a,
                         testCase2b,
                         solution2,
-                        createAnswer(),
-                        this::verifyExecutionRequestEventsArePublishedForSolutionsWithAnswer
+                        createAnswer()
                 )
         );
     }
@@ -197,16 +409,14 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                         testCase1a,
                         testCase1b,
                         solution1,
-                        null,
-                        this::verifyFailedResultIsSavedForSolutionsWithoutAnswer
+                        null
                 ),
                 SolutionData.create(
                         exercise2,
                         testCase2a,
                         testCase2b,
                         solution2,
-                        null,
-                        this::verifyFailedResultIsSavedForSolutionsWithoutAnswer
+                        null
                 )
         );
     }
@@ -221,20 +431,18 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * in which the {@link ExecutionResult} is a {@link FinishedExecutionResult}, with a non zero exit code.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        A {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
-     * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
+     * @param executionResult A {@link FinishedExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithFinishedExecutionResultWithNonZeroExitCode(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> {
+                },
                 executionResult,
                 r -> when(r.getExitCode()).thenReturn(TestHelper.validNonZeroExerciseSolutionExitCode()),
                 ExerciseSolutionResult.Result.FAILED
@@ -247,20 +455,18 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * but a non empty standard error output.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        A {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeAndNonEmptyStderr(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> {
+                },
                 executionResult,
                 r -> {
                     when(r.getExitCode()).thenReturn(0);
@@ -277,24 +483,20 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * no standard error output and standard output not equal to the expected output.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        A {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeEmptyStderrAndDifferentOutput(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
         final var expectedOutputs = TestHelper.validExerciseSolutionResultList();
         final var anotherOutputs = new LinkedList<>(expectedOutputs);
         Collections.shuffle(anotherOutputs);
-        when(testCase.getExpectedOutputs()).thenReturn(expectedOutputs);
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> when(r.getTestCase().getExpectedOutputs()).thenReturn(expectedOutputs),
                 executionResult,
                 r -> {
                     when(r.getExitCode()).thenReturn(0);
@@ -312,22 +514,18 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * no standard error output and standard output equal to the expected output.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        A {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult A {@link FinishedExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeAndEmptyStderrAndExpectedOutput(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
         final var expectedOutputs = TestHelper.validExerciseSolutionResultList();
-        when(testCase.getExpectedOutputs()).thenReturn(expectedOutputs);
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> when(r.getTestCase().getExpectedOutputs()).thenReturn(expectedOutputs),
                 executionResult,
                 r -> {
                     when(r.getExitCode()).thenReturn(0);
@@ -344,20 +542,18 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * in which the {@link ExecutionResult} is a {@link TimedOutExecutionResult}.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        A {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithTimedOutExecutionResult(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final TimedOutExecutionResult executionResult) {
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> {
+                },
                 executionResult,
                 r -> {
                 },
@@ -370,20 +566,18 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * in which the {@link ExecutionResult} is a {@link CompileErrorExecutionResult}.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        A {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult A {@link CompileErrorExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithNotCompiledExecutionResult(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final CompileErrorExecutionResult executionResult) {
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> {
+                },
                 executionResult,
                 r -> {
                 },
@@ -396,24 +590,22 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * in which the {@link ExecutionResult} is an {@link InitializationErrorExecutionResult}.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        An {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult An {@link InitializationErrorExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithInitializationErrorExecutionResult(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final InitializationErrorExecutionResult executionResult) {
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> {
+                },
                 executionResult,
                 r -> {
                 },
-                null
+                ExerciseSolutionResult.Result.INITIALIZATION_ERROR
         );
     }
 
@@ -422,24 +614,22 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * in which the {@link ExecutionResult} is an {@link UnknownErrorExecutionResult}.
      *
      * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution        An {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase        A {@link TestCase} mock which is referenced in the event.
      * @param executionResult An {@link UnknownErrorExecutionResult} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithUnknownErrorExecutionResult(
             @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
             @Mock(name = "executionResult") final UnknownErrorExecutionResult executionResult) {
         testProcessExecution(
                 event,
-                solution,
-                testCase,
+                solutionResult,
+                r -> {
+                },
                 executionResult,
                 r -> {
                 },
-                null
+                ExerciseSolutionResult.Result.UNKNOWN_ERROR
         );
     }
 
@@ -467,7 +657,8 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      */
     void testExamSolutionSubmissionEvent(
             final ExamSolutionSubmittedEvent event,
-            final ExamSolutionSubmission submission, final SolutionData solutionData1,
+            final ExamSolutionSubmission submission,
+            final SolutionData solutionData1,
             final SolutionData solutionData2) {
         solutionData1.setupSolutionMock();
         solutionData2.setupSolutionMock();
@@ -479,22 +670,27 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
 
         resultsManager.examSolutionSubmitted(event);
 
-        solutionData1.verifyTestCasesAccess(testCaseRepository);
-        solutionData2.verifyTestCasesAccess(testCaseRepository);
-        verifyNoMoreInteractions(testCaseRepository);
         verify(exerciseSolutionRepository, only()).getExerciseSolutions(submission);
-        solutionData1.verifySolutionAndTestCases();
-        solutionData2.verifySolutionAndTestCases();
-        verifyNoMoreInteractions(publisher);
+        solutionData1.verifyTestCaseRepositoryAccesses(testCaseRepository);
+        solutionData2.verifyTestCaseRepositoryAccesses(testCaseRepository);
+        verifyNoMoreInteractions(testCaseRepository);
+        solutionData1.verifyExerciseSolutionResultRepositoryAccesses(exerciseSolutionResultRepository);
+        solutionData2.verifyExerciseSolutionResultRepositoryAccesses(exerciseSolutionResultRepository);
         verifyNoMoreInteractions(exerciseSolutionResultRepository);
+        solutionData1.verifyExecutionRequestEventPublishing(publisher);
+        solutionData2.verifyExecutionRequestEventPublishing(publisher);
+        verifyNoMoreInteractions(publisher);
+
+
     }
 
     /**
      * Performs an {@link ExecutionResultArrivedEvent} received test.
      *
-     * @param event                     A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solution                  An {@link ExerciseSolution} mock which is referenced in the event.
-     * @param testCase                  A {@link TestCase} mock which is referenced in the event.
+     * @param event                     An {@link ExecutionResultArrivedEvent} mock that is received by the manager.
+     * @param solutionResult            An {@link ExerciseSolutionResult} mock which is the one being affected.
+     * @param solutionResultConfigurer  A {@link Consumer} of {@link ExerciseSolutionResult} intended to configure
+     *                                  the {@link ExerciseSolutionResult} mock (e.g to set the expected outputs).
      * @param executionResult           An {@link ExecutionResult} mock which is returned by the event.
      * @param executionResultConfigurer A {@link Consumer} of a subclass of {@link ExecutionResult} of type {@code R}
      *                                  intended to configure the {@link ExecutionResult} mock
@@ -505,8 +701,8 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      */
     private <R extends ExecutionResult> void testProcessExecution(
             final ExecutionResultArrivedEvent event,
-            final ExerciseSolution solution,
-            final TestCase testCase,
+            final ExerciseSolutionResult solutionResult,
+            final Consumer<ExerciseSolutionResult> solutionResultConfigurer,
             final R executionResult,
             final Consumer<R> executionResultConfigurer,
             final ExerciseSolutionResult.Result expectedResult) {
@@ -514,7 +710,7 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
         final var testCaseId = TestHelper.validTestCaseId();
         final var solutionId = TestHelper.validExerciseSolutionId();
 
-        // Configure the result mock
+        // Configure the execution result mock
         executionResultConfigurer.accept(executionResult);
 
         // Configure the event
@@ -522,96 +718,27 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
         when(event.getSolutionId()).thenReturn(solutionId);
         when(event.getResult()).thenReturn(executionResult);
 
-        // Setup repositories
-        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
-        when(exerciseSolutionResultRepository.save(any(ExerciseSolutionResult.class))).then(i -> i.getArgument(0));
+        // Configure the solution result mock
+        doNothing().when(solutionResult).mark(expectedResult);
+        solutionResultConfigurer.accept(solutionResult);
+
+        // Setup repository
+        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(solutionResult));
+        when(exerciseSolutionResultRepository.save(solutionResult)).thenReturn(solutionResult);
 
         // Call the method to be tested
         resultsManager.receiveExecutionResult(event);
 
         // Verifications
-        verify(testCaseRepository, only()).findById(testCaseId);
-        verify(exerciseSolutionRepository, only()).findById(solutionId);
-
-        Optional.ofNullable(expectedResult)
-                .ifPresentOrElse(
-                        result -> verify(exerciseSolutionResultRepository, only())
-                                .save(
-                                        argThat(solutionResult ->
-                                                solutionResult.getResult().equals(result)
-                                                        && solutionResult.getTestCase().equals(testCase)
-                                                        && solutionResult.getSolution().equals(solution)
-                                        )
-                                ),
-                        () -> verifyZeroInteractions(exerciseSolutionResultRepository)
-                );
+        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(testCaseRepository);
+        verify(solutionResult, times(1)).mark(expectedResult);
+        verify(exerciseSolutionResultRepository, times(1)).find(solutionId, testCaseId);
+        verify(exerciseSolutionResultRepository, times(1)).save(solutionResult);
+        verifyNoMoreInteractions(exerciseSolutionRepository);
         verifyZeroInteractions(publisher);
     }
 
-    /**
-     * Verifies how the {@link ApplicationEventPublisher} is accessed when there are {@link ExerciseSolution}s
-     * with answer (i.e {@link ExecutionRequestedEvent}s must be published in the publisher).
-     *
-     * @param solutionWithAnswer The {@link ExerciseSolution} with answer
-     *                           (which is included in the {@link ExecutionRequestedEvent}).
-     * @param testCases          The {@link TestCase} included in the {@link ExecutionRequestedEvent}.
-     */
-    private void verifyExecutionRequestEventsArePublishedForSolutionsWithAnswer(
-            final ExerciseSolution solutionWithAnswer,
-            final List<TestCase> testCases) {
-        testCases.forEach(testCase ->
-                verify(publisher, times(1))
-                        .publishEvent(argThat(executionRequestedEventIsWellFormed(solutionWithAnswer, testCase)))
-        );
-    }
-
-    /**
-     * Verifies how the {@link ExerciseSolutionResultRepository} is accessed when there are {@link ExerciseSolution}s
-     * without answer (i.e {@link ExerciseSolutionResult}s must be stored).
-     *
-     * @param solutionWithoutAnswer The {@link ExerciseSolution} without answer
-     *                              (to which the {@link ExerciseSolutionResult} created belongs to).
-     * @param testCases             The {@link TestCase} to which the {@link ExerciseSolutionResult} created belongs to.
-     */
-    private void verifyFailedResultIsSavedForSolutionsWithoutAnswer(
-            final ExerciseSolution solutionWithoutAnswer,
-            final List<TestCase> testCases) {
-        testCases.forEach(testCase ->
-                verify(exerciseSolutionResultRepository, times(1))
-                        .save(argThat(solutionWithNoAnswerResult(solutionWithoutAnswer, testCase)))
-        );
-    }
-
-    /**
-     * An {@link ArgumentMatcher} for {@link ExecutionRequestedEvent} to check whether the said event contains
-     * the given {@code solution} and {@code testCase}.
-     *
-     * @param solution The {@link ExerciseSolution} to be checked.
-     * @param testCase The {@link TestCase} to be checked.
-     * @return The {@link ArgumentMatcher}.
-     */
-    private static ArgumentMatcher<ExecutionRequestedEvent> executionRequestedEventIsWellFormed(
-            final ExerciseSolution solution,
-            final TestCase testCase) {
-        return event -> event.getSolution().equals(solution) && event.getTestCase().equals(testCase);
-    }
-
-    /**
-     * An {@link ArgumentMatcher} for {@link ExerciseSolutionResult} to check whether the said event contains
-     * the given {@code solution} and {@code testCase}.
-     *
-     * @param solution The {@link ExerciseSolution} to be checked.
-     * @param testCase The {@link TestCase} to be checked.
-     * @return The {@link ArgumentMatcher}.
-     */
-    private static ArgumentMatcher<ExerciseSolutionResult> solutionWithNoAnswerResult(
-            final ExerciseSolution solution,
-            final TestCase testCase) {
-        return result -> result.getSolution().equals(solution)
-                && result.getTestCase().equals(testCase)
-                && result.getResult().equals(ExerciseSolutionResult.Result.FAILED);
-    }
 
     /**
      * A container class for a solution structure mocks
@@ -643,11 +770,6 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
          * The answer in the {@link ExerciseSolution}.
          */
         private final String answer;
-        /**
-         * A {@link BiConsumer} of {@link ExerciseSolution} and {@link List} of {@link TestCase}
-         * used to verify how those mocks are used.
-         */
-        private final BiConsumer<ExerciseSolution, List<TestCase>> solutionAndTestCasesVerifier;
 
         /**
          * Setups the {@link ExerciseSolution} mock.
@@ -663,16 +785,7 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
          * @param testCaseRepository The {@link TestCaseRepository} mock to be set up.
          */
         private void setupRepositories(final TestCaseRepository testCaseRepository) {
-            when(testCaseRepository.getAllTestCases(exercise)).thenReturn(testCases());
-        }
-
-        /**
-         * Convenient method that returns the {@link TestCase}s as a {@link List}.
-         *
-         * @return The {@link TestCase}s.
-         */
-        private List<TestCase> testCases() {
-            return List.of(testCase1, testCase2);
+            when(testCaseRepository.getAllTestCases(exercise)).thenReturn(List.of(testCase1, testCase2));
         }
 
         /**
@@ -682,16 +795,109 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
          *
          * @param testCaseRepository The {@link TestCaseRepository} to be verified.
          */
-        private void verifyTestCasesAccess(final TestCaseRepository testCaseRepository) {
+        private void verifyTestCaseRepositoryAccesses(final TestCaseRepository testCaseRepository) {
             verify(testCaseRepository, times(1)).getAllTestCases(exercise);
         }
 
         /**
-         * Calls the {@link #solutionAndTestCasesVerifier}, with the {@link ExerciseSolution} and the {@link TestCase}s.
-         * This method is intended to be used to verify actions with those mocks.
+         * Performs verification over the given {@code repository}
+         * (i.e checks that the {@link ExerciseSolutionResultRepository#save(ExerciseSolutionResult)} method
+         * is called using one {@link ExerciseSolutionResult}s with the {@code solution} and {@code testCase1},
+         * and with another for the {@code testCase2}.
+         *
+         * @param repository The {@link ExerciseSolutionResultRepository} to be verified.
          */
-        private void verifySolutionAndTestCases() {
-            solutionAndTestCasesVerifier.accept(solution, testCases());
+        private void verifyExerciseSolutionResultRepositoryAccesses(final ExerciseSolutionResultRepository repository) {
+            final var stateMatcher = isAnswered() ? isNotMarkedMatcher() : isNotAnsweredMatcher();
+            verify(repository, times(1)).save(argThat(and(resultIsWellFormed(solution, testCase1), stateMatcher)));
+            verify(repository, times(1)).save(argThat(and(resultIsWellFormed(solution, testCase2), stateMatcher)));
         }
+
+        /**
+         * Performs verification over the given {@code publisher}
+         * (i.e checks that the {@link ApplicationEventPublisher#publishEvent(Object)} method
+         * is called only if the solution has an answer with the corresponding events.
+         *
+         * @param publisher The {@link ApplicationEventPublisher} to be checked.
+         */
+        private void verifyExecutionRequestEventPublishing(final ApplicationEventPublisher publisher) {
+            if (isAnswered()) {
+                verify(publisher, times(1)).publishEvent(argThat(eventIsWellFormed(solution, testCase1)));
+                verify(publisher, times(1)).publishEvent(argThat(eventIsWellFormed(solution, testCase2)));
+            } else {
+                verifyZeroInteractions(publisher);
+            }
+        }
+
+        /**
+         * Convenient method to check "whether the solution has an answer".
+         *
+         * @return {@code true} "if it has", or {@code false} otherwise.
+         */
+        private boolean isAnswered() {
+            return StringUtils.hasText(answer);
+        }
+
+
+        /**
+         * Combines the two given {@link ArgumentMatcher}s with and "and" operation.
+         *
+         * @param wellFormedMatcher An {@link ArgumentMatcher} to check if the result is well formed.
+         * @param stateMatcher      An {@link ArgumentMatcher} to check the state of the result.
+         * @return The combined {@link ArgumentMatcher}.
+         */
+        private static ArgumentMatcher<ExerciseSolutionResult> and(
+                final ArgumentMatcher<ExerciseSolutionResult> wellFormedMatcher,
+                final ArgumentMatcher<ExerciseSolutionResult> stateMatcher) {
+            return arg -> wellFormedMatcher.matches(arg) && stateMatcher.matches(arg);
+        }
+
+        /**
+         * An {@link ArgumentMatcher} for {@link ExerciseSolutionResult} to check whether it contains
+         * the given {@code solution} and {@code testCase}.
+         *
+         * @param solution The {@link ExerciseSolution} to be checked.
+         * @param testCase The {@link TestCase} to be checked.
+         * @return The {@link ArgumentMatcher}.
+         */
+        private static ArgumentMatcher<ExerciseSolutionResult> resultIsWellFormed(
+                final ExerciseSolution solution,
+                final TestCase testCase) {
+            return result -> result.getSolution().equals(solution) && result.getTestCase().equals(testCase);
+        }
+
+        /**
+         * An {@link ArgumentMatcher} for {@link ExerciseSolutionResult} to check whether it contains
+         * a {@link ExerciseSolutionResult.Result#NOT_ANSWERED} result.
+         *
+         * @return The {@link ArgumentMatcher}.
+         */
+        private static ArgumentMatcher<ExerciseSolutionResult> isNotMarkedMatcher() {
+            return result -> !result.isMarked();
+        }
+
+        /**
+         * An {@link ArgumentMatcher} for {@link ExerciseSolutionResult} to check whether it contains
+         * a {@link ExerciseSolutionResult.Result#NOT_ANSWERED} result.
+         *
+         * @return The {@link ArgumentMatcher}.
+         */
+        private static ArgumentMatcher<ExerciseSolutionResult> isNotAnsweredMatcher() {
+            return result -> result.getResult() == ExerciseSolutionResult.Result.NOT_ANSWERED;
+        }
+    }
+
+    /**
+     * An {@link ArgumentMatcher} for {@link ExecutionRequestedEvent} to check whether the said event contains
+     * the given {@code solution} and {@code testCase}.
+     *
+     * @param solution The {@link ExerciseSolution} to be checked.
+     * @param testCase The {@link TestCase} to be checked.
+     * @return The {@link ArgumentMatcher}.
+     */
+    private static ArgumentMatcher<ExecutionRequestedEvent> eventIsWellFormed(
+            final ExerciseSolution solution,
+            final TestCase testCase) {
+        return event -> event.getSolution().equals(solution) && event.getTestCase().equals(testCase);
     }
 }

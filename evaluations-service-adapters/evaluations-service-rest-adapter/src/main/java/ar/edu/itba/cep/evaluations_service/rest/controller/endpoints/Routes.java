@@ -44,4 +44,12 @@ public class Routes {
     public static final String SOLUTIONS = "/solutions-submissions/{submissionId : \\d+}/solutions";
 
     public static final String SOLUTION = "/solutions/{solutionId : \\d+}";
+
+    public static final String SOLUTION_RESULTS = "/solutions/{solutionId : \\d+}/results";
+
+    public static final String SOLUTION_TEST_CASE_RESULT = "/solutions/{solutionId : \\d+}/results/test-case/{testCaseId : \\d+}";
+
+    public static final String RETRY_SOLUTION_EXECUTION = "/solutions/{solutionId : \\d+}/retry";
+
+    public static final String RETRY_SOLUTION_TEST_CASE_EXECUTION = "/solutions/{solutionId : \\d+}/retry/test-case/{testCaseId : \\d+}";
 }

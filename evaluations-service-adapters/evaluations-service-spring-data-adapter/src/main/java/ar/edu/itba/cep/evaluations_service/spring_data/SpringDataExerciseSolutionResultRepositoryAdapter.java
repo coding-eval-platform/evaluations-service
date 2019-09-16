@@ -47,6 +47,11 @@ public class SpringDataExerciseSolutionResultRepositoryAdapter implements Exerci
     }
 
     @Override
+    public Optional<ExerciseSolutionResult> find(final long solutionId, final long testCaseId) {
+        return repository.findBySolutionIdAndTestCaseId(solutionId, testCaseId);
+    }
+
+    @Override
     public List<ExerciseSolutionResult> find(final ExerciseSolution solution) {
         return repository.findBySolution(solution);
     }

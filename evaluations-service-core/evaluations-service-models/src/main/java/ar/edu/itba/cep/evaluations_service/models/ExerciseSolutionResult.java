@@ -5,10 +5,13 @@ import lombok.Getter;
 import lombok.ToString;
 import org.springframework.util.Assert;
 
+import java.util.Objects;
+
 /**
- * Represents an exercise's solution result (i.e approved or failed).
+ * Represents an exercise's solution result.
  * This class relates an {@link ExerciseSolution} and a {@link TestCase},
- * indicating whether the solution is approved or failed, when testing it with the test case.
+ * indicating whether the solution is approved, failed, or any of the possible values in the {@link Result} enum,
+ * when testing it with the test case.
  */
 @Getter
 @EqualsAndHashCode(of = "id")
@@ -30,7 +33,7 @@ public class ExerciseSolutionResult {
     /**
      * Indicates whether the result is approved or failed.
      */
-    private final Result result;
+    private Result result;
 
 
     /**
@@ -41,7 +44,6 @@ public class ExerciseSolutionResult {
         this.id = 0;
         this.solution = null;
         this.testCase = null;
-        this.result = null;
     }
 
     /**
@@ -49,49 +51,44 @@ public class ExerciseSolutionResult {
      *
      * @param solution The {@link ExerciseSolution} to which this result makes reference.
      * @param testCase The test case being used to reach the result.
-     * @param result   Indicates whether the result is approved or failed.
      * @throws IllegalArgumentException If any argument is not valid.
      */
-    public ExerciseSolutionResult(final ExerciseSolution solution, final TestCase testCase, final Result result)
+    public ExerciseSolutionResult(final ExerciseSolution solution, final TestCase testCase)
             throws IllegalArgumentException {
         assertSolution(solution);
         assertTestCase(testCase);
-        assertResult(result);
         this.id = 0;
         this.solution = solution;
         this.testCase = testCase;
-        this.result = result;
     }
 
 
-    // ================================
-    // Helpers
-    // ================================
+    /**
+     * Indicates whether this result is marked.
+     *
+     * @return {@code true} if the result is marked, or {@code false} otherwise.
+     */
+    public boolean isMarked() {
+        return Objects.nonNull(this.result);
+    }
 
     /**
-     * An enum with values describing the result.
+     * Sets the given {@code result}.
+     *
+     * @param result The {@link Result} to be set.
+     * @throws IllegalArgumentException if the given {@code result} is {@code null}.
+     * @apiNote This method can be executed several times.
      */
-    public enum Result {
-        /**
-         * Indicates that an exercise's solution is accepted when testing it with a given test case.
-         */
-        APPROVED,
-        /**
-         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
-         * the execution returned a non expected output.
-         */
-        FAILED,
-        /**
-         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
-         * the execution timed out.
-         */
-        TIMED_OUT,
-        /**
-         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
-         * the code could not be compiled.
-         */
-        NOT_COMPILED,
-        ;
+    public void mark(final Result result) throws IllegalArgumentException {
+        assertResult(result);
+        this.result = result;
+    }
+
+    /**
+     * Removes the {@code result}.
+     */
+    public void unmark() {
+        this.result = null;
     }
 
 
@@ -127,5 +124,51 @@ public class ExerciseSolutionResult {
      */
     private static void assertResult(final Result result) throws IllegalArgumentException {
         Assert.notNull(result, "The result is missing");
+    }
+
+
+    // ================================
+    // States
+    // ================================
+
+    /**
+     * An enum with values describing the result.
+     */
+    public enum Result {
+        /**
+         * Indicates that an exercise's solution is accepted when testing it with a given test case.
+         */
+        APPROVED,
+        /**
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
+         * the execution returned a non expected output.
+         */
+        FAILED,
+        /**
+         * Indicates that an exercise's solution is not accepted because it was not answered.
+         */
+        NOT_ANSWERED,
+        /**
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
+         * the execution timed out.
+         */
+        TIMED_OUT,
+        /**
+         * Indicates that an exercise's solution is not accepted when testing it with a given test case because
+         * the code could not be compiled.
+         */
+        NOT_COMPILED,
+        /**
+         * Indicates that the execution of an exercise's solution could not be performed as expected because of
+         * initialization issues.
+         */
+        INITIALIZATION_ERROR,
+        /**
+         * Indicates that the execution of an exercise's solution could not be performed as expected because of
+         * unknown issues.
+         * For non compiled languages this will be reported when there are syntax errors.
+         */
+        UNKNOWN_ERROR,
+        ;
     }
 }
