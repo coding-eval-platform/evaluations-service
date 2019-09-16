@@ -885,20 +885,6 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
         private static ArgumentMatcher<ExerciseSolutionResult> isNotAnsweredMatcher() {
             return result -> result.getResult() == ExerciseSolutionResult.Result.NOT_ANSWERED;
         }
-
-//        /**
-//         * An {@link ArgumentMatcher} for {@link ExecutionRequestedEvent} to check whether the said event contains
-//         * the given {@code solution} and {@code testCase}.
-//         *
-//         * @param solution The {@link ExerciseSolution} to be checked.
-//         * @param testCase The {@link TestCase} to be checked.
-//         * @return The {@link ArgumentMatcher}.
-//         */
-//        private static ArgumentMatcher<ExecutionRequestedEvent> eventIsWellFormed(
-//                final ExerciseSolution solution,
-//                final TestCase testCase) {
-//            return event -> event.getSolution().equals(solution) && event.getTestCase().equals(testCase);
-//        }
     }
 
     /**
