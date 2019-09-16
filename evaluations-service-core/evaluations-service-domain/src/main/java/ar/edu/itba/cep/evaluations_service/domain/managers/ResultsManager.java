@@ -80,6 +80,7 @@ public class ResultsManager implements ResultsService {
 
 
     @Override
+    @Transactional
     public void retryForSolution(final long solutionId) throws NoSuchEntityException, IllegalEntityStateException {
         final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
         checkSubmitted(solution);

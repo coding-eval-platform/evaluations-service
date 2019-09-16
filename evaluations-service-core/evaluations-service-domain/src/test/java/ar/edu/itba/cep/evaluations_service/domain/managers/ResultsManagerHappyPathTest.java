@@ -178,6 +178,7 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
 
         resultsManager.retryForSolution(solutionId);
 
+        verify(markedResult, times(1)).unmark();
         verify(exerciseSolutionRepository, only()).findById(solutionId);
         verifyZeroInteractions(testCaseRepository);
         verify(exerciseSolutionResultRepository, times(1)).find(solution);
@@ -263,6 +264,7 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
 
         resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
 
+        verify(result, times(1)).unmark();
         verify(exerciseSolutionRepository, only()).existsById(solutionId);
         verify(testCaseRepository, only()).existsById(testCaseId);
         verify(exerciseSolutionResultRepository, times(1)).find(solutionId, testCaseId);
