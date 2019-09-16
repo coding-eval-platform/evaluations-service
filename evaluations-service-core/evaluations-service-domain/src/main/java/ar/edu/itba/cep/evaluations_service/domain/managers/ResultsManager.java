@@ -19,6 +19,7 @@ import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -64,6 +65,17 @@ public class ResultsManager implements ResultsService {
     // ResultsService
     // ================================================================================================================
 
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (" +
+                    "   hasAuthority('TEACHER')" +
+                    "       and @exerciseSolutionAuthorizationProvider.isExamOwner(#solutionId, principal)" +
+                    ")" +
+                    " or (" +
+                    "   hasAuthority('STUDENT')" +
+                    "       and @exerciseSolutionAuthorizationProvider.isOwner(#solutionId, principal)" +
+                    ")"
+    )
     @Override
     public List<ExerciseSolutionResult> getResultsForSolution(final long solutionId)
             throws NoSuchEntityException, IllegalEntityStateException {
@@ -72,6 +84,17 @@ public class ResultsManager implements ResultsService {
         return exerciseSolutionResultRepository.find(solution);
     }
 
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (" +
+                    "   hasAuthority('TEACHER')" +
+                    "       and @exerciseSolutionAuthorizationProvider.isExamOwner(#solutionId, principal)" +
+                    ")" +
+                    " or (" +
+                    "   hasAuthority('STUDENT')" +
+                    "       and @exerciseSolutionAuthorizationProvider.isOwner(#solutionId, principal)" +
+                    ")"
+    )
     @Override
     public ExerciseSolutionResult getResultFor(final long solutionId, final long testCaseId)
             throws NoSuchEntityException, IllegalEntityStateException {
@@ -79,6 +102,13 @@ public class ResultsManager implements ResultsService {
     }
 
 
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (" +
+                    "   hasAuthority('TEACHER')" +
+                    "       and @exerciseSolutionAuthorizationProvider.isExamOwner(#solutionId, principal)" +
+                    ")"
+    )
     @Override
     @Transactional
     public void retryForSolution(final long solutionId) throws NoSuchEntityException, IllegalEntityStateException {
@@ -102,6 +132,13 @@ public class ResultsManager implements ResultsService {
 
     }
 
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (" +
+                    "   hasAuthority('TEACHER')" +
+                    "       and @exerciseSolutionAuthorizationProvider.isExamOwner(#solutionId, principal)" +
+                    ")"
+    )
     @Override
     @Transactional
     public void retryForSolutionAndTestCase(final long solutionId, final long testCaseId)
