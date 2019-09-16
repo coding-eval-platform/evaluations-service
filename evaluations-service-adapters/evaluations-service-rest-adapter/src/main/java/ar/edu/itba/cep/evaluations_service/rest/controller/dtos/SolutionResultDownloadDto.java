@@ -4,12 +4,16 @@ import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * Data Transfer Object for {@link ExerciseSolutionResult}.
  *
  * @param <T> The concrete type for the result.
  */
+@ToString(doNotUseGetters = true)
+@EqualsAndHashCode(doNotUseGetters = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public abstract class SolutionResultDownloadDto<T> {
 
