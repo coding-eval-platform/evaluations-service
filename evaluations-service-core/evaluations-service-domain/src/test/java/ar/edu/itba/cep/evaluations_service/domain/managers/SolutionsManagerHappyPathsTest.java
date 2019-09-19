@@ -2,14 +2,8 @@ package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
-import ar.edu.itba.cep.evaluations_service.models.Exam;
-import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamSolutionSubmissionRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.evaluations_service.repositories.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,24 +29,20 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository                   An {@link ExamRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param exerciseRepository               An {@link ExerciseRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param examSolutionSubmissionRepository An {@link ExamSolutionSubmissionRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param exerciseSolutionRepository       An {@link ExerciseSolutionRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param publisher                        An {@link ApplicationEventPublisher}
-     *                                         that is injected to the {@link SolutionsManager}.
+     * @param examRepository       An {@link ExamRepository} that is injected to the {@link SolutionsManager}.
+     * @param exerciseRepository   An {@link ExerciseRepository} that is injected to the {@link SolutionsManager}.
+     * @param submissionRepository An {@link ExamSolutionSubmissionRepository} that is injected to the {@link SolutionsManager}.
+     * @param solutionRepository   An {@link ExerciseSolutionRepository} that is injected to the {@link SolutionsManager}.
+     * @param publisher            An {@link ApplicationEventPublisher} that is injected to the {@link SolutionsManager}.
      */
     SolutionsManagerHappyPathsTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "submissionRepository") final ExamSolutionSubmissionRepository examSolutionSubmissionRepository,
-            @Mock(name = "exerciseSolutionRepository") final ExerciseSolutionRepository exerciseSolutionRepository,
+            @Mock(name = "submissionRepository") final ExamSolutionSubmissionRepository submissionRepository,
+            @Mock(name = "solutionRepository") final ExerciseSolutionRepository solutionRepository,
+            @Mock(name = "resultRepository") final ExerciseSolutionResultRepository resultRepository,
             @Mock(name = "eventPublisher") final ApplicationEventPublisher publisher) {
-        super(examRepository, exerciseRepository, examSolutionSubmissionRepository, exerciseSolutionRepository, publisher);
+        super(examRepository, exerciseRepository, submissionRepository, solutionRepository, resultRepository, publisher);
     }
 
 
@@ -71,7 +61,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
     void testSearchForExamThatExists(@Mock(name = "submission") final ExamSolutionSubmission submission) {
         final var submissionsId = TestHelper.validExerciseSolutionId();
         when(submission.getId()).thenReturn(submissionsId);
-        when(examSolutionSubmissionRepository.findById(submissionsId)).thenReturn(Optional.of(submission));
+        when(submissionRepository.findById(submissionsId)).thenReturn(Optional.of(submission));
         final var submissionOptional = solutionsManager.getSubmission(submissionsId);
         Assertions.assertAll("Searching for a submission that exists is not working as expected",
                 () -> Assertions.assertTrue(
@@ -111,10 +101,10 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         when(exercise1.getExam()).thenReturn(exam);
         when(exercise2.getExam()).thenReturn(exam);
         when(examRepository.findById(examId)).thenReturn(Optional.of(exam));
-        when(examSolutionSubmissionRepository.save(any(ExamSolutionSubmission.class))).then(i -> i.getArgument(0));
-        when(examSolutionSubmissionRepository.existsSubmissionFor(exam, submitter)).thenReturn(false);
+        when(submissionRepository.save(any(ExamSolutionSubmission.class))).then(i -> i.getArgument(0));
+        when(submissionRepository.existsSubmissionFor(exam, submitter)).thenReturn(false);
         when(exerciseRepository.getExamExercises(exam)).thenReturn(exercises);
-        when(exerciseSolutionRepository.save(any(ExerciseSolution.class))).then(i -> i.getArgument(0));
+        when(solutionRepository.save(any(ExerciseSolution.class))).then(i -> i.getArgument(0));
 
         TestHelper.setupSecurityContext(submitter, authentication, securityContext);
 
@@ -133,13 +123,14 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         );
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
-        verify(examSolutionSubmissionRepository, times(1)).existsSubmissionFor(exam, submitter);
-        verify(examSolutionSubmissionRepository, times(1)).save(any(ExamSolutionSubmission.class));
-        verifyNoMoreInteractions(examSolutionSubmissionRepository);
-        exercises.forEach(e -> verify(exerciseSolutionRepository, times(1))
+        verify(submissionRepository, times(1)).existsSubmissionFor(exam, submitter);
+        verify(submissionRepository, times(1)).save(any(ExamSolutionSubmission.class));
+        verifyNoMoreInteractions(submissionRepository);
+        exercises.forEach(e -> verify(solutionRepository, times(1))
                 .save(argThat(inner -> inner.getExercise().equals(e)))
         );
-        verifyNoMoreInteractions(exerciseSolutionRepository);
+        verifyNoMoreInteractions(solutionRepository);
+        verifyZeroInteractions(resultRepository);
         verifyZeroInteractions(publisher);
 
         TestHelper.clearSecurityContext();
@@ -159,22 +150,115 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         when(submission.getExam()).thenReturn(exam);
         doNothing().when(submission).submit();
         when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
-        when(examSolutionSubmissionRepository.findById(submissionsId)).thenReturn(Optional.of(submission));
-        when(examSolutionSubmissionRepository.save(submission)).thenReturn(submission);
+        when(submissionRepository.findById(submissionsId)).thenReturn(Optional.of(submission));
+        when(submissionRepository.save(submission)).thenReturn(submission);
         doNothing().when(publisher).publishEvent(any(ExamSolutionSubmittedEvent.class));
         Assertions.assertDoesNotThrow(
                 () -> solutionsManager.submitSolutions(submissionsId),
                 "An unexpected exception is thrown when submitting an exam solution"
         );
         verifyZeroInteractions(examRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
-        verify(examSolutionSubmissionRepository, times(1)).findById(submissionsId);
-        verify(examSolutionSubmissionRepository, times(1)).save(submission);
-        verifyNoMoreInteractions(examSolutionSubmissionRepository);
-        verifyZeroInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(solutionRepository);
+        verify(submissionRepository, times(1)).findById(submissionsId);
+        verify(submissionRepository, times(1)).save(submission);
+        verifyNoMoreInteractions(submissionRepository);
+        verifyZeroInteractions(solutionRepository);
+        verifyZeroInteractions(resultRepository);
         verify(publisher, only()).publishEvent(
                 argThat((final ExamSolutionSubmittedEvent event) -> event.getSubmission().equals(submission))
         );
+    }
+
+    /**
+     * Tests that re-scoring an {@link ExamSolutionSubmission} does not do anything.
+     *
+     * @param submission A mocked {@link ExamSolutionSubmission} (the one being re-scored).
+     */
+    @Test
+    void testReScoringDoesNotDoAnything(@Mock(name = "submission") final ExamSolutionSubmission submission) {
+        final var submissionId = TestHelper.validExamSolutionSubmissionId();
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submission.getScore()).thenReturn(TestHelper.validScore());
+
+        solutionsManager.scoreSubmission(submissionId);
+
+        verify(submission, only()).getScore();
+        verifyOnlySubmissionSearch(submissionId);
+    }
+
+    /**
+     * Tests that scoring an {@link ExamSolutionSubmission}
+     * that contains approved and not-approved {@link ExerciseSolution}s works as expected.
+     *
+     * @param submission A mocked {@link ExamSolutionSubmission} (the one being scored).
+     * @param solution1  A mocked {@link ExerciseSolution} (represents a solution belonging to the {@code submission}).
+     * @param solution2  A mocked {@link ExerciseSolution} (represents a solution belonging to the {@code submission}).
+     * @param result1a   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution1}).
+     * @param result1b   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution1}).
+     * @param result2a   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution2}).
+     * @param result2b   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution2}).
+     */
+    @Test
+    void testSubmissionIsNotScoredIfThereArePendingExecutions(
+            @Mock(name = "submission") final ExamSolutionSubmission submission,
+            @Mock(name = "exercise1") final Exercise exercise1,
+            @Mock(name = "solution1") final ExerciseSolution solution1,
+            @Mock(name = "solution2") final ExerciseSolution solution2,
+            @Mock(name = "result1a") final ExerciseSolutionResult result1a,
+            @Mock(name = "result1b") final ExerciseSolutionResult result1b,
+            @Mock(name = "result2a") final ExerciseSolutionResult result2a,
+            @Mock(name = "result2b") final ExerciseSolutionResult result2b) {
+        final var submissionId = TestHelper.validExamSolutionSubmissionId();
+        final var exercise1AwardedScore = TestHelper.validAwardedScore();
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submission.getScore()).thenReturn(null);
+        when(submission.getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        doNothing().when(submission).score(exercise1AwardedScore);
+        when(solution1.getExercise()).thenReturn(exercise1);
+        when(exercise1.getAwardedScore()).thenReturn(exercise1AwardedScore);
+        // We assume that all but one are approved
+        when(result1a.isMarked()).thenReturn(true);
+        when(result1b.isMarked()).thenReturn(true);
+        when(result2a.isMarked()).thenReturn(true);
+        when(result2b.isMarked()).thenReturn(true);
+        when(result1a.getResult()).thenReturn(ExerciseSolutionResult.Result.APPROVED);
+        when(result1b.getResult()).thenReturn(ExerciseSolutionResult.Result.APPROVED);
+        when(result2a.getResult()).thenReturn(ExerciseSolutionResult.Result.APPROVED);
+        when(result2b.getResult()).thenReturn(TestHelper.notApprovedResult());
+        when(solutionRepository.getExerciseSolutions(submission)).thenReturn(List.of(solution1, solution2));
+        when(resultRepository.find(solution1)).thenReturn(List.of(result1a, result1b));
+        when(resultRepository.find(solution2)).thenReturn(List.of(result2a, result2b));
+
+        solutionsManager.scoreSubmission(submissionId);
+
+        verify(submission, times(1)).getState();
+        verify(submission, times(1)).getScore();
+        verify(submission, times(1)).score(exercise1AwardedScore);
+        verifyNoMoreInteractions(submission);
+        verify(solution1, only()).getExercise();
+        verifyZeroInteractions(solution2); // The failed solution's exercise is not retrieved.
+        verify(result1a, atMost(1)).isMarked();
+        verify(result1a, atMost(1)).getResult();
+        verifyNoMoreInteractions(result1a);
+        verify(result1b, atMost(1)).isMarked();
+        verify(result1b, atMost(1)).getResult();
+        verifyNoMoreInteractions(result1b);
+        verify(result2a, atMost(1)).isMarked();
+        verify(result2a, atMost(1)).getResult();
+        verifyNoMoreInteractions(result2a);
+        verify(result2b, atMost(1)).isMarked();
+        verify(result2b, atMost(1)).getResult();
+        verifyNoMoreInteractions(result2b);
+        verify(exercise1, only()).getAwardedScore();
+        verifyZeroInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verify(submissionRepository, times(1)).findById(submissionId);
+        verify(submissionRepository, times(1)).save(submission);
+        verify(solutionRepository, only()).getExerciseSolutions(submission);
+        verify(resultRepository, atMost(1)).find(solution1);
+        verify(resultRepository, atMost(1)).find(solution2);
+        verifyNoMoreInteractions(resultRepository);
+        verifyZeroInteractions(publisher);
     }
 
 
@@ -194,17 +278,18 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
             @Mock(name = "submission") final ExamSolutionSubmission submission,
             @Mock(name = "solutions") final List<ExerciseSolution> solutions) {
         final var submissionId = TestHelper.validExamSolutionSubmissionId();
-        when(examSolutionSubmissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
-        when(exerciseSolutionRepository.getExerciseSolutions(submission)).thenReturn(solutions);
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(solutionRepository.getExerciseSolutions(submission)).thenReturn(solutions);
         Assertions.assertEquals(
                 solutions,
                 solutionsManager.getSolutionsForSubmission(submissionId),
                 "The returned solutions list is not the one returned by the repository"
         );
-        verify(examSolutionSubmissionRepository, only()).findById(submissionId);
-        verify(exerciseSolutionRepository, only()).getExerciseSolutions(submission);
+        verify(submissionRepository, only()).findById(submissionId);
+        verify(solutionRepository, only()).getExerciseSolutions(submission);
         verifyZeroInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
+        verifyZeroInteractions(resultRepository);
         verifyZeroInteractions(publisher);
     }
 
@@ -218,7 +303,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
     void testSearchForExerciseThatExists(@Mock(name = "solution") final ExerciseSolution solution) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         when(solution.getId()).thenReturn(solutionId);
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         final var solutionOptional = solutionsManager.getSolution(solutionId);
         Assertions.assertAll("Searching for an exercise solution that exists is not working as expected",
                 () -> Assertions.assertTrue(
@@ -256,8 +341,8 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
         when(submission.getState()).thenReturn(ExamSolutionSubmission.State.UNPLACED);
         doNothing().when(solution).setAnswer(answer);
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
-        when(exerciseSolutionRepository.save(solution)).thenReturn(solution);
+        when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(solutionRepository.save(solution)).thenReturn(solution);
         Assertions.assertDoesNotThrow(
                 () -> solutionsManager.modifySolution(solutionId, answer),
                 "An unexpected exception was thrown"
@@ -270,10 +355,11 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         verifyNoMoreInteractions(solution);
         verifyZeroInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
-        verifyZeroInteractions(examSolutionSubmissionRepository);
-        verify(exerciseSolutionRepository, times(1)).findById(solutionId);
-        verify(exerciseSolutionRepository, times(1)).save(solution);
-        verifyNoMoreInteractions(exerciseSolutionRepository);
+        verifyZeroInteractions(submissionRepository);
+        verify(solutionRepository, times(1)).findById(solutionId);
+        verify(solutionRepository, times(1)).save(solution);
+        verifyNoMoreInteractions(solutionRepository);
+        verifyZeroInteractions(resultRepository);
         verifyZeroInteractions(publisher);
     }
 }

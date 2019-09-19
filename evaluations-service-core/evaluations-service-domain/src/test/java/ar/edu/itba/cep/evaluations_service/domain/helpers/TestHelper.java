@@ -10,10 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -211,6 +208,13 @@ public final class TestHelper {
     }
 
     /**
+     * @return A random valid score.
+     */
+    public static int validScore() {
+        return (int) Faker.instance().number().numberBetween(1L, Integer.MAX_VALUE);
+    }
+
+    /**
      * @return A valid {@link ExerciseSolution} id.
      */
     public static long validExerciseSolutionId() {
@@ -218,10 +222,14 @@ public final class TestHelper {
     }
 
     /**
-     * @return A valid {@link ExerciseSolution} exit code.
+     * @return An {@link ExerciseSolutionResult.Result} other than the {@link ExerciseSolutionResult.Result#APPROVED}.
      */
-    public static int validExerciseSolutionExitCode() {
-        return Faker.instance().number().numberBetween(Integer.MIN_VALUE, Integer.MAX_VALUE);
+    public static ExerciseSolutionResult.Result notApprovedResult() {
+        final var results = Arrays.stream(ExerciseSolutionResult.Result.values())
+                .filter(r -> r != ExerciseSolutionResult.Result.APPROVED)
+                .collect(Collectors.toList());
+        final var index = (int) Faker.instance().number().numberBetween(0L, results.size());
+        return results.get(index);
     }
 
     /**

@@ -4,10 +4,7 @@ import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamSolutionSubmissionRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.repositories.*;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import org.junit.jupiter.api.Assertions;
@@ -33,24 +30,20 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository                   An {@link ExamRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param exerciseRepository               An {@link ExerciseRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param examSolutionSubmissionRepository An {@link ExamSolutionSubmissionRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param exerciseSolutionRepository       An {@link ExerciseSolutionRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param publisher                        An {@link ApplicationEventPublisher}
-     *                                         that is injected to the {@link SolutionsManager}.
+     * @param examRepository       An {@link ExamRepository} that is injected to the {@link SolutionsManager}.
+     * @param exerciseRepository   An {@link ExerciseRepository} that is injected to the {@link SolutionsManager}.
+     * @param submissionRepository An {@link ExamSolutionSubmissionRepository} that is injected to the {@link SolutionsManager}.
+     * @param solutionRepository   An {@link ExerciseSolutionRepository} that is injected to the {@link SolutionsManager}.
+     * @param publisher            An {@link ApplicationEventPublisher} that is injected to the {@link SolutionsManager}.
      */
     SolutionsManagerNonExistenceTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "submissionRepository") final ExamSolutionSubmissionRepository examSolutionSubmissionRepository,
-            @Mock(name = "exerciseSolutionRepository") final ExerciseSolutionRepository exerciseSolutionRepository,
+            @Mock(name = "submissionRepository") final ExamSolutionSubmissionRepository submissionRepository,
+            @Mock(name = "solutionRepository") final ExerciseSolutionRepository solutionRepository,
+            @Mock(name = "resultRepository") final ExerciseSolutionResultRepository resultRepository,
             @Mock(name = "eventPublisher") final ApplicationEventPublisher publisher) {
-        super(examRepository, exerciseRepository, examSolutionSubmissionRepository, exerciseSolutionRepository, publisher);
+        super(examRepository, exerciseRepository, submissionRepository, solutionRepository, resultRepository, publisher);
     }
 
 
@@ -83,7 +76,7 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
     @Test
     void testSearchForExamSolutionSubmissionThatDoesNotExist() {
         final var submissionId = TestHelper.validExamSolutionSubmissionId();
-        when(examSolutionSubmissionRepository.findById(submissionId)).thenReturn(Optional.empty());
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.empty());
         Assertions.assertTrue(
                 solutionsManager.getSubmission(submissionId).isEmpty(),
                 "Searching for a submission that does not exist does not return an empty optional."
@@ -115,12 +108,28 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
     @Test
     void testSubmitNonExistenceSubmission() {
         final var submissionId = TestHelper.validExamSolutionSubmissionId();
-        when(examSolutionSubmissionRepository.findById(submissionId)).thenReturn(Optional.empty());
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.empty());
         Assertions.assertThrows(
                 NoSuchEntityException.class,
                 () -> solutionsManager.submitSolutions(submissionId),
                 "Trying to submit solutions for a submission that does not exist" +
                         " does not throw a NoSuchEntityException"
+        );
+        verifyOnlySubmissionSearch(submissionId);
+    }
+
+    /**
+     * Tests that trying to score an {@link ExamSolutionSubmission} that does not exists
+     * throws a {@link NoSuchEntityException}.
+     */
+    @Test
+    void testScoreNonExistenceSubmission() {
+        final var submissionId = TestHelper.validExamSolutionSubmissionId();
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.empty());
+        Assertions.assertThrows(
+                NoSuchEntityException.class,
+                () -> solutionsManager.scoreSubmission(submissionId),
+                "Trying to score a submission that does not exist does not throw a NoSuchEntityException"
         );
         verifyOnlySubmissionSearch(submissionId);
     }
@@ -138,7 +147,7 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
     @Test
     void testGetSolutionsOfNonExistenceSubmission() {
         final var submissionId = TestHelper.validExamSolutionSubmissionId();
-        when(examSolutionSubmissionRepository.findById(submissionId)).thenReturn(Optional.empty());
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.empty());
         Assertions.assertThrows(
                 NoSuchEntityException.class,
                 () -> solutionsManager.getSolutionsForSubmission(submissionId),
@@ -155,7 +164,7 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
     @Test
     void testSearchForExerciseSolutionThatDoesNotExist() {
         final var solutionId = TestHelper.validExerciseSolutionId();
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.empty());
+        when(solutionRepository.findById(solutionId)).thenReturn(Optional.empty());
         Assertions.assertTrue(
                 solutionsManager.getSolution(solutionId).isEmpty(),
                 "Searching for a solution that does not exist does not return an empty optional."
@@ -169,7 +178,7 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
     @Test
     void testModifyExerciseSolutionThatDoesNotExist() {
         final var solutionId = TestHelper.validExerciseSolutionId();
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.empty());
+        when(solutionRepository.findById(solutionId)).thenReturn(Optional.empty());
         Assertions.assertThrows(
                 NoSuchEntityException.class,
                 () -> solutionsManager.modifySolution(solutionId, TestHelper.validExerciseSolutionAnswer()),

@@ -31,6 +31,10 @@ public class ExamSolutionSubmission {
      * The state of this {@link Exam} solution submission.
      */
     private State state;
+    /**
+     * The score given to this submission.
+     */
+    private Integer score;
 
 
     /**
@@ -72,6 +76,16 @@ public class ExamSolutionSubmission {
         this.state = State.SUBMITTED;
     }
 
+    /**
+     * Scores this submission.
+     *
+     * @param score The score assigned.
+     */
+    public void score(final int score) {
+        assertScore(score);
+        this.score = score;
+    }
+
 
     // ================================
     // Assertions
@@ -95,6 +109,16 @@ public class ExamSolutionSubmission {
      */
     private static void assertSubmitter(final String submitter) throws IllegalArgumentException {
         Assert.hasText(submitter, "The submitter must have text");
+    }
+
+    /**
+     * Asserts that the given {@code score} is valid.
+     *
+     * @param score The score to be checked.
+     * @throws IllegalArgumentException If the score is not valid.
+     */
+    private static void assertScore(final int score) throws IllegalArgumentException {
+        Assert.isTrue(score >= 0, "The score cannot be negative");
     }
 
 
