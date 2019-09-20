@@ -1,7 +1,9 @@
 package ar.edu.itba.cep.evaluations_service.services;
 
+import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 
@@ -37,13 +39,12 @@ public interface ResultsService {
      * @param testCaseId The id of the {@link ar.edu.itba.cep.evaluations_service.models.TestCase}
      *                   to which the returned {@link ExerciseSolutionResult} belongs to.
      * @return The corresponding {@link ExerciseSolutionResult}.
-     * @throws IllegalEntityStateException If the
-     *                                     {@link ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission}
-     *                                     to which the {@link ExerciseSolution} with the given {@code solutionId}
-     *                                     belongs is not submitted yet.
-     * @throws NoSuchEntityException       If there is no {@link ExerciseSolution}
-     *                                     or {@link ar.edu.itba.cep.evaluations_service.models.TestCase}
-     *                                     with the given {@code solutionId} or {@code testCaseId} respectively.
+     * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} or {@link TestCase}
+     *                                     with the given ids, or if they do not belong to the same
+     *                                     {@link ar.edu.itba.cep.evaluations_service.models.Exercise}.
+     * @throws IllegalEntityStateException If the {@link ExamSolutionSubmission}
+     *                                     belonging to the {@link ExerciseSolution} with the given {@code solutionId}
+     *                                     is not submitted.
      * @apiNote Note that the returned entity will be created once the
      * {@link ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission} to which the {@link ExerciseSolution}
      * with the given {@code solutionId} belongs is submitted.
@@ -73,13 +74,12 @@ public interface ResultsService {
      *
      * @param solutionId The {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolution}'s id.
      * @param testCaseId The {@link ar.edu.itba.cep.evaluations_service.models.TestCase}'s id.
-     * @throws NoSuchEntityException       If there is no {@link ExerciseSolution}
-     *                                     or {@link ar.edu.itba.cep.evaluations_service.models.TestCase}
-     *                                     with the given {@code solutionId} or {@code testCaseId} respectively.
-     * @throws IllegalEntityStateException If the
-     *                                     {@link ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission}
-     *                                     to which the {@link ExerciseSolution} with the given {@code solutionId}
-     *                                     belongs is not submitted yet.
+     * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} or {@link TestCase}
+     *                                     with the given ids, or if they do not belong to the same
+     *                                     {@link ar.edu.itba.cep.evaluations_service.models.Exercise}.
+     * @throws IllegalEntityStateException If the {@link ExamSolutionSubmission}
+     *                                     belonging to the {@link ExerciseSolution} with the given {@code solutionId}
+     *                                     is not submitted.
      * @apiNote If there is an execution being performed when the method is called, then nothing happens.
      */
     void retryForSolutionAndTestCase(final long solutionId, final long testCaseId)

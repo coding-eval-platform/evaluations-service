@@ -14,7 +14,6 @@ import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionReposito
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import ar.edu.itba.cep.evaluations_service.services.ResultsService;
-import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import lombok.AllArgsConstructor;
@@ -28,6 +27,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -211,21 +211,23 @@ public class ResultsManager implements ResultsService {
      * @param testCaseId The {@link TestCase} id.
      * @return The corresponding {@link ExerciseSolutionResult}.
      * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} or {@link TestCase}
-     *                                     with the given ids.
-     * @throws IllegalEntityStateException If there is no {@link ExerciseSolutionResult}
-     *                                     for the {@link ExerciseSolution} and {@link TestCase} with the given ids
-     *                                     (In this manager, trying to load an {@link ExerciseSolutionResult} that
-     *                                     does not exist means that the corresponding {@link ExamSolutionSubmission}
-     *                                     is not submitted yet).
+     *                                     with the given ids, or if they do not belong to the same
+     *                                     {@link ar.edu.itba.cep.evaluations_service.models.Exercise}.
+     * @throws IllegalEntityStateException If the {@link ExamSolutionSubmission}
+     *                                     belonging to the {@link ExerciseSolution} with the given {@code solutionId}
+     *                                     is not submitted.
      */
     private ExerciseSolutionResult loadResultFor(final long solutionId, final long testCaseId)
             throws NoSuchEntityException, IllegalEntityStateException {
-        if (!exerciseSolutionRepository.existsById(solutionId) || !testCaseRepository.existsById(testCaseId)) {
+        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
+        final var testCase = DataLoadingHelper.loadTestCase(testCaseRepository, testCaseId);
+        if (!Objects.equals(solution.getExercise(), testCase.getExercise())) {
             throw new NoSuchEntityException();
         }
-        // If the result does not exist, it means that the solution has not been submitted yet.
-        return exerciseSolutionResultRepository.find(solutionId, testCaseId)
-                .orElseThrow(() -> new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED));
+        StateVerificationHelper.checkSubmitted(solution.getSubmission());
+        // If the result does not exist, it means that something unexpected happened.
+        return exerciseSolutionResultRepository.find(solution, testCase)
+                .orElseThrow(() -> new IllegalStateException("This should not happen"));
     }
 
     /**
@@ -372,17 +374,4 @@ public class ResultsManager implements ResultsService {
                 && result.getStderr().isEmpty()
                 && expectedOutputsSupplier.get().equals(result.getStdout());
     }
-
-    /**
-     * An {@link IllegalStateException} that indicates that the {@link ExamSolutionSubmission} that owns
-     * an {@link ExerciseSolution} is not submitted yet.
-     */
-    private final static IllegalEntityStateError SOLUTION_NOT_SUBMITTED =
-            new IllegalEntityStateError("Solution not submitted yet", "submission");
-
-    /**
-     * An {@link IllegalStateException} that indicates that an {@link ExamSolutionSubmission} is not submitted yet.
-     */
-    private final static IllegalEntityStateError NOT_MARKED =
-            new IllegalEntityStateError("Exercise Solution Result is not marked yet", "result");
 }

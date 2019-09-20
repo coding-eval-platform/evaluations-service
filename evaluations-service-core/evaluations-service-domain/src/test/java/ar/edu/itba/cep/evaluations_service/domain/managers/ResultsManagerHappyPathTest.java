@@ -99,15 +99,26 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
     /**
      * Tests retrieving an {@link ExerciseSolutionResult} for an {@link ExerciseSolution} and {@link TestCase}.
      *
-     * @param result An {@link ExerciseSolutionResult} mock (the one being returned).
+     * @param result   An {@link ExerciseSolutionResult} mock
+     *                 (the one owning the {@link ExerciseSolution} without answer).
+     * @param solution The {@link ExerciseSolution}.
+     * @param testCase The {@link TestCase}.
+     * @param exercise The {@link Exercise} that belongs to the solution and the test case.
      */
     @Test
-    void testGetResultsForSolutionAndTestCase(@Mock(name = "result") final ExerciseSolutionResult result) {
+    void testGetResultsForSolutionAndTestCase(
+            @Mock(name = "result") final ExerciseSolutionResult result,
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "exercise") final Exercise exercise) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
-        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
-        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(exerciseSolutionResultRepository.find(solution, testCase)).thenReturn(Optional.of(result));
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(solution.getExercise()).thenReturn(exercise);
+        when(testCase.getExercise()).thenReturn(exercise);
 
         Assertions.assertEquals(
                 result,
@@ -115,9 +126,9 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                 "Getting a result for a solution and test case is not returned the one returned by the repository"
         );
 
-        verify(exerciseSolutionRepository, only()).existsById(solutionId);
-        verify(testCaseRepository, only()).existsById(testCaseId);
-        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verify(testCaseRepository, only()).findById(testCaseId);
+        verify(exerciseSolutionResultRepository, only()).find(solution, testCase);
         verifyZeroInteractions(publisher);
     }
 
@@ -193,22 +204,31 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * when the corresponding {@link ExerciseSolutionResult} is already marked.
      *
      * @param result An {@link ExerciseSolutionResult} mock (the one being checked if answered).
+     * @param solution The {@link ExerciseSolution}.
+     * @param testCase The {@link TestCase}.
+     * @param exercise The {@link Exercise} that belongs to the solution and the test case.
      */
     @Test
     void testRetryExecutionForSolutionAndTestCaseWithUnmarkedResult(
-            @Mock(name = "result") final ExerciseSolutionResult result) {
+            @Mock(name = "result") final ExerciseSolutionResult result,
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "exercise") final Exercise exercise) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
-        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
-        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(exerciseSolutionResultRepository.find(solution, testCase)).thenReturn(Optional.of(result));
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(solution.getExercise()).thenReturn(exercise);
+        when(testCase.getExercise()).thenReturn(exercise);
         when(result.isMarked()).thenReturn(false);
 
         resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
 
-        verify(exerciseSolutionRepository, only()).existsById(solutionId);
-        verify(testCaseRepository, only()).existsById(testCaseId);
-        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verify(testCaseRepository, only()).findById(testCaseId);
+        verify(exerciseSolutionResultRepository, only()).find(solution, testCase);
         verifyZeroInteractions(publisher);
     }
 
@@ -216,25 +236,35 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * Tests retrying execution for an {@link ExerciseSolution} and a {@link TestCase},
      * when the said {@link ExerciseSolution} is not answered.
      *
-     * @param result An {@link ExerciseSolutionResult} mock
-     *               (the one owning the {@link ExerciseSolution} without answer).
+     * @param result   An {@link ExerciseSolutionResult} mock
+     *                 (the one owning the {@link ExerciseSolution} without answer).
+     * @param solution The {@link ExerciseSolution}.
+     * @param testCase The {@link TestCase}.
+     * @param exercise The {@link Exercise} that belongs to the solution and the test case.
      */
     @Test
     void testRetryExecutionForSolutionAndTestCaseWithNotAnsweredSolution(
-            @Mock(name = "result", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult result) {
+            @Mock(name = "result") final ExerciseSolutionResult result,
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "exercise") final Exercise exercise) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
-        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
-        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(exerciseSolutionResultRepository.find(solution, testCase)).thenReturn(Optional.of(result));
         when(result.isMarked()).thenReturn(true);
-        when(result.getSolution().getAnswer()).thenReturn(null);
+        when(result.getSolution()).thenReturn(solution);
+        when(solution.getAnswer()).thenReturn(null);
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(solution.getExercise()).thenReturn(exercise);
+        when(testCase.getExercise()).thenReturn(exercise);
 
         resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
 
-        verify(exerciseSolutionRepository, only()).existsById(solutionId);
-        verify(testCaseRepository, only()).existsById(testCaseId);
-        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verify(testCaseRepository, only()).findById(testCaseId);
+        verify(exerciseSolutionResultRepository, only()).find(solution, testCase);
         verifyZeroInteractions(publisher);
     }
 
@@ -242,32 +272,39 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * Tests retrying execution for an {@link ExerciseSolution} and a {@link TestCase},
      * when the said {@link ExerciseSolution} is not answered.
      *
-     * @param result An {@link ExerciseSolutionResult} mock
-     *               (the one owning the {@link ExerciseSolution} without answer).
+     * @param result   An {@link ExerciseSolutionResult} mock
+     *                 (the one owning the {@link ExerciseSolution} without answer).
+     * @param solution The {@link ExerciseSolution}.
+     * @param testCase The {@link TestCase}.
+     * @param exercise The {@link Exercise} that belongs to the solution and the test case.
      */
     @Test
     void testRetryExecutionForSolutionAndTestCaseInIdealConditions(
             @Mock(name = "result") final ExerciseSolutionResult result,
-            @Mock(name = "solution") final ExerciseSolution solution,
-            @Mock(name = "testCase") final TestCase testCase) {
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "exercise") final Exercise exercise) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
-        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
-        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.of(result));
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(exerciseSolutionResultRepository.find(solution, testCase)).thenReturn(Optional.of(result));
         when(exerciseSolutionResultRepository.save(result)).thenReturn(result);
         when(result.isMarked()).thenReturn(true);
         when(result.getSolution()).thenReturn(solution);
         when(result.getTestCase()).thenReturn(testCase);
-        when(solution.getAnswer()).thenReturn(createAnswer());
         doNothing().when(result).unmark();
+        when(solution.getAnswer()).thenReturn(createAnswer());
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        when(solution.getExercise()).thenReturn(exercise);
+        when(testCase.getExercise()).thenReturn(exercise);
 
         resultsManager.retryForSolutionAndTestCase(solutionId, testCaseId);
 
         verify(result, times(1)).unmark();
-        verify(exerciseSolutionRepository, only()).existsById(solutionId);
-        verify(testCaseRepository, only()).existsById(testCaseId);
-        verify(exerciseSolutionResultRepository, times(1)).find(solutionId, testCaseId);
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verify(testCaseRepository, only()).findById(testCaseId);
+        verify(exerciseSolutionResultRepository, times(1)).find(solution, testCase);
         verify(exerciseSolutionResultRepository, times(1)).save(result);
         verifyNoMoreInteractions(exerciseSolutionResultRepository);
         verify(publisher, only()).publishEvent(argThat(eventIsWellFormed(solution, testCase)));

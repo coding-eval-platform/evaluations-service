@@ -2,7 +2,9 @@ package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
+import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
@@ -69,13 +71,23 @@ class ResultsManagerIllegalStateTest extends AbstractResultsManagerTest {
 
     /**
      * Tests that trying to get an {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult}
-     * of an {@link ExerciseSolution} and a {@link ar.edu.itba.cep.evaluations_service.models.TestCase}
+     * of an {@link ExerciseSolution} and a {@link TestCase}
      * when the {@link ExerciseSolution} belongs to an non submitted {@link ExamSolutionSubmission}
      * throws an {@link IllegalEntityStateException}.
+     *
+     * @param solution The {@link ExerciseSolution}.
+     * @param exercise The {@link Exercise} that belongs to both the {@link ExerciseSolution} and the {@link TestCase}.
+     * @param testCase The {@link TestCase}.
      */
     @Test
-    void testGetAResultsForNonSubmittedSubmission() {
+    void testGetAResultsForNonSubmittedSubmission(
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "exercise") final Exercise exercise,
+            @Mock(name = "testCase") final TestCase testCase) {
         testAccessAnEntityOfASolutionBelongingToNonSubmittedSubmission(
+                solution,
+                exercise,
+                testCase,
                 ResultsManager::getResultFor,
                 "Trying to get a result for a solution and test case" +
                         " when the solution belongs to a non submitted submission is being allowed"
@@ -104,13 +116,23 @@ class ResultsManagerIllegalStateTest extends AbstractResultsManagerTest {
 
     /**
      * Tests that trying to retry execution for an {@link ExerciseSolution}
-     * and a {@link ar.edu.itba.cep.evaluations_service.models.TestCase}
+     * and a {@link TestCase}
      * when the {@link ExerciseSolution} belongs to an non submitted {@link ExamSolutionSubmission}
      * throws an {@link IllegalEntityStateException}.
+     *
+     * @param solution The {@link ExerciseSolution}.
+     * @param exercise The {@link Exercise} that belongs to both the {@link ExerciseSolution} and the {@link TestCase}.
+     * @param testCase The {@link TestCase}.
      */
     @Test
-    void testRetryAnExecutionForNonSubmittedSubmission() {
+    void testRetryAnExecutionForNonSubmittedSubmission(
+            @Mock(name = "solution", answer = RETURNS_DEEP_STUBS) final ExerciseSolution solution,
+            @Mock(name = "exercise") final Exercise exercise,
+            @Mock(name = "testCase") final TestCase testCase) {
         testAccessAnEntityOfASolutionBelongingToNonSubmittedSubmission(
+                solution,
+                exercise,
+                testCase,
                 ResultsManager::retryForSolutionAndTestCase,
                 "Trying to retry execution for a solution and test case" +
                         " when the solution belongs to a non submitted submission is being allowed"
@@ -153,21 +175,30 @@ class ResultsManagerIllegalStateTest extends AbstractResultsManagerTest {
     /**
      * Performs the illegal entity state test over the given {@code resultsManagerAction},
      * which access an {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult}
-     * for a given {@link ExerciseSolution} and {@link ar.edu.itba.cep.evaluations_service.models.TestCase}.
+     * for a given {@link ExerciseSolution} and {@link TestCase}.
      *
+     * @param solution             The {@link ExerciseSolution}.
+     * @param exercise             The {@link Exercise}
+     *                             that belongs to both the {@link ExerciseSolution} and the {@link TestCase}.
+     * @param testCase             The {@link TestCase}.
      * @param resultsManagerAction The {@link ResultsManager} action being tested.
      *                             Must accept an {@link ExerciseSolution}
-     *                             and a {@link ar.edu.itba.cep.evaluations_service.models.TestCase} ids.
+     *                             and a {@link TestCase} ids.
      * @param message              A message to display in case of failure.
      */
     private void testAccessAnEntityOfASolutionBelongingToNonSubmittedSubmission(
+            final ExerciseSolution solution,
+            final Exercise exercise,
+            final TestCase testCase,
             final ResultsManagerSolutionTestCaseAction resultsManagerAction,
             final String message) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
-        when(testCaseRepository.existsById(testCaseId)).thenReturn(true);
-        when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.empty());
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(solution.getSubmission().getState()).thenReturn(ExamSolutionSubmission.State.UNPLACED);
+        when(solution.getExercise()).thenReturn(exercise);
+        when(testCase.getExercise()).thenReturn(exercise);
 
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
@@ -175,9 +206,9 @@ class ResultsManagerIllegalStateTest extends AbstractResultsManagerTest {
                 message
         );
 
-        verify(exerciseSolutionRepository, only()).existsById(solutionId);
-        verify(testCaseRepository, only()).existsById(testCaseId);
-        verify(exerciseSolutionResultRepository, only()).find(solutionId, testCaseId);
+        verify(exerciseSolutionRepository, only()).findById(solutionId);
+        verify(testCaseRepository, only()).findById(testCaseId);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(publisher);
     }
 }

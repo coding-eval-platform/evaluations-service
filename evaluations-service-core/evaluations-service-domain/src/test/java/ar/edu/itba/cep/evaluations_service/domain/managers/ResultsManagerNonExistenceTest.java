@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.domain.managers;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
+import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
@@ -87,6 +88,30 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
         );
     }
 
+    /**
+     * Tests that trying to get a result for an {@link ExerciseSolution} and a {@link TestCase} that are not related,
+     * throws a {@link NoSuchEntityException}
+     *
+     * @param solution The {@link ExerciseSolution}.
+     * @param testCase The {@link TestCase}.
+     */
+    @Test
+    void testGetAResultForForNonRelatedSolutionAndTestCase(
+            @Mock(name = "solution") final ExerciseSolution solution,
+            @Mock(name = "solutionExercise") final Exercise exercise1,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "testCaseExercise") final Exercise exercise2) {
+        testSomethingForNonRelatedSolutionAndTestCase(
+                solution,
+                exercise1,
+                testCase,
+                exercise2,
+                ResultsManager::getResultFor,
+                "Trying to get results for a solution and test case that are not related" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
+
 
     /**
      * Tests that trying to retry all executions for an {@link ExerciseSolution} that does not exist
@@ -122,6 +147,30 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
         testSomethingForNonExistenceTestCase(
                 ResultsManager::retryForSolutionAndTestCase,
                 "Trying to retry execution for a test case that does not exists" +
+                        " does not throw a NoSuchEntityException"
+        );
+    }
+
+    /**
+     * Tests that trying to get a result for an {@link ExerciseSolution} and a {@link TestCase} that are not related,
+     * throws a {@link NoSuchEntityException}
+     *
+     * @param solution The {@link ExerciseSolution}.
+     * @param testCase The {@link TestCase}.
+     */
+    @Test
+    void testRetryAnExecutionForNonRelatedSolutionAndTestCase(
+            @Mock(name = "solution") final ExerciseSolution solution,
+            @Mock(name = "solutionExercise") final Exercise exercise1,
+            @Mock(name = "testCase") final TestCase testCase,
+            @Mock(name = "testCaseExercise") final Exercise exercise2) {
+        testSomethingForNonRelatedSolutionAndTestCase(
+                solution,
+                exercise1,
+                testCase,
+                exercise2,
+                ResultsManager::retryForSolutionAndTestCase,
+                "Trying to retry execution for a solution and test case that are not related" +
                         " does not throw a NoSuchEntityException"
         );
     }
@@ -209,8 +258,7 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
             final String message) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validExerciseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(false);
-        when(testCaseRepository.existsById(solutionId)).thenReturn(true);
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(
                 NoSuchEntityException.class,
@@ -237,8 +285,7 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
             final String message) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validExerciseId();
-        when(exerciseSolutionRepository.existsById(solutionId)).thenReturn(true);
-        when(testCaseRepository.existsById(solutionId)).thenReturn(false);
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(
                 NoSuchEntityException.class,
@@ -248,6 +295,44 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
 
         verify(exerciseSolutionRepository, atMost(1)).existsById(solutionId);
         verify(testCaseRepository, atMost(1)).existsById(testCaseId);
+        verifyNoMoreInteractions(exerciseSolutionResultRepository, testCaseRepository);
+        verifyZeroInteractions(exerciseSolutionResultRepository);
+        verifyZeroInteractions(publisher);
+    }
+
+    /**
+     * Performs a test for a {@link ResultsManager}'s action that accesses an entity belonging to an
+     * {@link ExerciseSolution} and a {@link TestCase}, when they are not related.
+     *
+     * @param solution             The {@link ExerciseSolution}.
+     * @param exercise1            The {@link Exercise} to which the solution belongs.
+     * @param exercise2            The {@link Exercise} to which the test case belongs.
+     * @param testCase             The {@link TestCase}.
+     * @param resultsManagerAction The {@link ResultsManager}'s action.
+     * @param message              An assertion message to display in case of failure.
+     */
+    private void testSomethingForNonRelatedSolutionAndTestCase(
+            final ExerciseSolution solution,
+            final Exercise exercise1,
+            final TestCase testCase,
+            final Exercise exercise2,
+            final ResultsManagerSolutionTestCaseAction resultsManagerAction,
+            final String message) {
+        final var solutionId = TestHelper.validExerciseSolutionId();
+        final var testCaseId = TestHelper.validExerciseId();
+        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
+        when(solution.getExercise()).thenReturn(exercise1);
+        when(testCase.getExercise()).thenReturn(exercise2);
+
+        Assertions.assertThrows(
+                NoSuchEntityException.class,
+                () -> resultsManagerAction.accept(resultsManager, solutionId, testCaseId),
+                message
+        );
+
+        verify(exerciseSolutionRepository, atMost(1)).findById(solutionId);
+        verify(testCaseRepository, atMost(1)).findById(testCaseId);
         verifyNoMoreInteractions(exerciseSolutionResultRepository, testCaseRepository);
         verifyZeroInteractions(exerciseSolutionResultRepository);
         verifyZeroInteractions(publisher);
