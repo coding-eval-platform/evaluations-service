@@ -41,6 +41,8 @@ public class Routes {
 
     public static final String SUBMIT_SOLUTION = "/solutions-submissions/{submissionId : \\d+}/submit";
 
+    public static final String SCORE_SOLUTION = "/solutions-submissions/{submissionId : \\d+}/score";
+
     public static final String SOLUTIONS = "/solutions-submissions/{submissionId : \\d+}/solutions";
 
     public static final String SOLUTION = "/solutions/{solutionId : \\d+}";
