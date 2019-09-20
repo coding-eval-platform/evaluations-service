@@ -69,4 +69,19 @@ public class TestCaseAuthorizationProvider {
                 .isPresent()
                 ;
     }
+
+    /**
+     * Indicates whether the {@link TestCase} with the given {@code testCaseId} is public.
+     *
+     * @param testCaseId The id of {@link TestCase} to be checked.
+     * @return {@code true} if the {@link TestCase} has public visibility, or {@code false} otherwise.
+     */
+    @Transactional(readOnly = true)
+    public boolean isPublic(final long testCaseId) {
+        return testCaseRepository.findById(testCaseId)
+                .map(TestCase::getVisibility)
+                .filter(visibility -> visibility == TestCase.Visibility.PUBLIC)
+                .isPresent()
+                ;
+    }
 }

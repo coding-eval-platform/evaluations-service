@@ -324,7 +324,11 @@ public class ExamManager implements ExamService {
     @PreAuthorize(
             "hasAuthority('ADMIN')" +
                     " or (hasAuthority('TEACHER') and @testCaseAuthorizationProvider.isOwner(#testCaseId, principal))" +
-                    " or (hasAuthority('STUDENT') and @testCaseAuthorizationProvider.examHasStarted(#testCaseId))"
+                    " or (" +
+                    "       hasAuthority('STUDENT')" +
+                    "           and @testCaseAuthorizationProvider.examHasStarted(#testCaseId)" +
+                    "           and @testCaseAuthorizationProvider.isPublic(#testCaseId)" +
+                    ")"
     )
     public Optional<TestCase> getTestCase(long testCaseId) {
         return testCaseRepository.findById(testCaseId).map(testCase -> {
