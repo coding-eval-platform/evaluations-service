@@ -57,7 +57,7 @@ public class ExerciseUploadDto {
                     Update.class,
             }
     )
-    private final int awardedScore;
+    private final Integer awardedScore;
 
 
     /**
