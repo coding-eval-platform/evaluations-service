@@ -2,7 +2,6 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.endpoints;
 
 import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExamSolutionsSubmissionDownloadDto;
-import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import ar.edu.itba.cep.evaluations_service.services.SolutionService;
 import com.bellotapps.webapps_commons.config.JerseyController;
 import com.bellotapps.webapps_commons.data_transfer.jersey.annotations.PaginationParam;
@@ -89,6 +88,16 @@ public class ExamSolutionSubmissionEndpoint {
             @PathParam("submissionId") final long submissionId) {
         LOGGER.debug("Submitting submission with id {}", submissionId);
         solutionService.submitSolutions(submissionId);
+        return Response.noContent().build();
+    }
+
+    @PUT
+    @Path(Routes.SCORE_SOLUTION)
+    public Response scoreSolutions(
+            @Context final UriInfo uriInfo,
+            @PathParam("submissionId") final long submissionId) {
+        LOGGER.debug("Scoring submission with id {}", submissionId);
+        solutionService.scoreSubmission(submissionId);
         return Response.noContent().build();
     }
 }

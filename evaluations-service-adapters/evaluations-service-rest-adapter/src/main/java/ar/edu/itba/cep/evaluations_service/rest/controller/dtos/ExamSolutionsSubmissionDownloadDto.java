@@ -16,6 +16,10 @@ public class ExamSolutionsSubmissionDownloadDto {
      * The {@link ExamSolutionSubmission}'s submitter.
      */
     private final String submitter;
+    /**
+     * The {@link ExamSolutionSubmission}'s score.
+     */
+    private final Integer score;
 
 
     /**
@@ -26,6 +30,7 @@ public class ExamSolutionsSubmissionDownloadDto {
     public ExamSolutionsSubmissionDownloadDto(final ExamSolutionSubmission submission) {
         this.id = submission.getId();
         this.submitter = submission.getSubmitter();
+        this.score = submission.getScore();
     }
 
 
@@ -43,5 +48,13 @@ public class ExamSolutionsSubmissionDownloadDto {
     @JsonProperty(value = "submitter", access = JsonProperty.Access.READ_ONLY)
     public String getSubmitter() {
         return submitter;
+    }
+
+    /**
+     * @return The {@link ExamSolutionSubmission}'s score.
+     */
+    @JsonProperty(value = "score", access = JsonProperty.Access.READ_ONLY)
+    public Integer getScore() {
+        return score;
     }
 }

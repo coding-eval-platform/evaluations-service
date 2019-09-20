@@ -1,14 +1,8 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
-import ar.edu.itba.cep.evaluations_service.models.Exam;
-import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamSolutionSubmissionRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.evaluations_service.repositories.*;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.List;
 import java.util.Optional;
 
 import static ar.edu.itba.cep.evaluations_service.models.Exam.State.*;
@@ -35,24 +30,20 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository                   An {@link ExamRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param exerciseRepository               An {@link ExerciseRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param examSolutionSubmissionRepository An {@link ExamSolutionSubmissionRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param exerciseSolutionRepository       An {@link ExerciseSolutionRepository}
-     *                                         that is injected to the {@link SolutionsManager}.
-     * @param publisher                        An {@link ApplicationEventPublisher}
-     *                                         that is injected to the {@link SolutionsManager}.
+     * @param examRepository       An {@link ExamRepository} that is injected to the {@link SolutionsManager}.
+     * @param exerciseRepository   An {@link ExerciseRepository} that is injected to the {@link SolutionsManager}.
+     * @param submissionRepository An {@link ExamSolutionSubmissionRepository} that is injected to the {@link SolutionsManager}.
+     * @param solutionRepository   An {@link ExerciseSolutionRepository} that is injected to the {@link SolutionsManager}.
+     * @param publisher            An {@link ApplicationEventPublisher} that is injected to the {@link SolutionsManager}.
      */
     SolutionsManagerIllegalStateTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "submissionRepository") final ExamSolutionSubmissionRepository examSolutionSubmissionRepository,
-            @Mock(name = "exerciseSolutionRepository") final ExerciseSolutionRepository exerciseSolutionRepository,
+            @Mock(name = "submissionRepository") final ExamSolutionSubmissionRepository submissionRepository,
+            @Mock(name = "solutionRepository") final ExerciseSolutionRepository solutionRepository,
+            @Mock(name = "resultRepository") final ExerciseSolutionResultRepository resultRepository,
             @Mock(name = "eventPublisher") final ApplicationEventPublisher publisher) {
-        super(examRepository, exerciseRepository, examSolutionSubmissionRepository, exerciseSolutionRepository, publisher);
+        super(examRepository, exerciseRepository, submissionRepository, solutionRepository, resultRepository, publisher);
     }
 
     // ================================================================================================================
@@ -125,7 +116,7 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         when(exam.getState()).thenReturn(IN_PROGRESS);
         when(submission.getExam()).thenReturn(exam);
         doThrow(IllegalEntityStateException.class).when(submission).submit();
-        when(examSolutionSubmissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> solutionsManager.submitSolutions(submissionId),
@@ -136,6 +127,97 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         verify(submission, times(1)).submit();
         verifyNoMoreInteractions(submission);
         verifyOnlySubmissionSearch(submissionId);
+    }
+
+    /**
+     * Tests that scoring an {@link ExamSolutionSubmission} that is unplaced is not allowed.
+     *
+     * @param submission A mocked {@link ExamSolutionSubmission} (the one being scored).
+     */
+    @Test
+    void testSubmissionIsNotScoredIfNotSubmitted(@Mock(name = "submission") final ExamSolutionSubmission submission) {
+        final var submissionId = TestHelper.validExamSolutionSubmissionId();
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submission.getScore()).thenReturn(null);
+        when(submission.getState()).thenReturn(ExamSolutionSubmission.State.UNPLACED);
+
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> solutionsManager.scoreSubmission(submissionId),
+                "Scoring unplaced submissions is being allowed"
+        );
+
+        verify(submission, times(1)).getState();
+        verify(submission, times(1)).getScore();
+        verifyNoMoreInteractions(submission);
+        verifyOnlySubmissionSearch(submissionId);
+    }
+
+    /**
+     * Tests that scoring an {@link ExamSolutionSubmission} that contains pending executions is not allowed
+     * (i.e one of the {@link ExerciseSolutionResult} mocks is not marked).
+     *
+     * @param submission A mocked {@link ExamSolutionSubmission} (the one being scored).
+     * @param solution1  A mocked {@link ExerciseSolution} (represents a solution belonging to the {@code submission}).
+     * @param solution2  A mocked {@link ExerciseSolution} (represents a solution belonging to the {@code submission}).
+     * @param result1a   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution1}).
+     * @param result1b   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution1}).
+     * @param result2a   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution2}).
+     * @param result2b   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution2}).
+     */
+    @Test
+    void testSubmissionIsNotScoredIfThereArePendingExecutions(
+            @Mock(name = "submission") final ExamSolutionSubmission submission,
+            @Mock(name = "solution1") final ExerciseSolution solution1,
+            @Mock(name = "solution2") final ExerciseSolution solution2,
+            @Mock(name = "result1a") final ExerciseSolutionResult result1a,
+            @Mock(name = "result1b") final ExerciseSolutionResult result1b,
+            @Mock(name = "result2a") final ExerciseSolutionResult result2a,
+            @Mock(name = "result2b") final ExerciseSolutionResult result2b) {
+        final var submissionId = TestHelper.validExamSolutionSubmissionId();
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submission.getScore()).thenReturn(null);
+        when(submission.getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
+        // We assume that all but one are marked (the one without mark is the one with a pending execution).
+        when(result1a.isMarked()).thenReturn(true);
+        when(result1b.isMarked()).thenReturn(true);
+        when(result2a.isMarked()).thenReturn(true);
+        when(result2b.isMarked()).thenReturn(false);
+        when(solutionRepository.getExerciseSolutions(submission)).thenReturn(List.of(solution1, solution2));
+        when(resultRepository.find(solution1)).thenReturn(List.of(result1a, result1b));
+        when(resultRepository.find(solution2)).thenReturn(List.of(result2a, result2b));
+
+        Assertions.assertThrows(
+                IllegalEntityStateException.class,
+                () -> solutionsManager.scoreSubmission(submissionId),
+                "Scoring unplaced submissions is being allowed"
+        );
+
+        verify(submission, times(1)).getState();
+        verify(submission, times(1)).getScore();
+        verifyNoMoreInteractions(submission);
+        verifyZeroInteractions(solution1);
+        verifyZeroInteractions(solution2);
+        verify(result1a, atMost(1)).isMarked();
+        verify(result1a, atMost(1)).getResult();
+        verifyNoMoreInteractions(result1a);
+        verify(result1b, atMost(1)).isMarked();
+        verify(result1b, atMost(1)).getResult();
+        verifyNoMoreInteractions(result1b);
+        verify(result2a, atMost(1)).isMarked();
+        verify(result2a, atMost(1)).getResult();
+        verifyNoMoreInteractions(result2a);
+        verify(result2b, atMost(1)).isMarked();
+        verify(result2b, atMost(1)).getResult();
+        verifyNoMoreInteractions(result2b);
+        verifyZeroInteractions(examRepository);
+        verifyZeroInteractions(exerciseRepository);
+        verify(submissionRepository, only()).findById(submissionId);
+        verify(solutionRepository, only()).getExerciseSolutions(submission);
+        verify(resultRepository, atMost(1)).find(solution1);
+        verify(resultRepository, atMost(1)).find(solution2);
+        verifyNoMoreInteractions(resultRepository);
+        verifyZeroInteractions(publisher);
     }
 
 
@@ -193,7 +275,7 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         when(exam.getState()).thenReturn(IN_PROGRESS);
         when(solution.getSubmission()).thenReturn(submission);
         when(submission.getState()).thenReturn(ExamSolutionSubmission.State.SUBMITTED);
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> solutionsManager.modifySolution(solutionId, TestHelper.validExerciseSolutionAnswer()),
@@ -262,7 +344,7 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         final var submissionId = TestHelper.validExamSolutionSubmissionId();
         when(exam.getState()).thenReturn(state);
         when(submission.getExam()).thenReturn(exam);
-        when(examSolutionSubmissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
+        when(submissionRepository.findById(submissionId)).thenReturn(Optional.of(submission));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> solutionsManager.submitSolutions(submissionId),
@@ -293,7 +375,7 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         when(solution.getExercise()).thenReturn(exercise);
         when(exercise.getExam()).thenReturn(exam);
         when(exam.getState()).thenReturn(state);
-        when(exerciseSolutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
+        when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
                 () -> solutionsManager.modifySolution(solutionId, TestHelper.validExerciseSolutionAnswer()),

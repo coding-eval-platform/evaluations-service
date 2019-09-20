@@ -5,6 +5,7 @@ import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEv
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
+import ar.edu.itba.cep.evaluations_service.domain.helpers.StateVerificationHelper;
 import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
@@ -20,7 +21,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -37,7 +38,7 @@ import static ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult.
  * A component in charge of managing {@link ExerciseSolutionResult}s,
  * sending to run {@link ExerciseSolution}s and setting a result based on an execution result.
  */
-@Component
+@Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
 public class ResultsManager implements ResultsService {
@@ -80,7 +81,7 @@ public class ResultsManager implements ResultsService {
     public List<ExerciseSolutionResult> getResultsForSolution(final long solutionId)
             throws NoSuchEntityException, IllegalEntityStateException {
         final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
-        checkSubmitted(solution);
+        StateVerificationHelper.checkSubmitted(solution.getSubmission());
         return exerciseSolutionResultRepository.find(solution);
     }
 
@@ -113,7 +114,7 @@ public class ResultsManager implements ResultsService {
     @Transactional
     public void retryForSolution(final long solutionId) throws NoSuchEntityException, IllegalEntityStateException {
         final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
-        checkSubmitted(solution);
+        StateVerificationHelper.checkSubmitted(solution.getSubmission());
         // Check if the solution is answered
         if (!isAnswered(solution)) {
             return; // Do nothing if not answered.
@@ -201,20 +202,6 @@ public class ResultsManager implements ResultsService {
     // ================================================================================================================
     // Helpers
     // ================================================================================================================
-
-    /**
-     * Checks that the {@link ExamSolutionSubmission} to which the given {@code solution} belongs to
-     * is already submitted.
-     *
-     * @param solution The {@link ExerciseSolution} to be checked.
-     * @throws IllegalEntityStateException If the {@link ExamSolutionSubmission} is not submitted.
-     */
-    private static void checkSubmitted(final ExerciseSolution solution) throws IllegalEntityStateException {
-        // Then check the submission's state
-        if (solution.getSubmission().getState() != ExamSolutionSubmission.State.SUBMITTED) {
-            throw new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED);
-        }
-    }
 
     /**
      * Loads the {@link ExerciseSolutionResult}
@@ -387,10 +374,11 @@ public class ResultsManager implements ResultsService {
     }
 
     /**
-     * An {@link IllegalStateException} that indicates that an {@link ExamSolutionSubmission} is not submitted yet.
+     * An {@link IllegalStateException} that indicates that the {@link ExamSolutionSubmission} that owns
+     * an {@link ExerciseSolution} is not submitted yet.
      */
     private final static IllegalEntityStateError SOLUTION_NOT_SUBMITTED =
-            new IllegalEntityStateError("Solutions not submitted yet", "state");
+            new IllegalEntityStateError("Solution not submitted yet", "submission");
 
     /**
      * An {@link IllegalStateException} that indicates that an {@link ExamSolutionSubmission} is not submitted yet.

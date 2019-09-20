@@ -71,6 +71,18 @@ public interface SolutionService {
      */
     void submitSolutions(final long submissionId) throws NoSuchEntityException, IllegalStateException;
 
+    /**
+     * Scores the {@link ExamSolutionSubmission} with the given {@code submissionId}.
+     *
+     * @param submissionId The id of the {@link ExamSolutionSubmission} to be scored.
+     * @throws NoSuchEntityException       If there is no {@link ExamSolutionSubmission}
+     *                                     with the given {@code submissionId}.
+     * @throws IllegalEntityStateException If the given {@link ExamSolutionSubmission} is not submitted,
+     *                                     or if it owns an {@link ExerciseSolution}
+     *                                     for which there are pending executions.
+     */
+    void scoreSubmission(final long submissionId) throws NoSuchEntityException, IllegalEntityStateException;
+
 
     // ================================================================================================================
     // Solutions

@@ -2,14 +2,9 @@ package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
-import ar.edu.itba.cep.evaluations_service.models.Exam;
-import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExamSolutionSubmissionRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
-import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
+import ar.edu.itba.cep.evaluations_service.domain.helpers.StateVerificationHelper;
+import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.evaluations_service.repositories.*;
 import ar.edu.itba.cep.evaluations_service.security.authentication.AuthenticationHelper;
 import ar.edu.itba.cep.evaluations_service.services.SolutionService;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
@@ -20,6 +15,8 @@ import com.bellotapps.webapps_commons.exceptions.UniqueViolationException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -29,6 +26,9 @@ import org.springframework.util.Assert;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult.Result.APPROVED;
+import static java.util.function.Predicate.not;
 
 
 /**
@@ -50,11 +50,15 @@ public class SolutionsManager implements SolutionService {
     /**
      * Repository for {@link ExamSolutionSubmission}s.
      */
-    private final ExamSolutionSubmissionRepository examSolutionSubmissionRepository;
+    private final ExamSolutionSubmissionRepository submissionRepository;
     /**
      * Repository for {@link ExerciseSolution}s.
      */
-    private final ExerciseSolutionRepository exerciseSolutionRepository;
+    private final ExerciseSolutionRepository solutionRepository;
+    /**
+     * Repository for {@link ExerciseSolutionResult}s.
+     */
+    private final ExerciseSolutionResultRepository resultsRepository;
 
     /**
      * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
@@ -74,7 +78,7 @@ public class SolutionsManager implements SolutionService {
     public Page<ExamSolutionSubmission> getSolutionSubmissionsForExam(long examId, PagingRequest pagingRequest)
             throws NoSuchEntityException {
         final var exam = DataLoadingHelper.loadExam(examRepository, examId);
-        return examSolutionSubmissionRepository.getByExam(exam, pagingRequest);
+        return submissionRepository.getByExam(exam, pagingRequest);
     }
 
     @Override
@@ -90,7 +94,7 @@ public class SolutionsManager implements SolutionService {
                     ")"
     )
     public Optional<ExamSolutionSubmission> getSubmission(final long submissionId) {
-        return examSolutionSubmissionRepository.findById(submissionId);
+        return submissionRepository.findById(submissionId);
     }
 
     @Override
@@ -105,17 +109,17 @@ public class SolutionsManager implements SolutionService {
         performExamInProgressStateVerification(exam);
 
         // Then check if there is a submission for the exam by the current user
-        if (examSolutionSubmissionRepository.existsSubmissionFor(exam, submitter)) {
+        if (submissionRepository.existsSubmissionFor(exam, submitter)) {
             throw new UniqueViolationException(List.of(SUBMISSION_ALREADY_EXISTS));
         }
 
         // Create the submission
-        final var submission = examSolutionSubmissionRepository.save(new ExamSolutionSubmission(exam, submitter));
+        final var submission = submissionRepository.save(new ExamSolutionSubmission(exam, submitter));
         // And create a solution for each exercise belonging to the exam, setting the created submission
         exerciseRepository.getExamExercises(exam)
                 .stream()
                 .map(exercise -> new ExerciseSolution(submission, exercise))
-                .forEach(exerciseSolutionRepository::save)
+                .forEach(solutionRepository::save)
         ;
 
         // Return the created submission
@@ -130,11 +134,39 @@ public class SolutionsManager implements SolutionService {
                     "   and @examSolutionSubmissionAuthorizationProvider.isOwner(#submissionId, principal)"
     )
     public void submitSolutions(long submissionId) throws NoSuchEntityException, IllegalStateException {
-        final var submission = DataLoadingHelper.loadExamSolutionSubmission(examSolutionSubmissionRepository, submissionId);
+        final var submission = DataLoadingHelper.loadExamSolutionSubmission(submissionRepository, submissionId);
         performExamInProgressStateVerification(submission.getExam()); // TODO: Allow if finished?
         submission.submit();
-        examSolutionSubmissionRepository.save(submission);
+        submissionRepository.save(submission);
         publisher.publishEvent(ExamSolutionSubmittedEvent.create(submission));
+    }
+
+    @Override
+    @Transactional
+    @PreAuthorize(
+            "hasAuthority('ADMIN')" +
+                    " or (" +
+                    "   hasAuthority('TEACHER')" +
+                    "       and @examSolutionSubmissionAuthorizationProvider.isExamOwner(#submissionId, principal)" +
+                    ")"
+    )
+    public void scoreSubmission(final long submissionId) {
+        final var submission = DataLoadingHelper.loadExamSolutionSubmission(submissionRepository, submissionId);
+        if (Objects.nonNull(submission.getScore())) {
+            return; // Do not calculate it again.
+        }
+        StateVerificationHelper.checkSubmitted(submission);
+        final var totalScore = solutionRepository.getExerciseSolutions(submission)
+                .stream()
+                .map(this::buildContainer)
+                .peek(SolutionAndResultsContainer::verifyPendingExecutions)
+                .peek(container -> {
+                })
+                .filter(SolutionAndResultsContainer::isApproved)
+                .mapToInt(SolutionAndResultsContainer::getScore)
+                .sum();
+        submission.score(totalScore);
+        submissionRepository.save(submission);
     }
 
 
@@ -155,8 +187,8 @@ public class SolutionsManager implements SolutionService {
                     ")"
     )
     public List<ExerciseSolution> getSolutionsForSubmission(final long submissionId) throws NoSuchEntityException {
-        final var submission = DataLoadingHelper.loadExamSolutionSubmission(examSolutionSubmissionRepository, submissionId);
-        return exerciseSolutionRepository.getExerciseSolutions(submission);
+        final var submission = DataLoadingHelper.loadExamSolutionSubmission(submissionRepository, submissionId);
+        return solutionRepository.getExerciseSolutions(submission);
     }
 
     @Override
@@ -172,7 +204,7 @@ public class SolutionsManager implements SolutionService {
                     ")"
     )
     public Optional<ExerciseSolution> getSolution(final long solutionId) {
-        return exerciseSolutionRepository.findById(solutionId);
+        return solutionRepository.findById(solutionId);
     }
 
     @Override
@@ -183,11 +215,11 @@ public class SolutionsManager implements SolutionService {
     )
     public void modifySolution(final long solutionId, final String answer)
             throws NoSuchEntityException, IllegalEntityStateException {
-        final var solution = DataLoadingHelper.loadSolution(exerciseSolutionRepository, solutionId);
+        final var solution = DataLoadingHelper.loadSolution(solutionRepository, solutionId);
         performExamInProgressStateVerification(solution.getExercise().getExam());
         performSolutionNotSubmittedVerification(solution.getSubmission());
         solution.setAnswer(answer);
-        exerciseSolutionRepository.save(solution);
+        solutionRepository.save(solution);
     }
 
 
@@ -225,6 +257,19 @@ public class SolutionsManager implements SolutionService {
     }
 
     /**
+     * Builds a {@link SolutionAndResultsContainer} from the given {@code solution},
+     * using the {@link #resultsRepository}
+     * to retrieve the {@link ExerciseSolutionResult}s of the said {@code solution}.
+     *
+     * @param solution The {@link ExerciseSolution}.
+     * @return The build {@link SolutionAndResultsContainer}.
+     */
+    private SolutionAndResultsContainer buildContainer(final ExerciseSolution solution) {
+        return SolutionAndResultsContainer.build(solution, resultsRepository.find(solution));
+    }
+
+
+    /**
      * An {@link IllegalEntityStateError} that indicates that a certain action that involves an {@link Exam}
      * cannot be performed because the said {@link Exam}'s state is not in progress
      * (it has not started yet or has finished already).
@@ -238,6 +283,12 @@ public class SolutionsManager implements SolutionService {
     private final static IllegalEntityStateError EXAM_SOLUTION_ALREADY_SUBMITTED =
             new IllegalEntityStateError("The exam solution is already submitted", "state");
 
+    /**
+     * An {@link IllegalStateException} that indicates that the {@link ExamSolutionSubmission}
+     * owns an {@link ExerciseSolution} with pending executions.
+     */
+    private final static IllegalEntityStateError PENDING_EXECUTIONS =
+            new IllegalEntityStateError("The submission contains pending executions");
 
     /**
      * An {@link UniqueViolationError} that indicates that an {@link ExamSolutionSubmission} already exists
@@ -245,4 +296,52 @@ public class SolutionsManager implements SolutionService {
      */
     private final static UniqueViolationError SUBMISSION_ALREADY_EXISTS =
             new UniqueViolationError("An Exam Solution Submission already exists", "exam", "submitter");
+
+
+    /**
+     * Wraps an {@link ExerciseSolution} with its {@link ExerciseSolutionResult}s.
+     * It contains methods to check if there are {@link ExerciseSolutionResult}s with pending executions,
+     * and to check if the {@link ExerciseSolution} is approved, based on the result's mark.
+     */
+    @ToString(doNotUseGetters = true)
+    @EqualsAndHashCode(doNotUseGetters = true)
+    @AllArgsConstructor(staticName = "build")
+    private static final class SolutionAndResultsContainer {
+
+        /**
+         * The {@link ExerciseSolution}.
+         */
+        private final ExerciseSolution solution;
+        /**
+         * The {@link ExerciseSolutionResult}s.
+         */
+        private final List<ExerciseSolutionResult> results;
+
+        /**
+         * Verifies if there any of the {@link #results} is pending of execution result.
+         */
+        private void verifyPendingExecutions() {
+            if (results.stream().anyMatch(not(ExerciseSolutionResult::isMarked))) {
+                throw new IllegalEntityStateException(PENDING_EXECUTIONS);
+            }
+        }
+
+        /**
+         * Checks if the {@link #solution} is approved.
+         *
+         * @return {@code true} if approved, or {@code false} otherwise.
+         */
+        private boolean isApproved() {
+            return results.stream().allMatch(res -> res.getResult() == APPROVED);
+        }
+
+        /**
+         * Returns the awarded score for the {@link #solution} (i.e it returns the solution's exercise awarded score).
+         *
+         * @return The amount of score it is awarded to the solution.
+         */
+        private int getScore() {
+            return solution.getExercise().getAwardedScore();
+        }
+    }
 }
