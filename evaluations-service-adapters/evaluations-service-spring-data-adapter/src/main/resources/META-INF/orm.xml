@@ -121,6 +121,9 @@
                 <column name="state" nullable="false" insertable="true" updatable="true"/>
                 <enumerated>STRING</enumerated>
             </basic>
+            <basic name="score">
+                <column name="score" nullable="false" insertable="true" updatable="true"/>
+            </basic>
             <many-to-one name="exam" fetch="LAZY" optional="false">
                 <join-column name="exam_id"
                              referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
