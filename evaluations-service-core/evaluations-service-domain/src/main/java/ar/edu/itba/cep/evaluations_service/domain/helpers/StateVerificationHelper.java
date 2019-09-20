@@ -7,7 +7,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 /**
- * Created by Juan Marcos Bellini on 2019-09-19.
+ * A helper class that contains shared methods to check entities state.
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class StateVerificationHelper {
