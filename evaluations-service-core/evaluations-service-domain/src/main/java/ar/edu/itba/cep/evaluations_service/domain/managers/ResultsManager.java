@@ -203,20 +203,6 @@ public class ResultsManager implements ResultsService {
     // Helpers
     // ================================================================================================================
 
-//    /**
-//     * Checks that the {@link ExamSolutionSubmission} to which the given {@code solution} belongs to
-//     * is already submitted.
-//     *
-//     * @param solution The {@link ExerciseSolution} to be checked.
-//     * @throws IllegalEntityStateException If the {@link ExamSolutionSubmission} is not submitted.
-//     */
-//    private static void checkSubmitted(final ExerciseSolution solution) throws IllegalEntityStateException {
-//        // Then check the submission's state
-//        if (solution.getSubmission().getState() != ExamSolutionSubmission.State.SUBMITTED) {
-//            throw new IllegalEntityStateException(SOLUTION_NOT_SUBMITTED);
-//        }
-//    }
-
     /**
      * Loads the {@link ExerciseSolutionResult}
      * for the {@link ExerciseSolution} and {@link TestCase} with the given ids.
@@ -392,7 +378,7 @@ public class ResultsManager implements ResultsService {
      * an {@link ExerciseSolution} is not submitted yet.
      */
     private final static IllegalEntityStateError SOLUTION_NOT_SUBMITTED =
-            new IllegalEntityStateError("Solution not submitted yet", "submission.state");
+            new IllegalEntityStateError("Solution not submitted yet", "submission");
 
     /**
      * An {@link IllegalStateException} that indicates that an {@link ExamSolutionSubmission} is not submitted yet.
