@@ -11,13 +11,13 @@ package ar.edu.itba.cep.evaluations_service.commands.executor_service;
 
     /**
      * The Solution Id header key. Used together with the {@link #TEST_CASE_ID_HEADER} to match an
-     * {@link ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult} with an
+     * {@link ar.edu.itba.cep.executor.models.ExecutionResponse} with an
      * {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolution}.
      */
     /* package */ static final String SOLUTION_ID_HEADER = "Solution-Id";
     /**
      * The Test Case Id header key. Used together with the {@link #SOLUTION_ID_HEADER} to match an
-     * {@link ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult} with an
+     * {@link ar.edu.itba.cep.executor.models.ExecutionResponse} with an
      * {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolution}.
      */
     /* package */ static final String TEST_CASE_ID_HEADER = "TestCase-Id";
@@ -32,7 +32,7 @@ package ar.edu.itba.cep.evaluations_service.commands.executor_service;
     // ================================================================================================================
 
     /**
-     * Topic in which the {@link ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult}s
+     * Topic in which the {@link ar.edu.itba.cep.executor.models.ExecutionResponse}s
      * command replies are received.
      */
     /* package */ static final String REPLY_CHANNEL = "EvaluationsService-Command-Replies";
@@ -43,7 +43,7 @@ package ar.edu.itba.cep.evaluations_service.commands.executor_service;
     // ================================================================================================================
 
     /**
-     * Topic to which {@link ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionRequest}s are sent
+     * Topic to which {@link ar.edu.itba.cep.executor.models.ExecutionRequest}s are sent
      * to the Executor Service.
      */
     /* package */ static final String EXECUTOR_SERVICE_COMMANDS_CHANNEL = "ExecutorService-Commands";

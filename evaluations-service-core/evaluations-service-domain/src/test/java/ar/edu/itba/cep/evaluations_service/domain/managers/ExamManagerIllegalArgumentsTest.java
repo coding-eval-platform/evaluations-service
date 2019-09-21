@@ -215,6 +215,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                         TestHelper.invalidTestCaseVisibility(),
                         TestHelper.invalidTestCaseTimeout(),
                         TestHelper.invalidTestCaseList(),
+                        TestHelper.invalidTestCaseList(),
                         TestHelper.invalidTestCaseList()
                 ),
                 "Using invalid arguments when creating a TestCase did not throw an IllegalArgumentException"
@@ -241,7 +242,8 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
 
         final var newVisibility = TestHelper.invalidTestCaseVisibility();
         final var newTimeout = TestHelper.validTestCaseTimeout();
-        final var newInputs = TestHelper.invalidTestCaseList();
+        final var newProgramArguments = TestHelper.invalidTestCaseList();
+        final var newStdin = TestHelper.invalidTestCaseList();
         final var newExpectedOutputs = TestHelper.invalidTestCaseList();
 
         when(exam.getState()).thenReturn(Exam.State.UPCOMING);
@@ -250,7 +252,8 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         doThrow(IllegalArgumentException.class).when(testCase).update(
                 newVisibility,
                 newTimeout,
-                newInputs,
+                newProgramArguments,
+                newStdin,
                 newExpectedOutputs
         );
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
@@ -258,7 +261,14 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
 
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> examManager.modifyTestCase(testCaseId, newVisibility, newTimeout, newInputs, newExpectedOutputs),
+                () -> examManager.modifyTestCase(
+                        testCaseId,
+                        newVisibility,
+                        newTimeout,
+                        newProgramArguments,
+                        newStdin,
+                        newExpectedOutputs
+                ),
                 "Using an invalid value when modifying a TestCase did not throw an IllegalArgumentException"
         );
         verify(exam, only()).getState();
@@ -267,7 +277,8 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
         verify(testCase, times(1)).update(
                 newVisibility,
                 newTimeout,
-                newInputs,
+                newProgramArguments,
+                newStdin,
                 newExpectedOutputs
         );
         verifyNoMoreInteractions(testCase);

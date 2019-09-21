@@ -495,6 +495,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                         TestHelper.validTestCaseVisibility(),
                         TestHelper.validTestCaseTimeout(),
                         TestHelper.validTestCaseList(),
+                        TestHelper.validTestCaseList(),
                         TestHelper.validTestCaseList()
                 ),
                 "Creating a test case for an exercise belonging to an exam with " + state + " state" +
@@ -517,6 +518,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
                         id,
                         TestHelper.validTestCaseVisibility(),
                         TestHelper.validTestCaseTimeout(),
+                        TestHelper.validTestCaseList(),
                         TestHelper.validTestCaseList(),
                         TestHelper.validTestCaseList()
                 ),

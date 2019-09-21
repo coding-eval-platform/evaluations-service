@@ -211,12 +211,13 @@ public class SolutionsManager implements SolutionService {
             "hasAuthority('STUDENT')" +
                     "   and @exerciseSolutionAuthorizationProvider.isOwner(#solutionId, principal)"
     )
-    public void modifySolution(final long solutionId, final String answer)
+    public void modifySolution(final long solutionId, final String answer, final String compilerFlags)
             throws NoSuchEntityException, IllegalEntityStateException {
         final var solution = DataLoadingHelper.loadSolution(solutionRepository, solutionId);
         performExamInProgressStateVerification(solution.getExercise().getExam());
         performSolutionNotSubmittedVerification(solution.getSubmission());
         solution.setAnswer(answer);
+        solution.setCompilerFlags(compilerFlags); // TODO: fix
         solutionRepository.save(solution);
     }
 
@@ -359,7 +360,7 @@ public class SolutionsManager implements SolutionService {
         private final List<ExerciseSolutionResult> results;
 
         /**
-         * Verifies if there any of the {@link #results} is pending of execution result.
+         * Verifies if there any of the {@link #results} is pending of execution results.
          */
         private void verifyPendingExecutions() {
             if (results.stream().anyMatch(not(ExerciseSolutionResult::isMarked))) {

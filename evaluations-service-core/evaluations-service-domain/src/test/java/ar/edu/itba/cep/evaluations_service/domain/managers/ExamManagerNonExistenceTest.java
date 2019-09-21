@@ -279,6 +279,7 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                                 TestHelper.validTestCaseVisibility(),
                                 TestHelper.validTestCaseTimeout(),
                                 TestHelper.validTestCaseList(),
+                                TestHelper.validTestCaseList(),
                                 TestHelper.validTestCaseList()
                         ),
                 "Trying to create a test case" +
@@ -312,6 +313,7 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
                         id,
                         TestHelper.validTestCaseVisibility(),
                         TestHelper.validTestCaseTimeout(),
+                        TestHelper.validTestCaseList(),
                         TestHelper.validTestCaseList(),
                         TestHelper.validTestCaseList()
                 ),

@@ -24,7 +24,8 @@ public interface SpringDataTestCaseRepository extends CrudRepository<TestCase, L
      */
     @Query(value = "SELECT DISTINCT tc " +
             "       FROM TestCase tc " +
-            "           LEFT JOIN FETCH tc.inputs " +
+            "           LEFT JOIN FETCH tc.programArguments " +
+            "           LEFT JOIN FETCH tc.stdin " +
             "           LEFT JOIN FETCH tc.expectedOutputs " +
             "       WHERE tc.exercise = :exercise")
     List<TestCase> getByExercise(@Param("exercise") final Exercise exercise);
@@ -38,7 +39,8 @@ public interface SpringDataTestCaseRepository extends CrudRepository<TestCase, L
      */
     @Query(value = "SELECT DISTINCT tc " +
             "       FROM TestCase tc " +
-            "           LEFT JOIN FETCH tc.inputs " +
+            "           LEFT JOIN FETCH tc.programArguments " +
+            "           LEFT JOIN FETCH tc.stdin " +
             "           LEFT JOIN FETCH tc.expectedOutputs " +
             "       WHERE tc.exercise = :exercise AND tc.visibility = :visibility")
     List<TestCase> getByBelongsToAndVisibility(

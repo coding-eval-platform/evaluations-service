@@ -90,10 +90,17 @@
                 <join-column name="belongs_to"
                              referenced-column-name="id" nullable="false" insertable="true" updatable="false"/>
             </many-to-one>
-            <element-collection name="inputs" fetch="LAZY">
+            <element-collection name="programArguments" fetch="LAZY">
+                <order-column name="program_argument_order" nullable="false" insertable="true" updatable="false"/>
+                <column name="program_argument" nullable="false" insertable="true" updatable="true"/>
+                <collection-table name="test_case_program_arguments">
+                    <join-column name="test_case_id"/>
+                </collection-table>
+            </element-collection>
+            <element-collection name="stdin" fetch="LAZY">
                 <order-column name="input_order" nullable="false" insertable="true" updatable="false"/>
                 <column name="input" nullable="false" insertable="true" updatable="true"/>
-                <collection-table name="test_case_inputs">
+                <collection-table name="test_case_stdin">
                     <join-column name="test_case_id"/>
                 </collection-table>
             </element-collection>
@@ -140,6 +147,9 @@
             </id>
             <basic name="answer">
                 <column name="answer" nullable="false" insertable="true" updatable="true"/>
+            </basic>
+            <basic name="compilerFlags">
+                <column name="compiler_flags" nullable="false" insertable="true" updatable="true"/>
             </basic>
             <many-to-one name="submission" fetch="LAZY" optional="false">
                 <join-column name="submission_id"

@@ -1,6 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.domain.helpers;
 
 import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.executor.models.Language;
 import com.github.javafaker.Faker;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -183,15 +184,25 @@ public final class TestHelper {
      * @return A valid {@link List}.
      */
     public static List<String> validTestCaseList() {
-        return Faker.instance()
-                .lorem()
-                .words(LISTS_SIZE);
+        return Faker.instance().lorem().words(LISTS_SIZE);
     }
 
     /**
-     * @return A random answer whose length is between the valid limits.
+     * @return A random answer.
      */
     public static String validExerciseSolutionAnswer() {
+        final List<String> values = new LinkedList<>();
+        values.add(null);
+        values.add("");
+        values.add(Faker.instance().lorem().characters());
+        final var index = (int) Faker.instance().number().numberBetween(0L, values.size());
+        return values.get(index);
+    }
+
+    /**
+     * @return A random compiler flags.
+     */
+    public static String validCompilerFlags() {
         final List<String> values = new LinkedList<>();
         values.add(null);
         values.add("");
@@ -379,17 +390,13 @@ public final class TestHelper {
      * @return An invalid {@link List} of {@link String} for {@link TestCase}.
      */
     public static List<String> invalidTestCaseList() {
-        final var possibleValues = new LinkedList<List<String>>();
-        possibleValues.add(null);
         final var listWithNulls = Stream.concat(
                 Faker.instance().lorem().words(LISTS_SIZE - 1).stream(),
                 Stream.of((String) null)
         ).collect(Collectors.toList());
         Collections.shuffle(listWithNulls); // Perform shuffling to be sure that check is performed in all the list
-        possibleValues.add(listWithNulls);
 
-        final var index = (int) Faker.instance().number().numberBetween(0L, possibleValues.size());
-        return possibleValues.get(index);
+        return listWithNulls;
     }
 
 

@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Represents a test case for an {@link Exercise}.
@@ -23,19 +24,23 @@ public class TestCase {
     private final long id;
 
     /**
-     * The inputs of the test case.
+     * The program arguments of the test case.
      */
-    private final List<String> inputs;
+    private List<String> programArguments;
+
+    /**
+     * The elements to be passed to the standard input.
+     */
+    private List<String> stdin;
 
     /**
      * The expected outputs.
      */
-    private final List<String> expectedOutputs;
+    private List<String> expectedOutputs;
 
     /**
      * Indicates whether the test case is public or private.
      */
-    // TODO: maybe, when implementing the scoring system, subclasses would be better (only privates will grant score).
     private Visibility visibility;
 
     /**
@@ -55,7 +60,8 @@ public class TestCase {
     /* package */ TestCase() {
         // Initialize final fields with default values.
         this.id = 0;
-        this.inputs = null;
+        this.programArguments = null;
+        this.stdin = null;
         this.expectedOutputs = null;
         this.exercise = null;
     }
@@ -63,30 +69,34 @@ public class TestCase {
     /**
      * Constructor.
      *
-     * @param visibility      Indicates whether the test case is public or private.
-     * @param timeout         The time given to the exercise to execute, in milliseconds.
-     * @param inputs          The inputs of the test case.
-     * @param expectedOutputs The expected outputs.
-     * @param exercise        The {@link Exercise} to which this test case belongs to.
+     * @param visibility       Indicates whether the test case is public or private.
+     * @param timeout          The time given to the exercise to execute, in milliseconds.
+     * @param programArguments The inputs of the test case.
+     * @param stdin            The elements to be passed to the standard input.
+     * @param expectedOutputs  The expected outputs.
+     * @param exercise         The {@link Exercise} to which this test case belongs to.
      * @throws IllegalArgumentException If any argument is not valid.
      */
     public TestCase(
             final Visibility visibility,
             final Long timeout,
-            final List<String> inputs,
+            final List<String> programArguments,
+            final List<String> stdin,
             final List<String> expectedOutputs,
             final Exercise exercise)
             throws IllegalArgumentException {
         assertVisibility(visibility);
         assertTimeout(timeout);
-        assertInputList(inputs);
+        assertProgramArgumentsList(programArguments);
+        assertStdin(stdin);
         assertExpectedOutputsList(expectedOutputs);
         assertExercise(exercise);
         this.id = 0;
         this.visibility = visibility;
         this.timeout = timeout;
-        this.inputs = new LinkedList<>(inputs);
-        this.expectedOutputs = new LinkedList<>(expectedOutputs);
+        this.programArguments = Optional.ofNullable(programArguments).map(LinkedList::new).orElse(null);
+        this.stdin = Optional.ofNullable(stdin).map(LinkedList::new).orElse(null);
+        this.expectedOutputs = Optional.ofNullable(expectedOutputs).map(LinkedList::new).orElse(null);
         this.exercise = exercise;
     }
 
@@ -94,27 +104,29 @@ public class TestCase {
     /**
      * Updates all fields of this test case.
      *
-     * @param visibility      Indicates whether the test case is public or private.
-     * @param timeout         The time given to the exercise to execute, in milliseconds.
-     * @param inputs          inputs The new {@link List} of inputs for this test case.
-     * @param expectedOutputs The new {@link List} of outputs for this test case.
+     * @param visibility       Indicates whether the test case is public or private.
+     * @param timeout          The time given to the exercise to execute, in milliseconds.
+     * @param programArguments The new {@link List} of program arguments for this test case.
+     * @param stdin            The new stdin {@link List}.
+     * @param expectedOutputs  The new {@link List} of outputs for this test case.
      * @throws IllegalArgumentException If any argument is not valid.
      */
     public void update(
             final TestCase.Visibility visibility,
             final Long timeout,
-            final List<String> inputs,
+            final List<String> programArguments,
+            final List<String> stdin,
             final List<String> expectedOutputs) throws IllegalArgumentException {
         assertVisibility(visibility);
         assertTimeout(timeout);
-        assertInputList(inputs);
+        assertProgramArgumentsList(programArguments);
+        assertStdin(stdin);
         assertExpectedOutputsList(expectedOutputs);
         this.visibility = visibility;
         this.timeout = timeout;
-        this.inputs.clear();
-        this.inputs.addAll(inputs);
-        this.expectedOutputs.clear();
-        this.expectedOutputs.addAll(expectedOutputs);
+        this.programArguments = Optional.ofNullable(programArguments).map(LinkedList::new).orElse(null);
+        this.stdin = Optional.ofNullable(stdin).map(LinkedList::new).orElse(null);
+        this.expectedOutputs = Optional.ofNullable(expectedOutputs).map(LinkedList::new).orElse(null);
     }
 
 
@@ -143,14 +155,29 @@ public class TestCase {
     }
 
     /**
-     * Asserts that the given {@code inputs} {@link List} is valid.
+     * Asserts that the given {@code programArguments} {@link List} is valid.
      *
-     * @param inputs The inputs {@link List} to be checked.
-     * @throws IllegalArgumentException If the inputs {@link List} is not valid.
+     * @param programArguments The programArguments {@link List} to be checked.
+     * @throws IllegalArgumentException If the programArguments {@link List} is not valid.
      */
-    private static void assertInputList(final List<String> inputs) throws IllegalArgumentException {
-        Assert.notNull(inputs, "The inputs list is missing");
-        Assert.isTrue(inputs.stream().noneMatch(Objects::isNull), "The list must not contain null elements");
+    private static void assertProgramArgumentsList(final List<String> programArguments) throws IllegalArgumentException {
+        Assert.isTrue(
+                Objects.isNull(programArguments) || programArguments.stream().noneMatch(Objects::isNull),
+                "The list must not contain null elements"
+        );
+    }
+
+    /**
+     * Asserts that the given {@code stdin} {@link List} is valid.
+     *
+     * @param stdin The stdin {@link List} to be checked.
+     * @throws IllegalArgumentException If the stdin {@link List} is not valid.
+     */
+    private static void assertStdin(final List<String> stdin) throws IllegalArgumentException {
+        Assert.isTrue(
+                Objects.isNull(stdin) || stdin.stream().noneMatch(Objects::isNull),
+                "The list must not contain null elements"
+        );
     }
 
     /**

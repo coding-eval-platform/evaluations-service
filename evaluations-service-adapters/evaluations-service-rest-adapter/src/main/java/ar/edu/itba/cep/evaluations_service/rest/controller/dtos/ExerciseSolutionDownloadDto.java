@@ -20,6 +20,10 @@ public class ExerciseSolutionDownloadDto {
      * The answer to the exercise's question.
      */
     private final String answer;
+    /**
+     * The compiler flags of the solution.
+     */
+    private final String compilerFlags;
 
 
     /**
@@ -31,6 +35,7 @@ public class ExerciseSolutionDownloadDto {
         this.id = solution.getId();
         this.exerciseId = solution.getExercise().getId();
         this.answer = solution.getAnswer();
+        this.compilerFlags = solution.getCompilerFlags();
     }
 
 
@@ -56,5 +61,13 @@ public class ExerciseSolutionDownloadDto {
     @JsonProperty(value = "answer", access = JsonProperty.Access.READ_ONLY)
     public String getAnswer() {
         return answer;
+    }
+
+    /**
+     * @return The compiler flags of the solution.
+     */
+    @JsonProperty(value = "compilerFlags", access = JsonProperty.Access.READ_ONLY)
+    public String getCompilerFlags() {
+        return compilerFlags;
     }
 }

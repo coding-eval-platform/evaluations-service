@@ -181,7 +181,11 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
         when(solutionRepository.findById(solutionId)).thenReturn(Optional.empty());
         Assertions.assertThrows(
                 NoSuchEntityException.class,
-                () -> solutionsManager.modifySolution(solutionId, TestHelper.validExerciseSolutionAnswer()),
+                () -> solutionsManager.modifySolution(
+                        solutionId,
+                        TestHelper.validExerciseSolutionAnswer(),
+                        TestHelper.validCompilerFlags()
+                ),
                 "Trying to modify a solution that does not exist" +
                         " does not throw a NoSuchEntityException"
         );

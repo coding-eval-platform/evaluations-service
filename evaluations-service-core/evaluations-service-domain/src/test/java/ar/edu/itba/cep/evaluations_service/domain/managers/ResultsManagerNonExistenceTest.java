@@ -1,7 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
-import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
@@ -9,6 +8,7 @@ import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
+import ar.edu.itba.cep.executor.models.ExecutionResponse;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -177,26 +177,27 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
 
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
      * checking the condition in which the {@link ExerciseSolutionResultRepository} returns an empty {@link Optional}
      * when trying to retrieve the corresponding
      * {@link ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult}
      * for the data that arrived with the event.
      *
-     * @param event           The {@link ExecutionResultArrivedEvent} that contains ids of entities that do not exist.
-     * @param executionResult An {@link ExecutionResult} to be retrieved from the event.
+     * @param event             The {@link ExecutionResponseArrivedEvent}
+     *                          that contains ids of entities that do not exist.
+     * @param executionResponse An {@link ExecutionResponse} to be retrieved from the event.
      */
     @Test
-    void testReceiveExecutionResult(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
-            @Mock(name = "executionResult") final ExecutionResult executionResult) {
+    void testReceiveExecutionResponse(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
 
         // Configure the event
         when(event.getTestCaseId()).thenReturn(testCaseId);
         when(event.getSolutionId()).thenReturn(solutionId);
-        when(event.getResult()).thenReturn(executionResult);
+        when(event.getResponse()).thenReturn(executionResponse);
 
         // Setup repository
         when(exerciseSolutionResultRepository.find(solutionId, testCaseId)).thenReturn(Optional.empty());
@@ -204,8 +205,8 @@ class ResultsManagerNonExistenceTest extends AbstractResultsManagerTest {
         // Call the method to be tested
         Assertions.assertThrows(
                 NoSuchEntityException.class,
-                () -> resultsManager.receiveExecutionResult(event),
-                "Trying to handle an execution result arrived event that contains data of entities" +
+                () -> resultsManager.receiveExecutionResponse(event),
+                "Trying to handle an execution response arrived event that contains data of entities" +
                         " that do not exist does not throw a NoSuchEntityException"
         );
 

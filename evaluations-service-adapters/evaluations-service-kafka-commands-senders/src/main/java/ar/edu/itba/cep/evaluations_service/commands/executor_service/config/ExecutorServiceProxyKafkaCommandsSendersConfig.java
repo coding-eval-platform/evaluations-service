@@ -1,8 +1,8 @@
 package ar.edu.itba.cep.evaluations_service.commands.executor_service.config;
 
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionRequestDtoMessageBuilderFactory;
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.dto.ExecutionRequestDto;
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.dto.ExecutionResultDto;
+import ar.edu.itba.cep.executor.dtos.ExecutionRequestDto;
+import ar.edu.itba.cep.executor.dtos.ExecutionResponseDto;
 import com.bellotapps.the_messenger.commons.payload.PayloadDeserializer;
 import com.bellotapps.the_messenger.commons.payload.PayloadSerializer;
 import com.bellotapps.the_messenger.json.JacksonJsonPayloadDeserializer;
@@ -26,7 +26,7 @@ public class ExecutorServiceProxyKafkaCommandsSendersConfig {
     /**
      * Creates a bean of {@link JacksonJsonPayloadSerializer} of {@link ExecutionRequestDto}.
      *
-     * @return A bean of {@link PayloadSerializer} of {@link ExecutionResultDto}.
+     * @return A bean of {@link PayloadSerializer} of {@link ExecutionResponseDto}.
      */
     @Bean
     public PayloadSerializer<ExecutionRequestDto> executionRequestDtoPayloadSerializer() {
@@ -34,13 +34,13 @@ public class ExecutorServiceProxyKafkaCommandsSendersConfig {
     }
 
     /**
-     * Creates a bean of {@link JacksonJsonPayloadDeserializer} of {@link ExecutionResultDto}.
+     * Creates a bean of {@link JacksonJsonPayloadDeserializer} of {@link ExecutionResponseDto}.
      *
-     * @return A bean of {@link PayloadDeserializer} of {@link ExecutionResultDto}.
+     * @return A bean of {@link PayloadDeserializer} of {@link ExecutionResponseDto}.
      */
     @Bean
-    public PayloadDeserializer<ExecutionResultDto> executionResultDtoPayloadDeserializer() {
-        return new JacksonJsonPayloadDeserializer<>(new ObjectMapper(), ExecutionResultDto.class);
+    public PayloadDeserializer<ExecutionResponseDto> executionResponseDtoPayloadDeserializer() {
+        return new JacksonJsonPayloadDeserializer<>(new ObjectMapper(), ExecutionResponseDto.class);
     }
 
     /**

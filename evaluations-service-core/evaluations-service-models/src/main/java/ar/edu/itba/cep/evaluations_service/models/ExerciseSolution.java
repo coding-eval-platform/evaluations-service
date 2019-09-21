@@ -33,6 +33,10 @@ public class ExerciseSolution {
      * The answer to the question of the {@link Exercise} (i.e the code written by the student).
      */
     private String answer;
+    /**
+     * The answer to the question of the {@link Exercise} (i.e the code written by the student).
+     */
+    private String compilerFlags;
 
 
     /**
@@ -43,7 +47,6 @@ public class ExerciseSolution {
         this.id = 0;
         this.submission = null;
         this.exercise = null;
-        this.answer = null;
     }
 
     /**

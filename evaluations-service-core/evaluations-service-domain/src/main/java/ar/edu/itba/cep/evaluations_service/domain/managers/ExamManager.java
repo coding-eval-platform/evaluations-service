@@ -4,7 +4,6 @@ import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.Language;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.evaluations_service.repositories.ExamRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseRepository;
@@ -13,6 +12,7 @@ import ar.edu.itba.cep.evaluations_service.security.authentication.Authenticatio
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithoutOwners;
+import ar.edu.itba.cep.executor.models.Language;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
@@ -319,12 +319,15 @@ public class ExamManager implements ExamService {
             final long exerciseId,
             final TestCase.Visibility visibility,
             final Long timeout,
-            final List<String> inputs,
+            final List<String> programArguments,
+            final List<String> stdin,
             final List<String> expectedOutputs)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var exercise = DataLoadingHelper.loadExercise(exerciseRepository, exerciseId);
         performExamUpcomingStateVerification(exercise.getExam());
-        return testCaseRepository.save(new TestCase(visibility, timeout, inputs, expectedOutputs, exercise));
+        return testCaseRepository.save(
+                new TestCase(visibility, timeout, programArguments, stdin, expectedOutputs, exercise)
+        );
     }
 
     @Override
@@ -339,7 +342,7 @@ public class ExamManager implements ExamService {
     )
     public Optional<TestCase> getTestCase(long testCaseId) {
         return testCaseRepository.findById(testCaseId).map(testCase -> {
-            testCase.getInputs().size(); // Initialize Lazy Collection
+            testCase.getProgramArguments().size(); // Initialize Lazy Collection
             testCase.getExpectedOutputs().size(); // Initialize Lazy Collection
             return testCase;
         });
@@ -354,12 +357,13 @@ public class ExamManager implements ExamService {
     public void modifyTestCase(final long testCaseId,
                                final TestCase.Visibility visibility,
                                final Long timeout,
-                               final List<String> inputs,
+                               final List<String> programArguments,
+                               final List<String> stdin,
                                final List<String> expectedOutputs)
             throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException {
         final var testCase = DataLoadingHelper.loadTestCase(testCaseRepository, testCaseId);
         performExamUpcomingStateVerification(testCase.getExercise().getExam());
-        testCase.update(visibility, timeout, inputs, expectedOutputs);
+        testCase.update(visibility, timeout, programArguments, stdin, expectedOutputs);
         testCaseRepository.save(testCase);
     }
 

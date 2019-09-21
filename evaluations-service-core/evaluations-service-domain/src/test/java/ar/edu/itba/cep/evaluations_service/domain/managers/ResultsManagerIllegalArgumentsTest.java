@@ -1,7 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
-import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
@@ -77,28 +77,29 @@ class ResultsManagerIllegalArgumentsTest extends AbstractResultsManagerTest {
     }
 
     /**
-     * Tests the reception of a {@code null} {@link ExecutionResultArrivedEvent}.
+     * Tests the reception of a {@code null} {@link ExecutionResponseArrivedEvent}.
      */
     @Test
-    void testNullExecutionResultArrivedEvent() {
+    void testNullExecutionResponseArrivedEvent() {
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> resultsManager.receiveExecutionResult(null),
+                () -> resultsManager.receiveExecutionResponse(null),
                 "The reception of a null result event does not throw an IllegalArgumentException"
         );
         verifyNoInteractionsWithMocks();
     }
 
     /**
-     * Tests the reception of an {@link ExecutionResultArrivedEvent}
-     * that returns a {@code null} {@link ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult}.
+     * Tests the reception of an {@link ExecutionResponseArrivedEvent}
+     * that returns a {@code null} {@link ar.edu.itba.cep.executor.models.ExecutionResponse}.
      */
     @Test
-    void testExecutionResultArrivedEventWithNullResult(@Mock(name = "event") final ExecutionResultArrivedEvent event) {
-        when(event.getResult()).thenReturn(null);
+    void testExecutionResponseArrivedEventWithNullResult(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event) {
+        when(event.getResponse()).thenReturn(null);
         Assertions.assertThrows(
                 IllegalArgumentException.class,
-                () -> resultsManager.receiveExecutionResult(event),
+                () -> resultsManager.receiveExecutionResponse(event),
                 "The reception of an event with a null result does not throw an IllegalArgumentException"
         );
         verifyNoInteractionsWithMocks();

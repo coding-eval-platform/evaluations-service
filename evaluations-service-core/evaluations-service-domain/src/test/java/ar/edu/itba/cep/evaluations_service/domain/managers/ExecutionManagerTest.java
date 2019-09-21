@@ -1,13 +1,13 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResult;
 import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
-import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import ar.edu.itba.cep.executor.models.ExecutionResponse;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -87,12 +87,14 @@ class ExecutionManagerTest {
         final var testCaseId = TestHelper.validTestCaseId();
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var code = Faker.instance().lorem().characters();
-        final var inputs = TestHelper.validTestCaseList();
+        final var programArguments = TestHelper.validTestCaseList();
+        final var stdin = TestHelper.validTestCaseList();
         final var language = TestHelper.validLanguage();
         final var timeout = TestHelper.validTestCaseTimeout();
 
         when(testCase.getId()).thenReturn(testCaseId);
-        when(testCase.getInputs()).thenReturn(inputs);
+        when(testCase.getProgramArguments()).thenReturn(programArguments);
+        when(testCase.getStdin()).thenReturn(stdin);
         when(testCase.getTimeout()).thenReturn(timeout);
         when(solution.getId()).thenReturn(solutionId);
         when(solution.getAnswer()).thenReturn(code);
@@ -108,7 +110,8 @@ class ExecutionManagerTest {
                 .requestExecution(
                         argThat(req ->
                                 Objects.equals(code, req.getCode())
-                                        && Objects.equals(inputs, req.getInputs())
+                                        && Objects.equals(programArguments, req.getProgramArguments())
+                                        && Objects.equals(stdin, req.getStdin())
                                         && Objects.equals(language, req.getLanguage())
                                         && Objects.equals(timeout, req.getTimeout())
                         ),
@@ -117,25 +120,25 @@ class ExecutionManagerTest {
     }
 
     /**
-     * Tests the {@link ExecutionManager#processExecution(long, long, ExecutionResult)} method.
+     * Tests the {@link ExecutionManager#processResponse(long, long, ExecutionResponse)} method.
      *
-     * @param executionResult The {@link ExecutionResult} to be processed (together with the needed ids).
+     * @param executionResponse The {@link ExecutionResponse} to be processed (together with the needed ids).
      */
     @Test
-    void testProcessExecution(@Mock(name = "executionResult") final ExecutionResult executionResult) {
+    void testProcessExecution(@Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
 
-        executionManager.processExecution(solutionId, testCaseId, executionResult);
+        executionManager.processResponse(solutionId, testCaseId, executionResponse);
 
         verifyZeroInteractions(executorService);
         verify(publisher, only())
                 .publishEvent(
                         argThat(
-                                (final ExecutionResultArrivedEvent event) ->
+                                (final ExecutionResponseArrivedEvent event) ->
                                         event.getSolutionId() == solutionId
                                                 && event.getTestCaseId() == testCaseId
-                                                && Objects.equals(event.getResult(), executionResult)
+                                                && Objects.equals(event.getResponse(), executionResponse)
                         )
                 );
 

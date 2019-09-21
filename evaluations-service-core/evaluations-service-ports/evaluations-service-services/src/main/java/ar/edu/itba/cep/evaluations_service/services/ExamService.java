@@ -2,8 +2,8 @@ package ar.edu.itba.cep.evaluations_service.services;
 
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.Language;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import ar.edu.itba.cep.executor.models.Language;
 import com.bellotapps.webapps_commons.exceptions.IllegalEntityStateException;
 import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
@@ -246,11 +246,12 @@ public interface ExamService {
     /**
      * Creates a {@link TestCase} for the {@link Exercise} with the given {@code exerciseId}.
      *
-     * @param exerciseId      The id of the {@link Exercise} to which a {@link TestCase} will be added.
-     * @param visibility      The {@link TestCase.Visibility} of the {@link TestCase}.
-     * @param timeout         The timeout of the {@link TestCase}.
-     * @param inputs          The inputs of the {@link TestCase}.
-     * @param expectedOutputs The expected outputs of the {@link TestCase}.
+     * @param exerciseId       The id of the {@link Exercise} to which a {@link TestCase} will be added.
+     * @param visibility       The {@link TestCase.Visibility} of the {@link TestCase}.
+     * @param timeout          The timeout of the {@link TestCase}.
+     * @param programArguments The program arguments of the {@link TestCase}.
+     * @param stdin            The stdin of the {@link TestCase}.
+     * @param expectedOutputs  The expected outputs of the {@link TestCase}.
      * @return The created {@link TestCase}.
      * @throws NoSuchEntityException       If there is no {@link Exercise} with the given {@code exerciseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
@@ -259,9 +260,14 @@ public interface ExamService {
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    TestCase createTestCase(final long exerciseId, final TestCase.Visibility visibility, final Long timeout,
-                            final List<String> inputs, final List<String> expectedOutputs)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
+    TestCase createTestCase(
+            final long exerciseId,
+            final TestCase.Visibility visibility,
+            final Long timeout,
+            final List<String> programArguments,
+            final List<String> stdin,
+            final List<String> expectedOutputs
+    ) throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Finds the {@link TestCase} with the given {@code testCaseId}.
@@ -274,11 +280,12 @@ public interface ExamService {
     /**
      * Modifies the {@link TestCase} with the given {@code testCaseId}.
      *
-     * @param testCaseId      The id of the {@link TestCase} being modified.
-     * @param visibility      The new {@link TestCase.Visibility} for the {@link TestCase}.
-     * @param timeout         The new timeout for the {@link TestCase}.
-     * @param inputs          The new inputs {@link List} for the {@link TestCase}.
-     * @param expectedOutputs The new expected outputs {@link List} for the {@link TestCase}.
+     * @param testCaseId       The id of the {@link TestCase} being modified.
+     * @param visibility       The new {@link TestCase.Visibility} for the {@link TestCase}.
+     * @param timeout          The new timeout for the {@link TestCase}.
+     * @param programArguments The new program arguments {@link List} for the {@link TestCase}.
+     * @param stdin            The new stdin {@link List} for the {@link TestCase}.
+     * @param expectedOutputs  The new expected outputs {@link List} for the {@link TestCase}.
      * @throws NoSuchEntityException       If there is no {@link TestCase} with the given {@code testCaseId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise}
      *                                     that owns the {@link TestCase}
@@ -287,9 +294,14 @@ public interface ExamService {
      * @apiNote It cannot be executed if the {@link Exam} owning the {@link Exercise} that owns the {@link TestCase}
      * is not in {@link Exam.State#UPCOMING} state.
      */
-    void modifyTestCase(final long testCaseId, final TestCase.Visibility visibility, final Long timeout,
-                        final List<String> inputs, final List<String> expectedOutputs)
-            throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
+    void modifyTestCase(
+            final long testCaseId,
+            final TestCase.Visibility visibility,
+            final Long timeout,
+            final List<String> programArguments,
+            final List<String> stdin,
+            final List<String> expectedOutputs
+    ) throws NoSuchEntityException, IllegalEntityStateException, IllegalArgumentException;
 
     /**
      * Deletes the {@link TestCase} with the given {@code testCaseId}.

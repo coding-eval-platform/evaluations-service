@@ -1,14 +1,14 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.*;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
-import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResultArrivedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.*;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.ExerciseSolutionResultRepository;
 import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
+import ar.edu.itba.cep.executor.models.ExecutionResponse;
 import com.github.javafaker.Faker;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -460,73 +460,79 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
 
 
     // ================================================================================================================
-    // ExecutionResultArrivedEvent
+    // ExecutionResponseArrivedEvent
     // ================================================================================================================
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is a {@link FinishedExecutionResult}, with a non zero exit code.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPLETED} result,
+     * with a non zero exit code.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult A {@link FinishedExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
-    void testProcessExecutionWithFinishedExecutionResultWithNonZeroExitCode(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+    void testProcessExecutionWithCompletedExecutionResultAndWithNonZeroExitCode(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> {
                 },
-                executionResult,
-                r -> when(r.getExitCode()).thenReturn(TestHelper.validNonZeroExerciseSolutionExitCode()),
+                executionResponse,
+                r -> {
+                    when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
+                    when(r.getExitCode()).thenReturn(TestHelper.validNonZeroExerciseSolutionExitCode());
+                },
                 ExerciseSolutionResult.Result.FAILED
         );
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is a {@link FinishedExecutionResult}, with a zero exit code,
-     * but a non empty standard error output.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPLETED} result,
+     * with a zero exit code, but a non empty standard error output.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
-    void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeAndNonEmptyStderr(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+    void testProcessExecutionWithCompletedExecutionResultAndWithZeroExitCodeAndNonEmptyStderr(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> {
                 },
-                executionResult,
+                executionResponse,
                 r -> {
+                    when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
                     when(r.getExitCode()).thenReturn(0);
                     when(r.getStderr()).thenReturn(TestHelper.validExerciseSolutionResultList());
 
+
                 },
                 ExerciseSolutionResult.Result.FAILED
         );
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is a {@link FinishedExecutionResult}, with a zero exit code,
-     * no standard error output and standard output not equal to the expected output.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPLETED} result,
+     * with a zero exit code, no standard error output and standard output not equal to the expected output.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
-    void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeEmptyStderrAndDifferentOutput(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+    void testProcessExecutionWithCompletedExecutionResultAndWithZeroExitCodeEmptyStderrAndDifferentOutput(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         final var expectedOutputs = TestHelper.validExerciseSolutionResultList();
         final var anotherOutputs = new LinkedList<>(expectedOutputs);
         Collections.shuffle(anotherOutputs);
@@ -534,8 +540,9 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                 event,
                 solutionResult,
                 r -> when(r.getTestCase().getExpectedOutputs()).thenReturn(expectedOutputs),
-                executionResult,
+                executionResponse,
                 r -> {
+                    when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
                     when(r.getExitCode()).thenReturn(0);
                     when(r.getStderr()).thenReturn(Collections.emptyList());
                     when(r.getStdout()).thenReturn(anotherOutputs);
@@ -546,25 +553,26 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is a {@link FinishedExecutionResult}, with a zero exit code,
-     * no standard error output and standard output equal to the expected output.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPLETED} result,
+     * with a zero exit code, no standard error output and standard output equal to the expected output.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult A {@link FinishedExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
-    void testProcessExecutionWithFinishedExecutionResultWithZeroExitCodeAndEmptyStderrAndExpectedOutput(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+    void testProcessExecutionWithCompletedExecutionResultAndWithZeroExitCodeAndEmptyStderrAndExpectedOutput(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final FinishedExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         final var expectedOutputs = TestHelper.validExerciseSolutionResultList();
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> when(r.getTestCase().getExpectedOutputs()).thenReturn(expectedOutputs),
-                executionResult,
+                executionResponse,
                 r -> {
+                    when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
                     when(r.getExitCode()).thenReturn(0);
                     when(r.getStderr()).thenReturn(Collections.emptyList());
                     when(r.getStdout()).thenReturn(expectedOutputs);
@@ -575,97 +583,94 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is a {@link TimedOutExecutionResult}.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#TIMEOUT} result.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult A {@link TimedOutExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
-    void testProcessExecutionWithTimedOutExecutionResult(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+    void testProcessExecutionWithTimeOutExecutionResult(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final TimedOutExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> {
                 },
-                executionResult,
-                r -> {
-                },
+                executionResponse,
+                r -> when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.TIMEOUT),
                 ExerciseSolutionResult.Result.TIMED_OUT
         );
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is a {@link CompileErrorExecutionResult}.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPILE_ERROR} result.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult A {@link CompileErrorExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
-    void testProcessExecutionWithNotCompiledExecutionResult(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+    void testProcessExecutionWithCompileErrorExecutionResult(
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final CompileErrorExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> {
                 },
-                executionResult,
-                r -> {
-                },
+                executionResponse,
+                r -> when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPILE_ERROR),
                 ExerciseSolutionResult.Result.NOT_COMPILED
         );
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is an {@link InitializationErrorExecutionResult}.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#INITIALIZATION_ERROR}
+     * result.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult An {@link InitializationErrorExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithInitializationErrorExecutionResult(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final InitializationErrorExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> {
                 },
-                executionResult,
-                r -> {
-                },
+                executionResponse,
+                r -> when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.INITIALIZATION_ERROR),
                 ExerciseSolutionResult.Result.INITIALIZATION_ERROR
         );
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test,
-     * in which the {@link ExecutionResult} is an {@link UnknownErrorExecutionResult}.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test,
+     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#UNKNOWN_ERROR} result.
      *
-     * @param event           A {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param executionResult An {@link UnknownErrorExecutionResult} mock which is returned by the event.
+     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
      */
     @Test
     void testProcessExecutionWithUnknownErrorExecutionResult(
-            @Mock(name = "event") final ExecutionResultArrivedEvent event,
+            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
             @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResult") final UnknownErrorExecutionResult executionResult) {
+            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
         testProcessExecution(
                 event,
                 solutionResult,
                 r -> {
                 },
-                executionResult,
-                r -> {
-                },
+                executionResponse,
+                r -> when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.UNKNOWN_ERROR),
                 ExerciseSolutionResult.Result.UNKNOWN_ERROR
         );
     }
@@ -722,38 +727,37 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
     }
 
     /**
-     * Performs an {@link ExecutionResultArrivedEvent} received test.
+     * Performs an {@link ExecutionResponseArrivedEvent} received test.
      *
-     * @param event                     An {@link ExecutionResultArrivedEvent} mock that is received by the manager.
-     * @param solutionResult            An {@link ExerciseSolutionResult} mock which is the one being affected.
-     * @param solutionResultConfigurer  A {@link Consumer} of {@link ExerciseSolutionResult} intended to configure
-     *                                  the {@link ExerciseSolutionResult} mock (e.g to set the expected outputs).
-     * @param executionResult           An {@link ExecutionResult} mock which is returned by the event.
-     * @param executionResultConfigurer A {@link Consumer} of a subclass of {@link ExecutionResult} of type {@code R}
-     *                                  intended to configure the {@link ExecutionResult} mock
-     *                                  (e.g to set the exit code).
-     * @param expectedResult            The expected {@link ExerciseSolutionResult.Result}
-     *                                  (i.e which is set in the {@link ExecutionResult}).
-     * @param <R>                       The concrete type of {@link ExecutionResult}.
+     * @param event                       An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
+     * @param solutionResult              An {@link ExerciseSolutionResult} mock which is the one being affected.
+     * @param solutionResultConfigurer    A {@link Consumer} of {@link ExerciseSolutionResult} intended to configure
+     *                                    the {@link ExerciseSolutionResult} mock (e.g to set the expected outputs).
+     * @param executionResponse           An {@link ExecutionResponse} mock which is returned by the event.
+     * @param executionResponseConfigurer A {@link Consumer} of{@link ExecutionResponse}
+     *                                    intended to configure the {@link ExecutionResponse} mock
+     *                                    (e.g to set the exit code).
+     * @param expectedResult              The expected {@link ExerciseSolutionResult.Result}
+     *                                    (i.e which is set in the {@link ExecutionResponse}).
      */
-    private <R extends ExecutionResult> void testProcessExecution(
-            final ExecutionResultArrivedEvent event,
+    private void testProcessExecution(
+            final ExecutionResponseArrivedEvent event,
             final ExerciseSolutionResult solutionResult,
             final Consumer<ExerciseSolutionResult> solutionResultConfigurer,
-            final R executionResult,
-            final Consumer<R> executionResultConfigurer,
+            final ExecutionResponse executionResponse,
+            final Consumer<ExecutionResponse> executionResponseConfigurer,
             final ExerciseSolutionResult.Result expectedResult) {
 
         final var testCaseId = TestHelper.validTestCaseId();
         final var solutionId = TestHelper.validExerciseSolutionId();
 
-        // Configure the execution result mock
-        executionResultConfigurer.accept(executionResult);
+        // Configure the execution response mock
+        executionResponseConfigurer.accept(executionResponse);
 
         // Configure the event
         when(event.getTestCaseId()).thenReturn(testCaseId);
         when(event.getSolutionId()).thenReturn(solutionId);
-        when(event.getResult()).thenReturn(executionResult);
+        when(event.getResponse()).thenReturn(executionResponse);
 
         // Configure the solution result mock
         doNothing().when(solutionResult).mark(expectedResult);
@@ -764,7 +768,7 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
         when(exerciseSolutionResultRepository.save(solutionResult)).thenReturn(solutionResult);
 
         // Call the method to be tested
-        resultsManager.receiveExecutionResult(event);
+        resultsManager.receiveExecutionResponse(event);
 
         // Verifications
         verifyZeroInteractions(exerciseSolutionRepository);
