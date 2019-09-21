@@ -1,6 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.commands.executor_service;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.dto.ExecutionRequestDto;
+import ar.edu.itba.cep.executor.dtos.ExecutionRequestDto;
+import ar.edu.itba.cep.executor.models.ExecutionRequest;
 import com.bellotapps.the_messenger.commons.Message;
 import com.bellotapps.the_messenger.producer.MessageBuilderFactory;
 import com.bellotapps.the_messenger.producer.MessageProducer;
@@ -45,12 +46,12 @@ public class ExecutorServiceKafkaCommandMessageProxy implements ExecutorServiceC
 
 
     @Override
-    public void requestExecution(final ExecutionRequest executionRequest, final ExecutionResultReplyData replyData) {
+    public void requestExecution(final ExecutionRequest executionRequest, final ExecutionResponseReplyData replyData) {
         final var message = executionRequestDtoMessageBuilderFactory.commandMessage("requestExecution")
                 .withHeader(Constants.SOLUTION_ID_HEADER, Long.toString(replyData.getSolutionId()))
                 .withHeader(Constants.TEST_CASE_ID_HEADER, Long.toString(replyData.getTestCaseId()))
                 .copyHeaders(Constants.SOLUTION_ID_HEADER, Constants.TEST_CASE_ID_HEADER)
-                .withPayload(new ExecutionRequestDto(executionRequest))
+                .withPayload(ExecutionRequestDto.buildFromRequest(executionRequest))
                 .build();
         messageProducer.send(message, Constants.EXECUTOR_SERVICE_COMMANDS_CHANNEL);
     }

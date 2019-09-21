@@ -540,14 +540,22 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
             @Mock(name = "exercise") final Exercise exercise) {
         final var visibility = TestHelper.validTestCaseVisibility();
         final var timeout = TestHelper.validTestCaseTimeout();
-        final var inputs = TestHelper.validTestCaseList();
+        final var programArguments = TestHelper.validTestCaseList();
+        final var stdin = TestHelper.validTestCaseList();
         final var expectedOutputs = TestHelper.validTestCaseList();
         final var exerciseId = TestHelper.validExerciseId();
         when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         when(exercise.getExam()).thenReturn(exam);
         when(exerciseRepository.findById(exerciseId)).thenReturn(Optional.of(exercise));
         when(testCaseRepository.save(any(TestCase.class))).then(invocation -> invocation.getArgument(0));
-        final var testCase = examManager.createTestCase(exerciseId, visibility, timeout, inputs, expectedOutputs);
+        final var testCase = examManager.createTestCase(
+                exerciseId,
+                visibility,
+                timeout,
+                programArguments,
+                stdin,
+                expectedOutputs
+        );
         Assertions.assertAll("TestCase properties are not the expected",
                 () -> Assertions.assertEquals(
                         visibility,
@@ -560,9 +568,14 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                         "There is a mismatch in the timeout"
                 ),
                 () -> Assertions.assertEquals(
-                        inputs,
-                        testCase.getInputs(),
-                        "There is a mismatch in the inputs"
+                        programArguments,
+                        testCase.getProgramArguments(),
+                        "There is a mismatch in the program arguments list"
+                ),
+                () -> Assertions.assertEquals(
+                        stdin,
+                        testCase.getStdin(),
+                        "There is a mismatch in the stdin list"
                 ),
                 () -> Assertions.assertEquals(
                         expectedOutputs,
@@ -624,22 +637,30 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         final var testCaseId = TestHelper.validTestCaseId();
         final var newVisibility = TestHelper.validTestCaseVisibility();
         final var newTimeout = TestHelper.validTestCaseTimeout();
-        final var newInputs = TestHelper.validTestCaseList();
+        final var newProgramArguments = TestHelper.validTestCaseList();
+        final var newStdin = TestHelper.validTestCaseList();
         final var newExpectedOutputs = TestHelper.validTestCaseList();
         when(exam.getState()).thenReturn(Exam.State.UPCOMING);
         when(exercise.getExam()).thenReturn(exam);
         when(testCase.getExercise()).thenReturn(exercise);
-        doNothing().when(testCase).update(newVisibility, newTimeout, newInputs, newExpectedOutputs);
+        doNothing().when(testCase).update(newVisibility, newTimeout, newProgramArguments, newStdin, newExpectedOutputs);
         when(testCaseRepository.findById(testCaseId)).thenReturn(Optional.of(testCase));
         when(testCaseRepository.save(any(TestCase.class))).then(inv -> inv.getArgument(0));
         Assertions.assertDoesNotThrow(
-                () -> examManager.modifyTestCase(testCaseId, newVisibility, newTimeout, newInputs, newExpectedOutputs),
+                () -> examManager.modifyTestCase(
+                        testCaseId,
+                        newVisibility,
+                        newTimeout,
+                        newProgramArguments,
+                        newStdin,
+                        newExpectedOutputs
+                ),
                 "An unexpected exception was thrown"
         );
         verify(exam, only()).getState();
         verify(exercise, only()).getExam();
         verify(testCase, times(1)).getExercise();
-        verify(testCase, times(1)).update(newVisibility, newTimeout, newInputs, newExpectedOutputs);
+        verify(testCase, times(1)).update(newVisibility, newTimeout, newProgramArguments, newStdin, newExpectedOutputs);
         verifyNoMoreInteractions(testCase);
         verifyZeroInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);

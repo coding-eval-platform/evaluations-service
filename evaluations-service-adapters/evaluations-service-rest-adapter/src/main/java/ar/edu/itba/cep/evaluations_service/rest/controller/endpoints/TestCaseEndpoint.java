@@ -79,7 +79,8 @@ public class TestCaseEndpoint {
                 exerciseId,
                 dto.getVisibility(),
                 dto.getTimeout(),
-                dto.getInputs(),
+                dto.getProgramArguments(),
+                dto.getStdin(),
                 dto.getExpectedOutputs()
         );
         final var location = uriInfo.getBaseUriBuilder()
@@ -111,7 +112,8 @@ public class TestCaseEndpoint {
                 testCaseId,
                 dto.getVisibility(),
                 dto.getTimeout(),
-                dto.getInputs(),
+                dto.getProgramArguments(),
+                dto.getStdin(),
                 dto.getExpectedOutputs()
         );
         return Response.noContent().build();

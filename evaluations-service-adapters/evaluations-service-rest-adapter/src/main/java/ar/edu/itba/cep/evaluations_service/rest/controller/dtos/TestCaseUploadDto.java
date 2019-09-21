@@ -7,6 +7,7 @@ import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCause
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.MissingValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,6 +17,7 @@ import java.util.List;
 /**
  * Data transfer object for receiving {@link TestCase}s data from an API consumer.
  */
+@Getter
 public class TestCaseUploadDto {
 
     /**
@@ -41,21 +43,26 @@ public class TestCaseUploadDto {
     private final Long timeout;
 
     /**
-     * The inputs of the test case.
+     * The program arguments list of the test case.
      */
-    @NotNull(message = "The inputs list must not be null", payload = MissingValue.class,
+    @NotNullsInIterable(message = "The program arguments list contains nulls", payload = IllegalValue.class,
             groups = {
                     Create.class,
                     Update.class,
             }
     )
-    @NotNullsInIterable(message = "The inputs list contains nulls", payload = IllegalValue.class,
+    private final List<String> programArguments;
+
+    /**
+     * The stdin list of the test case.
+     */
+    @NotNullsInIterable(message = "The stdin list contains nulls", payload = IllegalValue.class,
             groups = {
                     Create.class,
                     Update.class,
             }
     )
-    private final List<String> inputs;
+    private final List<String> stdin;
 
     /**
      * The expected output.
@@ -78,10 +85,11 @@ public class TestCaseUploadDto {
     /**
      * Constructor.
      *
-     * @param visibility      Indicates whether the test case is public or private.
-     * @param timeout         The timeout of the test case.
-     * @param inputs          The inputs of the test case.
-     * @param expectedOutputs The expected output.
+     * @param visibility       Indicates whether the test case is public or private.
+     * @param timeout          The timeout of the test case.
+     * @param programArguments The program arguments list of the test case.
+     * @param stdin            The stdin list of the test case.
+     * @param expectedOutputs  The expected output.
      */
     @JsonCreator
     public TestCaseUploadDto(
@@ -94,46 +102,22 @@ public class TestCaseUploadDto {
                     access = JsonProperty.Access.WRITE_ONLY
             ) final Long timeout,
             @JsonProperty(
-                    value = "inputs",
+                    value = "programArguments",
                     access = JsonProperty.Access.WRITE_ONLY
-            ) final List<String> inputs,
+            ) final List<String> programArguments,
+            @JsonProperty(
+                    value = "stdin",
+                    access = JsonProperty.Access.WRITE_ONLY
+            ) final List<String> stdin,
             @JsonProperty(
                     value = "expectedOutputs",
                     access = JsonProperty.Access.WRITE_ONLY
             ) final List<String> expectedOutputs) {
         this.visibility = visibility;
         this.timeout = timeout;
-        this.inputs = inputs;
+        this.programArguments = programArguments;
+        this.stdin = stdin;
         this.expectedOutputs = expectedOutputs;
-    }
-
-
-    /**
-     * @return Indicates whether the test case is public or private.
-     */
-    public Visibility getVisibility() {
-        return visibility;
-    }
-
-    /**
-     * @return The timeout of the test case.
-     */
-    public Long getTimeout() {
-        return timeout;
-    }
-
-    /**
-     * @return The inputs of the test case.
-     */
-    public List<String> getInputs() {
-        return inputs;
-    }
-
-    /**
-     * @return The expected output.
-     */
-    public List<String> getExpectedOutputs() {
-        return expectedOutputs;
     }
 
 

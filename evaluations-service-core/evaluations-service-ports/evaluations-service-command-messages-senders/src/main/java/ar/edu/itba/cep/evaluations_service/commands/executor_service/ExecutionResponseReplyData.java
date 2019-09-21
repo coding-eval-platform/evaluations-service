@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * Class containing data to handle an execution result.
+ * Class containing data to handle an {@link ar.edu.itba.cep.executor.models.ExecutionResponse}.
  */
 @Getter
 @EqualsAndHashCode
 @ToString(doNotUseGetters = true)
-public class ExecutionResultReplyData {
+public class ExecutionResponseReplyData {
 
     /**
      * The id of the solution to be processed.
@@ -29,7 +29,7 @@ public class ExecutionResultReplyData {
      * @param solutionId The id of the solution to be processed.
      * @param testCaseId The id of the test case to be processed.
      */
-    public ExecutionResultReplyData(final long solutionId, final long testCaseId) {
+    public ExecutionResponseReplyData(final long solutionId, final long testCaseId) {
         this.solutionId = solutionId;
         this.testCaseId = testCaseId;
     }

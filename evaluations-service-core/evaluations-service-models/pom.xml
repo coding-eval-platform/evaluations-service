@@ -33,6 +33,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Coding Eval Platform Commons Libraries -->
+        <dependency>
+            <groupId>ar.edu.itba.cep</groupId>
+            <artifactId>commons-executor-models</artifactId>
+        </dependency>
+
         <!-- Webapps Commons Exceptions -->
         <dependency>
             <groupId>com.bellotapps.webapps</groupId>

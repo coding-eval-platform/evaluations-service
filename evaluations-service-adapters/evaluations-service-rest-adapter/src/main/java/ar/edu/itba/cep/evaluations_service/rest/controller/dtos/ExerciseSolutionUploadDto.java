@@ -3,16 +3,24 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 /**
  * Data transfer object for receiving {@link ExerciseSolution}s data from an API consumer.
  */
+@Getter
 public class ExerciseSolutionUploadDto {
 
     /**
      * The answer for the exercise's question.
      */
     private final String answer;
+    /**
+     * The compiler flags for the solution.
+     */
+    private final String compilerFlags;
 
 
     /**
@@ -22,19 +30,10 @@ public class ExerciseSolutionUploadDto {
      */
     @JsonCreator
     public ExerciseSolutionUploadDto(
-            @JsonProperty(
-                    value = "answer",
-                    access = JsonProperty.Access.WRITE_ONLY
-            ) final String answer) {
+            @JsonProperty(value = "answer", access = WRITE_ONLY) final String answer,
+            @JsonProperty(value = "compilerFlags", access = WRITE_ONLY) final String compilerFlags) {
         this.answer = answer;
-    }
-
-
-    /**
-     * @return The answer for the exercise's question.
-     */
-    public String getAnswer() {
-        return answer;
+        this.compilerFlags = compilerFlags;
     }
 
 

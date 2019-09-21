@@ -1,7 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.Language;
+import ar.edu.itba.cep.executor.models.Language;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

@@ -9,6 +9,7 @@ import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCause
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Getter;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 /**
  * Data transfer object for receiving {@link Exam}s data from an API consumer.
  */
+@Getter
 public class ExamUploadDto {
 
     /**
@@ -97,28 +99,6 @@ public class ExamUploadDto {
         this.description = description;
         this.startingAt = startingAt;
         this.duration = duration;
-    }
-
-
-    /**
-     * @return The description for the exam (e.g mid-term exams, final exams, etc.).
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @return {@link LocalDateTime} at which the exam starts.
-     */
-    public LocalDateTime getStartingAt() {
-        return startingAt;
-    }
-
-    /**
-     * @return {@link Duration} of the exam.
-     */
-    public Duration getDuration() {
-        return duration;
     }
 
 

@@ -29,7 +29,12 @@ public class TestCaseDownloadDto {
     /**
      * The inputs of the test case.
      */
-    private final List<String> inputs;
+    private final List<String> programArguments;
+
+    /**
+     * The inputs of the test case.
+     */
+    private final List<String> stdin;
 
     /**
      * The expected output.
@@ -46,7 +51,8 @@ public class TestCaseDownloadDto {
         this.id = testCase.getId();
         this.visibility = testCase.getVisibility();
         this.timeout = testCase.getTimeout();
-        this.inputs = testCase.getInputs();
+        this.programArguments = testCase.getProgramArguments();
+        this.stdin = testCase.getStdin();
         this.expectedOutputs = testCase.getExpectedOutputs();
     }
 
@@ -76,11 +82,19 @@ public class TestCaseDownloadDto {
     }
 
     /**
-     * @return The inputs of the test case.
+     * @return The program arguments list of the test case.
      */
-    @JsonProperty(value = "inputs", access = JsonProperty.Access.READ_ONLY)
-    public List<String> getInputs() {
-        return inputs;
+    @JsonProperty(value = "programArguments", access = JsonProperty.Access.READ_ONLY)
+    public List<String> getProgramArguments() {
+        return programArguments;
+    }
+
+    /**
+     * @return The stdin list of the test case.
+     */
+    @JsonProperty(value = "stdin", access = JsonProperty.Access.READ_ONLY)
+    public List<String> getStdin() {
+        return stdin;
     }
 
     /**

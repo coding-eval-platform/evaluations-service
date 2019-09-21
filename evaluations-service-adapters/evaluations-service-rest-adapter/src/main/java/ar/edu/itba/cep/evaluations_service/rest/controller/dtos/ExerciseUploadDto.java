@@ -1,12 +1,13 @@
 package ar.edu.itba.cep.evaluations_service.rest.controller.dtos;
 
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
-import ar.edu.itba.cep.evaluations_service.models.Language;
 import ar.edu.itba.cep.evaluations_service.models.ValidationConstants;
+import ar.edu.itba.cep.executor.models.Language;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.IllegalValue;
 import com.bellotapps.webapps_commons.errors.ConstraintViolationError.ErrorCausePayload.MissingValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Size;
 /**
  * Data transfer object for receiving {@link Exercise}s data from an API consumer.
  */
+@Getter
 public class ExerciseUploadDto {
 
     /**
@@ -92,34 +94,6 @@ public class ExerciseUploadDto {
         this.awardedScore = awardedScore;
     }
 
-
-    /**
-     * @return The question for the exercise.
-     */
-    public String getQuestion() {
-        return question;
-    }
-
-    /**
-     * @return The {@link Language} for the exercise.
-     */
-    public Language getLanguage() {
-        return language;
-    }
-
-    /**
-     * @return The solution template for the exercise.
-     */
-    public String getSolutionTemplate() {
-        return solutionTemplate;
-    }
-
-    /**
-     * @return The awarded score for the exercise.
-     */
-    public int getAwardedScore() {
-        return awardedScore;
-    }
 
     // ================================================================================================================
     // Validation groups

@@ -19,10 +19,10 @@ public class KafkaCommandResultMessagesDispatcher {
     private final MessageHandler messageHandler;
 
     @Autowired
-    public KafkaCommandResultMessagesDispatcher(final MessageHandler executionResultHandler) {
+    public KafkaCommandResultMessagesDispatcher(final MessageHandler executionResponseHandler) {
         this.messageHandler = BuiltInMessageHandler.Builder.create()
                 .configureTypedMessageHandlers()
-                .handleReplyMessageWith(executionResultHandler)
+                .handleReplyMessageWith(executionResponseHandler)
                 .continueWithParentBuilder()
                 .build();
     }

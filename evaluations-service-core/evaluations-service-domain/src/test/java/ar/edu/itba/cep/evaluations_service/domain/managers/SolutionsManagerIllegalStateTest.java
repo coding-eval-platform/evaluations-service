@@ -278,7 +278,11 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
-                () -> solutionsManager.modifySolution(solutionId, TestHelper.validExerciseSolutionAnswer()),
+                () -> solutionsManager.modifySolution(
+                        solutionId,
+                        TestHelper.validExerciseSolutionAnswer(),
+                        TestHelper.validCompilerFlags()
+                ),
                 "Modifying an already submitted solution is being allowed"
         );
         verify(exam, only()).getState();
@@ -378,7 +382,11 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
         when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         Assertions.assertThrows(
                 IllegalEntityStateException.class,
-                () -> solutionsManager.modifySolution(solutionId, TestHelper.validExerciseSolutionAnswer()),
+                () -> solutionsManager.modifySolution(
+                        solutionId,
+                        TestHelper.validExerciseSolutionAnswer(),
+                        TestHelper.validCompilerFlags()
+                ),
                 "Modifying a solution for an exam with " + state + " state is being allowed"
         );
         verify(exam, only()).getState();

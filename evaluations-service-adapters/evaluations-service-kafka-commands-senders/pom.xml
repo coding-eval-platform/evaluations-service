@@ -26,6 +26,11 @@
         </dependency>
 
         <!-- Third party libraries-->
+        <!-- Coding Eval Platform Commons Libraries -->
+        <dependency>
+            <groupId>ar.edu.itba.cep</groupId>
+            <artifactId>commons-executor-dtos</artifactId>
+        </dependency>
         <!-- The Messenger modules -->
         <dependency>
             <groupId>com.bellotapps.the-messenger</groupId>

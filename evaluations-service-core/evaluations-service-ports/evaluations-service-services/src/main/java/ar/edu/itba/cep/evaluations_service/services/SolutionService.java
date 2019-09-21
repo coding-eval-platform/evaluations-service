@@ -111,14 +111,15 @@ public interface SolutionService {
     /**
      * Modifies the {@link ExerciseSolution} with the given {@code solutionId}.
      *
-     * @param solutionId The id of the {@link ExerciseSolution} to be modified.
-     * @param answer     The new answer for the {@link ExerciseSolution}.
+     * @param solutionId    The id of the {@link ExerciseSolution} to be modified.
+     * @param answer        The new answer for the {@link ExerciseSolution}.
+     * @param compilerFlags The compiler flags for the {@link ExerciseSolution}.
      * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} with the given {@code solutionId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise} of the solution
      *                                     is not in {@link Exam.State#IN_PROGRESS} state,
      *                                     or if the {@link ExamSolutionSubmission} to which the solution belongs to
      *                                     is already submitted.
      */
-    void modifySolution(final long solutionId, final String answer)
+    void modifySolution(final long solutionId, final String answer, final String compilerFlags)
             throws NoSuchEntityException, IllegalEntityStateException;
 }

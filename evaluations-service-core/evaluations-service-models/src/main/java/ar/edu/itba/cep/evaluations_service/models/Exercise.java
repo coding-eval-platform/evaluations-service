@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.models;
 
+import ar.edu.itba.cep.executor.models.Language;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
