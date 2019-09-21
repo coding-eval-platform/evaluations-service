@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
+import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.StateVerificationHelper;
@@ -18,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,7 +77,7 @@ public class SolutionsManager implements SolutionService {
             "hasAuthority('ADMIN')" +
                     " or (hasAuthority('TEACHER') and @examAuthorizationProvider.isOwner(#examId, principal))"
     )
-    public Page<ExamSolutionSubmission> getSolutionSubmissionsForExam(long examId, PagingRequest pagingRequest)
+    public Page<ExamSolutionSubmission> getSolutionSubmissionsForExam(long examId, final PagingRequest pagingRequest)
             throws NoSuchEntityException {
         final var exam = DataLoadingHelper.loadExam(examRepository, examId);
         return submissionRepository.getByExam(exam, pagingRequest);
@@ -136,9 +138,7 @@ public class SolutionsManager implements SolutionService {
     public void submitSolutions(long submissionId) throws NoSuchEntityException, IllegalStateException {
         final var submission = DataLoadingHelper.loadExamSolutionSubmission(submissionRepository, submissionId);
         performExamInProgressStateVerification(submission.getExam()); // TODO: Allow if finished?
-        submission.submit();
-        submissionRepository.save(submission);
-        publisher.publishEvent(ExamSolutionSubmittedEvent.create(submission));
+        doPlaceSubmission(submission);
     }
 
     @Override
@@ -160,8 +160,6 @@ public class SolutionsManager implements SolutionService {
                 .stream()
                 .map(this::buildContainer)
                 .peek(SolutionAndResultsContainer::verifyPendingExecutions)
-                .peek(container -> {
-                })
                 .filter(SolutionAndResultsContainer::isApproved)
                 .mapToInt(SolutionAndResultsContainer::getScore)
                 .sum();
@@ -224,6 +222,25 @@ public class SolutionsManager implements SolutionService {
 
 
     // ================================================================================================================
+    // Event Listeners
+    // ================================================================================================================
+
+    /**
+     * Handles the given {@code event}.
+     *
+     * @param event The {@link ExamSolutionSubmittedEvent} to be handled.
+     * @throws IllegalArgumentException If the {@code event} is {@code null},
+     *                                  or if it contains a {@code null} {@link ExamSolutionSubmission}
+     */
+    @Transactional
+    @EventListener(ExamFinishedEvent.class)
+    public void examFinished(final ExamFinishedEvent event) throws IllegalArgumentException {
+        Assert.notNull(event, "The event must not be null");
+        submitNonFinished(event.getExam());
+    }
+
+
+    // ================================================================================================================
     // Helpers
     // ================================================================================================================
 
@@ -254,6 +271,30 @@ public class SolutionsManager implements SolutionService {
         if (Objects.equals(submission.getState(), ExamSolutionSubmission.State.SUBMITTED)) {
             throw new IllegalEntityStateException(EXAM_SOLUTION_ALREADY_SUBMITTED);
         }
+    }
+
+    /**
+     * Submits all the {@link ExamSolutionSubmission} belonging to the given {@code exam} that are still unplaced.
+     *
+     * @param exam The {@link Exam} whose {@link ExamSolutionSubmission} must be placed.
+     */
+    private void submitNonFinished(final Exam exam) {
+        Assert.notNull(exam, "The exam whose submissions must be placed must not be null");
+        submissionRepository
+                .getByExamAndState(exam, ExamSolutionSubmission.State.UNPLACED)
+                .forEach(this::doPlaceSubmission);
+    }
+
+    /**
+     * Places the given {@code submission}
+     * (i.e sets the {@link ExamSolutionSubmission} as submitted and stores the new state).
+     *
+     * @param submission The {@link ExamSolutionSubmission} to be submitted.
+     */
+    private void doPlaceSubmission(final ExamSolutionSubmission submission) {
+        submission.submit();
+        submissionRepository.save(submission);
+        publisher.publishEvent(ExamSolutionSubmittedEvent.create(submission));
     }
 
     /**

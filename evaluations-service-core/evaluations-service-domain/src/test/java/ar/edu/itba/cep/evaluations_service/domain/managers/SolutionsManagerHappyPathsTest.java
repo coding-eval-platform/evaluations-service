@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
+import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.*;
@@ -7,6 +8,7 @@ import ar.edu.itba.cep.evaluations_service.repositories.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -17,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Optional;
 
+import static ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission.State.UNPLACED;
 import static org.mockito.Mockito.*;
 
 /**
@@ -164,9 +167,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         verifyNoMoreInteractions(submissionRepository);
         verifyZeroInteractions(solutionRepository);
         verifyZeroInteractions(resultRepository);
-        verify(publisher, only()).publishEvent(
-                argThat((final ExamSolutionSubmittedEvent event) -> event.getSubmission().equals(submission))
-        );
+        verify(publisher, only()).publishEvent(argThat(eventContainsSubmission(submission)));
     }
 
     /**
@@ -339,7 +340,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         when(solution.getExercise()).thenReturn(exercise);
         when(solution.getSubmission()).thenReturn(submission);
         when(exam.getState()).thenReturn(Exam.State.IN_PROGRESS);
-        when(submission.getState()).thenReturn(ExamSolutionSubmission.State.UNPLACED);
+        when(submission.getState()).thenReturn(UNPLACED);
         doNothing().when(solution).setAnswer(answer);
         when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         when(solutionRepository.save(solution)).thenReturn(solution);
@@ -361,5 +362,72 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         verifyNoMoreInteractions(solutionRepository);
         verifyZeroInteractions(resultRepository);
         verifyZeroInteractions(publisher);
+    }
+
+
+    // ================================================================================================================
+    // Event Listeners
+    // ================================================================================================================
+
+    /**
+     * Tests the the reception of an {@link ExamFinishedEvent} is handled as expected
+     * (retrieves {@link ExamSolutionSubmission}s that are not placed, then they are submitted, and then the
+     * corresponding event is streamed).
+     *
+     * @param event               An {@link ExamFinishedEvent} mock (the one being received).
+     * @param exam                An {@link Exam} mock (the one that has finished).
+     * @param placedSubmission    An {@link ExamSolutionSubmission} mock (one that has already been placed).
+     * @param unplacedSubmission1 An {@link ExamSolutionSubmission} mock (one that has not been placed).
+     * @param unplacedSubmission2 An {@link ExamSolutionSubmission} mock (another one that has not been placed).
+     */
+    @Test
+    void testExamFinishedEventReception(
+            @Mock(name = "event") final ExamFinishedEvent event,
+            @Mock(name = "exam") final Exam exam,
+            @Mock(name = "placedSubmission") final ExamSolutionSubmission placedSubmission,
+            @Mock(name = "unplacedSubmission1") final ExamSolutionSubmission unplacedSubmission1,
+            @Mock(name = "unplacedSubmission2") final ExamSolutionSubmission unplacedSubmission2) {
+        when(event.getExam()).thenReturn(exam);
+        when(submissionRepository.getByExamAndState(exam, UNPLACED))
+                .thenReturn(List.of(unplacedSubmission1, unplacedSubmission2));
+        doNothing().when(unplacedSubmission1).submit();
+        when(submissionRepository.save(unplacedSubmission1)).thenReturn(unplacedSubmission1);
+        when(submissionRepository.save(unplacedSubmission2)).thenReturn(unplacedSubmission2);
+        doNothing().when(publisher).publishEvent(any(ExamSolutionSubmittedEvent.class));
+
+        solutionsManager.examFinished(event);
+
+        verifyZeroInteractions(exam);
+        verifyZeroInteractions(placedSubmission);
+        verify(unplacedSubmission1, only()).submit();
+        verify(unplacedSubmission2, only()).submit();
+        verifyZeroInteractions(examRepository);
+        verifyZeroInteractions(solutionRepository);
+        verify(submissionRepository, times(1)).getByExamAndState(exam, UNPLACED);
+        verify(submissionRepository, times(1)).save(unplacedSubmission1);
+        verify(submissionRepository, times(1)).save(unplacedSubmission2);
+        verifyNoMoreInteractions(submissionRepository);
+        verifyZeroInteractions(solutionRepository);
+        verifyZeroInteractions(resultRepository);
+        verify(publisher, times(1)).publishEvent(argThat(eventContainsSubmission(unplacedSubmission1)));
+        verify(publisher, times(1)).publishEvent(argThat(eventContainsSubmission(unplacedSubmission2)));
+        verifyNoMoreInteractions(publisher);
+    }
+
+
+    // ================================================================================================================
+    // Helpers
+    // ================================================================================================================
+
+    /**
+     * Creates an {@link ArgumentMatcher} of {@link ExamSolutionSubmittedEvent} to check if the said event
+     * contains the given {@code submission}.
+     *
+     * @param submission The {@link ExamSolutionSubmission} to be checked.
+     * @return The {@link ArgumentMatcher}.
+     */
+    private static ArgumentMatcher<ExamSolutionSubmittedEvent> eventContainsSubmission(
+            final ExamSolutionSubmission submission) {
+        return event -> event.getSubmission().equals(submission);
     }
 }

@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
+import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
@@ -18,6 +19,7 @@ import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.Page;
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +53,11 @@ public class ExamManager implements ExamService {
      * Repository for {@link TestCase}s.
      */
     private final TestCaseRepository testCaseRepository;
+
+    /**
+     * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
+     */
+    private final ApplicationEventPublisher publisher;
 
 
     // ================================================================================================================
@@ -137,7 +144,7 @@ public class ExamManager implements ExamService {
         final var exam = DataLoadingHelper.loadExam(examRepository, examId);
         exam.finishExam(); // The Exam verifies state by its own.
         examRepository.save(exam);
-        // TODO: submit all exam submissions for this exam?
+        publisher.publishEvent(ExamFinishedEvent.create(exam));
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -60,6 +61,11 @@ public class SpringDataExamSolutionSubmissionRepositoryAdapter
         final var pageable = PagingMapper.map(pagingRequest);
         final var page = repository.getByExam(exam, pageable);
         return PagingMapper.map(page);
+    }
+
+    @Override
+    public List<ExamSolutionSubmission> getByExamAndState(final Exam exam, final ExamSolutionSubmission.State state) {
+        return repository.getByExamAndState(exam, state);
     }
 
     @Override

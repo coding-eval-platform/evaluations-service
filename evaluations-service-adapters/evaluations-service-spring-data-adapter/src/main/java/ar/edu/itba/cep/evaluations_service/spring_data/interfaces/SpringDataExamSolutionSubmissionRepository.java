@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -25,6 +26,16 @@ public interface SpringDataExamSolutionSubmissionRepository extends CrudReposito
      * configured according to the given {@code pageable}.
      */
     Page<ExamSolutionSubmission> getByExam(final Exam exam, final Pageable pageable);
+
+    /**
+     * Retrieves the {@link ExamSolutionSubmission}s belonging to the given {@code exam},
+     * that have the given {@code state}.
+     *
+     * @param exam  The {@link Exam} owning the {@link ExamSolutionSubmission}s being returned.
+     * @param state The {@link ExamSolutionSubmission.State} of the {@link ExamSolutionSubmission}s to be returned.
+     * @return A {@link List} containing the matching {@link ExamSolutionSubmission}s.
+     */
+    List<ExamSolutionSubmission> getByExamAndState(final Exam exam, final ExamSolutionSubmission.State state);
 
     /**
      * Deletes the {@link ExamSolutionSubmission}s belonging to the given {@code exam}.

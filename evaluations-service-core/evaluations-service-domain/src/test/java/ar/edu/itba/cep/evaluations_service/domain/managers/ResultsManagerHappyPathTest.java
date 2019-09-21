@@ -203,7 +203,7 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
      * Tests retrying execution for an {@link ExerciseSolution} and a {@link TestCase},
      * when the corresponding {@link ExerciseSolutionResult} is already marked.
      *
-     * @param result An {@link ExerciseSolutionResult} mock (the one being checked if answered).
+     * @param result   An {@link ExerciseSolutionResult} mock (the one being checked if answered).
      * @param solution The {@link ExerciseSolution}.
      * @param testCase The {@link TestCase}.
      * @param exercise The {@link Exercise} that belongs to the solution and the test case.

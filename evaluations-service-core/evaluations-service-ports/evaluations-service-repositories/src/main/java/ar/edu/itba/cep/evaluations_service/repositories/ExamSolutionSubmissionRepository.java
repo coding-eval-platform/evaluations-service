@@ -6,6 +6,7 @@ import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_so
 import com.bellotapps.webapps_commons.persistence.repository_utils.paging_and_sorting.PagingRequest;
 import com.bellotapps.webapps_commons.persistence.repository_utils.repositories.BasicRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -23,6 +24,16 @@ public interface ExamSolutionSubmissionRepository extends BasicRepository<ExamSo
      * configured according to the given {@code pagingRequest}.
      */
     Page<ExamSolutionSubmission> getByExam(final Exam exam, final PagingRequest pagingRequest);
+
+    /**
+     * Retrieves the {@link ExamSolutionSubmission}s belonging to the given {@code exam},
+     * that have the given {@code state}.
+     *
+     * @param exam  The {@link Exam} owning the {@link ExamSolutionSubmission}s being returned.
+     * @param state The {@link ExamSolutionSubmission.State} of the {@link ExamSolutionSubmission}s to be returned.
+     * @return A {@link List} containing the matching {@link ExamSolutionSubmission}s.
+     */
+    List<ExamSolutionSubmission> getByExamAndState(final Exam exam, final ExamSolutionSubmission.State state);
 
     /**
      * Deletes the {@link ExamSolutionSubmission}s belonging to the given {@code exam}.

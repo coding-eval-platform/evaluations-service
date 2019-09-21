@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,12 +34,14 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
      * @param examRepository     A mocked {@link ExamRepository} passed to super class.
      * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
      * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
+     * @param publisher          A mocked {@link ApplicationEventPublisher} passed to super class.
      */
     ExamManagerIllegalArgumentsTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
-        super(examRepository, exerciseRepository, testCaseRepository);
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository,
+            @Mock(name = "publisher") final ApplicationEventPublisher publisher) {
+        super(examRepository, exerciseRepository, testCaseRepository, publisher);
     }
 
 
@@ -69,7 +72,7 @@ class ExamManagerIllegalArgumentsTest extends AbstractExamManagerTest {
                 ),
                 "Using invalid arguments when creating an Exam did not throw an IllegalArgumentException"
         );
-        verifyNoInteractionWithAnyMockedRepository();
+        verifyNoInteractionWithAnyMock();
 
         // Clear the security context
         SecurityContextHolder.clearContext();

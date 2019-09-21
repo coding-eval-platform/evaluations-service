@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -33,12 +34,14 @@ class ExamManagerNonExistenceTest extends AbstractExamManagerTest {
      * @param examRepository     A mocked {@link ExamRepository} passed to super class.
      * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
      * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
+     * @param publisher          A mocked {@link ApplicationEventPublisher} passed to super class.
      */
     ExamManagerNonExistenceTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
-        super(examRepository, exerciseRepository, testCaseRepository);
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository,
+            @Mock(name = "publisher") final ApplicationEventPublisher publisher) {
+        super(examRepository, exerciseRepository, testCaseRepository, publisher);
     }
 
 

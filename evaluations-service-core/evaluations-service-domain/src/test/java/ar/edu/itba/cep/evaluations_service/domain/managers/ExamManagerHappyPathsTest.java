@@ -1,5 +1,6 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
+import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exam;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,12 +37,14 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
      * @param examRepository     A mocked {@link ExamRepository} passed to super class.
      * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
      * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
+     * @param publisher          A mocked {@link ApplicationEventPublisher} passed to super class.
      */
     ExamManagerHappyPathsTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
-        super(examRepository, exerciseRepository, testCaseRepository);
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository,
+            @Mock(name = "publisher") final ApplicationEventPublisher publisher) {
+        super(examRepository, exerciseRepository, testCaseRepository, publisher);
     }
 
 
@@ -113,6 +117,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).save(any(Exam.class));
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
 
         // Clear the security context
         SecurityContextHolder.clearContext();
@@ -143,6 +148,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -175,6 +181,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -199,6 +206,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
+        verify(publisher, only()).publishEvent(argThat((final ExamFinishedEvent e) -> e.getExam().equals(exam)));
     }
 
     /**
@@ -223,6 +231,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -247,6 +256,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -269,6 +279,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyNoMoreInteractions(examRepository);
         verify(exerciseRepository, only()).deleteExamExercises(exam);
         verify(testCaseRepository, only()).deleteExamTestCases(exam);
+        verifyZeroInteractions(publisher);
     }
 
 
@@ -298,6 +309,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(id);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -317,6 +329,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).deleteExamExercises(exam);
         verify(testCaseRepository, only()).deleteExamTestCases(exam);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -366,6 +379,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).save(any(Exercise.class));
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -391,6 +405,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 )
         );
         verifyOnlyExerciseSearch(exerciseId);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -426,6 +441,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(exerciseRepository, times(1)).save(exercise);
         verifyNoMoreInteractions(exerciseRepository);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -454,6 +470,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(exerciseRepository, times(1)).delete(exercise);
         verifyNoMoreInteractions(exerciseRepository);
         verify(testCaseRepository, only()).deleteExerciseTestCases(exercise);
+        verifyZeroInteractions(publisher);
     }
 
 
@@ -483,6 +500,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(examRepository);
         verify(exerciseRepository, only()).findById(exerciseId);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -507,6 +525,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(examRepository);
         verify(exerciseRepository, only()).findById(exerciseId);
         verify(testCaseRepository, only()).getExercisePublicTestCases(exercise);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -561,6 +580,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verifyZeroInteractions(examRepository);
         verify(exerciseRepository, only()).findById(exerciseId);
         verify(testCaseRepository, only()).save(any(TestCase.class));
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -586,6 +606,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
                 )
         );
         verifyOnlyTestCaseSearch(testCaseId);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -625,6 +646,7 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(testCaseRepository, times(1)).findById(testCaseId);
         verify(testCaseRepository, times(1)).save(testCase);
         verifyNoMoreInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -657,5 +679,6 @@ class ExamManagerHappyPathsTest extends AbstractExamManagerTest {
         verify(testCaseRepository, times(1)).findById(testCaseId);
         verify(testCaseRepository, times(1)).delete(testCase);
         verifyNoMoreInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 }

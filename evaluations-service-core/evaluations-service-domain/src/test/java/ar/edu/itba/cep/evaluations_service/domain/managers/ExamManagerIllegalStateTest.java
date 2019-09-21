@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -37,12 +38,14 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
      * @param examRepository     A mocked {@link ExamRepository} passed to super class.
      * @param exerciseRepository A mocked {@link ExerciseRepository} passed to super class.
      * @param testCaseRepository A mocked {@link TestCaseRepository} passed to super class.
+     * @param publisher          A mocked {@link ApplicationEventPublisher} passed to super class.
      */
     ExamManagerIllegalStateTest(
             @Mock(name = "examRepository") final ExamRepository examRepository,
             @Mock(name = "exerciseRepository") final ExerciseRepository exerciseRepository,
-            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository) {
-        super(examRepository, exerciseRepository, testCaseRepository);
+            @Mock(name = "testCaseRepository") final TestCaseRepository testCaseRepository,
+            @Mock(name = "publisher") final ApplicationEventPublisher publisher) {
+        super(examRepository, exerciseRepository, testCaseRepository, publisher);
     }
 
 
@@ -100,6 +103,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -129,6 +133,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verify(testCaseRepository, only()).getExercisePrivateTestCases(exercise);
+        verifyZeroInteractions(publisher);
     }
 
     /**
@@ -153,6 +158,7 @@ class ExamManagerIllegalStateTest extends AbstractExamManagerTest {
         verify(examRepository, only()).findById(examId);
         verify(exerciseRepository, only()).getExamExercises(exam);
         verifyZeroInteractions(testCaseRepository);
+        verifyZeroInteractions(publisher);
     }
 
     /**
