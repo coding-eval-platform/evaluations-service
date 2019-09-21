@@ -12,7 +12,10 @@ public class ExerciseSolutionDownloadDto {
      * The {@link ExerciseSolution}'s id.
      */
     private final long id;
-
+    /**
+     * The id of the {@link ar.edu.itba.cep.evaluations_service.models.Exercise} the solutions belongs to.
+     */
+    private final long exerciseId;
     /**
      * The answer to the exercise's question.
      */
@@ -26,6 +29,7 @@ public class ExerciseSolutionDownloadDto {
      */
     public ExerciseSolutionDownloadDto(final ExerciseSolution solution) {
         this.id = solution.getId();
+        this.exerciseId = solution.getExercise().getId();
         this.answer = solution.getAnswer();
     }
 
@@ -36,6 +40,14 @@ public class ExerciseSolutionDownloadDto {
     @JsonProperty(value = "id", access = JsonProperty.Access.READ_ONLY)
     public long getId() {
         return id;
+    }
+
+    /**
+     * @return The id of the {@link ar.edu.itba.cep.evaluations_service.models.Exercise} the solutions belongs to.
+     */
+    @JsonProperty(value = "exerciseId", access = JsonProperty.Access.READ_ONLY)
+    public long getExerciseId() {
+        return exerciseId;
     }
 
     /**
