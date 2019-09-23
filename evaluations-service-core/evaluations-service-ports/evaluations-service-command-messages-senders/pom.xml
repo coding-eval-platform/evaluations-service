@@ -26,6 +26,11 @@
         </dependency>
 
         <dependency>
+            <groupId>ar.edu.itba.cep</groupId>
+            <artifactId>commons-executor-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>

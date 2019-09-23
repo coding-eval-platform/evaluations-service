@@ -1,13 +1,12 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResponseProcessor;
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutionResponseReplyData;
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
+import ar.edu.itba.cep.evaluations_service.commands.executor_service.SolutionAndTestCaseIds;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
+import ar.edu.itba.cep.executor.api.ExecutionRequestSender;
+import ar.edu.itba.cep.executor.api.ExecutionResponseHandler;
 import ar.edu.itba.cep.executor.models.ExecutionRequest;
 import ar.edu.itba.cep.executor.models.ExecutionResponse;
-import com.bellotapps.webapps_commons.exceptions.NoSuchEntityException;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
@@ -18,12 +17,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @AllArgsConstructor
-public class ExecutionManager implements ExecutionResponseProcessor {
+public class ExecutionManager implements ExecutionResponseHandler<SolutionAndTestCaseIds> {
 
     /**
      * A proxy for the executor service.
      */
-    private final ExecutorServiceCommandMessageProxy executorService;
+    private final ExecutionRequestSender<SolutionAndTestCaseIds> executionRequester;
     /**
      * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
      */
@@ -47,13 +46,13 @@ public class ExecutionManager implements ExecutionResponseProcessor {
                 testCase.getTimeout(),
                 solution.getExercise().getLanguage()
         );
-        final var replyData = new ExecutionResponseReplyData(solution.getId(), testCase.getId());
-        executorService.requestExecution(request, replyData);
+        executionRequester.requestExecution(request, SolutionAndTestCaseIds.create(solution.getId(), testCase.getId()));
     }
 
     @Override
-    public void processResponse(final long solutionId, final long testCaseId, final ExecutionResponse executionResponse)
-            throws NoSuchEntityException, IllegalArgumentException {
-        publisher.publishEvent(ExecutionResponseArrivedEvent.create(solutionId, testCaseId, executionResponse));
+    public void processExecutionResponse(final ExecutionResponse response, final SolutionAndTestCaseIds idData) {
+        publisher.publishEvent(
+                ExecutionResponseArrivedEvent.create(idData.getSolutionId(), idData.getTestCaseId(), response)
+        );
     }
 }

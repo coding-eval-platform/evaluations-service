@@ -65,6 +65,12 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
 
+executor-service:
+  command-messages:
+    sender: "EvaluationsService"
+    request-execution:
+      reply-channel: "EvaluationsService-Command-Replies"
+
 
 ---
 # Configuration for Development Environment

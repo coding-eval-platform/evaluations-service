@@ -1,12 +1,13 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
-import ar.edu.itba.cep.evaluations_service.commands.executor_service.ExecutorServiceCommandMessageProxy;
+import ar.edu.itba.cep.evaluations_service.commands.executor_service.SolutionAndTestCaseIds;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
+import ar.edu.itba.cep.executor.api.ExecutionRequestSender;
 import ar.edu.itba.cep.executor.models.ExecutionResponse;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,9 @@ class ExecutionManagerTest {
     // ================================================================================================================
 
     /**
-     * An {@link ExecutorServiceCommandMessageProxy} mock that is injected to the {@link ExecutionManager}.
+     * An {@link ExecutionRequestSender} mock that is injected to the {@link ExecutionManager}.
      */
-    private final ExecutorServiceCommandMessageProxy executorService;
+    private final ExecutionRequestSender<SolutionAndTestCaseIds> executorService;
 
     /**
      * An {@link ApplicationEventPublisher} mock that is injected to the {@link ExecutionManager}.
@@ -57,12 +58,12 @@ class ExecutionManagerTest {
     /**
      * Constructor.
      *
-     * @param executorService An {@link ExecutorServiceCommandMessageProxy} mock
+     * @param executorService An {@link ExecutionRequestSender} mock
      *                        that is injected to the {@link ExecutionManager}.
      * @param publisher       An {@link ApplicationEventPublisher} that is injected to the {@link ExecutionManager}.
      */
     ExecutionManagerTest(
-            @Mock(name = "executorService") final ExecutorServiceCommandMessageProxy executorService,
+            @Mock(name = "executorService") final ExecutionRequestSender<SolutionAndTestCaseIds> executorService,
             @Mock(name = "publisher") final ApplicationEventPublisher publisher) {
         this.executorService = executorService;
         this.publisher = publisher;
@@ -120,7 +121,8 @@ class ExecutionManagerTest {
     }
 
     /**
-     * Tests the {@link ExecutionManager#processResponse(long, long, ExecutionResponse)} method.
+     * Tests the {@link ExecutionManager#processExecutionResponse(ExecutionResponse, SolutionAndTestCaseIds)}
+     * method.
      *
      * @param executionResponse The {@link ExecutionResponse} to be processed (together with the needed ids).
      */
@@ -129,7 +131,10 @@ class ExecutionManagerTest {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var testCaseId = TestHelper.validTestCaseId();
 
-        executionManager.processResponse(solutionId, testCaseId, executionResponse);
+        executionManager.processExecutionResponse(
+                executionResponse,
+                SolutionAndTestCaseIds.create(solutionId, testCaseId)
+        );
 
         verifyZeroInteractions(executorService);
         verify(publisher, only())

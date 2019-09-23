@@ -20,10 +20,9 @@
         <!-- Build -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versions -->
-        <com.bellotapps.the-messenger.version>0.0.1-RELEASE</com.bellotapps.the-messenger.version>
         <com.spotify.dockerfile-maven.version>1.4.10</com.spotify.dockerfile-maven.version>
         <org.springframework.cloud.version>Greenwich.SR2</org.springframework.cloud.version>
-        <ar.edu.itba.cep.commons.version>0.0.4-RELEASE</ar.edu.itba.cep.commons.version>
+        <ar.edu.itba.cep.commons.version>0.0.5-RELEASE</ar.edu.itba.cep.commons.version>
     </properties>
 
     <modules>
@@ -34,13 +33,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>com.bellotapps.the-messenger</groupId>
-                <artifactId>bill-of-materials</artifactId>
-                <version>${com.bellotapps.the-messenger.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
