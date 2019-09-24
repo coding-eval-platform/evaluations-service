@@ -42,7 +42,7 @@ public class ExecutionManager implements ExecutionResponseHandler<SolutionAndTes
                 solution.getAnswer(),
                 testCase.getProgramArguments(),
                 testCase.getStdin(),
-                null,
+                solution.getCompilerFlags(),
                 testCase.getTimeout(),
                 solution.getExercise().getLanguage()
         );

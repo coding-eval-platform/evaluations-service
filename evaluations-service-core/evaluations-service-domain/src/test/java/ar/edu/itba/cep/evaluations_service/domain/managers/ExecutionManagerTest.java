@@ -4,7 +4,6 @@ import ar.edu.itba.cep.evaluations_service.commands.executor_service.SolutionAnd
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionRequestedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExecutionResponseArrivedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
-import ar.edu.itba.cep.evaluations_service.models.Exercise;
 import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
 import ar.edu.itba.cep.evaluations_service.models.TestCase;
 import ar.edu.itba.cep.executor.api.ExecutionRequestSender;
@@ -12,6 +11,7 @@ import ar.edu.itba.cep.executor.models.ExecutionResponse;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -74,15 +74,13 @@ class ExecutionManagerTest {
      * Tests the {@link ExecutionManager#executionRequested(ExecutionRequestedEvent)} method.
      *
      * @param event    The {@link ExecutionRequestedEvent} being handled.
-     * @param exercise The {@link Exercise} to which the {@code solution} belongs to.
      * @param solution The {@link ExerciseSolution} to be send to execute.
      * @param testCase The {@link TestCase} used to run the solution.
      */
     @Test
     void testExecutionRequested(
             @Mock(name = "event") final ExecutionRequestedEvent event,
-            @Mock(name = "exercise") final Exercise exercise,
-            @Mock(name = "solution") final ExerciseSolution solution,
+            @Mock(name = "solution", answer = Answers.RETURNS_DEEP_STUBS) final ExerciseSolution solution,
             @Mock(name = "testCase") final TestCase testCase) {
 
         final var testCaseId = TestHelper.validTestCaseId();
@@ -90,6 +88,7 @@ class ExecutionManagerTest {
         final var code = Faker.instance().lorem().characters();
         final var programArguments = TestHelper.validTestCaseList();
         final var stdin = TestHelper.validTestCaseList();
+        final var compilerFlags = TestHelper.validCompilerFlags();
         final var language = TestHelper.validLanguage();
         final var timeout = TestHelper.validTestCaseTimeout();
 
@@ -99,8 +98,8 @@ class ExecutionManagerTest {
         when(testCase.getTimeout()).thenReturn(timeout);
         when(solution.getId()).thenReturn(solutionId);
         when(solution.getAnswer()).thenReturn(code);
-        when(solution.getExercise()).thenReturn(exercise);
-        when(exercise.getLanguage()).thenReturn(language);
+        when(solution.getExercise().getLanguage()).thenReturn(language);
+        when(solution.getCompilerFlags()).thenReturn(compilerFlags);
         when(event.getSolution()).thenReturn(solution);
         when(event.getTestCase()).thenReturn(testCase);
 
@@ -113,6 +112,7 @@ class ExecutionManagerTest {
                                 Objects.equals(code, req.getCode())
                                         && Objects.equals(programArguments, req.getProgramArguments())
                                         && Objects.equals(stdin, req.getStdin())
+                                        && Objects.equals(compilerFlags, req.getCompilerFlags())
                                         && Objects.equals(language, req.getLanguage())
                                         && Objects.equals(timeout, req.getTimeout())
                         ),
