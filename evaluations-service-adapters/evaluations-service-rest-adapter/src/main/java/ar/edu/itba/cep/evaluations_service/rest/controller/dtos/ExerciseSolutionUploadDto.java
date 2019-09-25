@@ -26,7 +26,8 @@ public class ExerciseSolutionUploadDto {
     /**
      * Constructor.
      *
-     * @param answer The answer for the exercise's question.
+     * @param answer        The answer for the exercise's question.
+     * @param compilerFlags The compiler flags for the solution.
      */
     @JsonCreator
     public ExerciseSolutionUploadDto(
