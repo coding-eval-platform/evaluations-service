@@ -1,15 +1,15 @@
 
 # Evaluations Service [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0) [![Build Status](https://img.shields.io/circleci/project/github/coding-eval-platform/evaluations-service/master.svg)](https://circleci.com/gh/coding-eval-platform/evaluations-service/tree/master) ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/coding-eval-platform/evaluations-service.svg)
 
-Service in charge of evaluations management
+Service in charge of evaluations management, including exams, exercises and test cases, to be used by teachers.
+This service also allows students to submit solutions for exams.
+Finally, it is also capable of retriving exam results and scoring exam solutions, to be used by teachers, allowing also to re-run solutions in case it is needed.
 
 ## Features
 
-- Create exams
-- Create exercises
-- Create exercises' test cases
-- Create exercises' answers
-- ... TODO: complete
+- Exam, Exercise and Test Cases management
+- Solutions Management
+- Results Management
 
 
 ## Getting started
