@@ -343,6 +343,7 @@ public class ExamManager implements ExamService {
     public Optional<TestCase> getTestCase(long testCaseId) {
         return testCaseRepository.findById(testCaseId).map(testCase -> {
             testCase.getProgramArguments().size(); // Initialize Lazy Collection
+            testCase.getStdin().size(); // Initialize Lazy Collection
             testCase.getExpectedOutputs().size(); // Initialize Lazy Collection
             return testCase;
         });
