@@ -3,6 +3,7 @@ package ar.edu.itba.cep.evaluations_service.rest.controller.endpoints;
 import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.ExamUploadDto;
 import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.NoOwnersExamDownloadDto;
 import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.WithOwnersExamDownloadDto;
+import ar.edu.itba.cep.evaluations_service.rest.controller.dtos.WithScoreExamDownloadDto;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import com.bellotapps.webapps_commons.config.JerseyController;
 import com.bellotapps.webapps_commons.data_transfer.jersey.annotations.PaginationParam;
@@ -75,6 +76,17 @@ public class ExamEndpoint {
         LOGGER.debug("Getting exam with id {}", examId);
         return examService.getExam(examId)
                 .map(WithOwnersExamDownloadDto::new)
+                .map(Response::ok)
+                .orElse(Response.status(Response.Status.NOT_FOUND).entity(""))
+                .build();
+    }
+
+    @GET
+    @Path(Routes.EXAM_INTERNAL)
+    public Response getExamByIdInternal(@PathParam("examId") final long examId) {
+        LOGGER.debug("Getting exam with id {}", examId);
+        return examService.getExamWithScore(examId)
+                .map(WithScoreExamDownloadDto::new)
                 .map(Response::ok)
                 .orElse(Response.status(Response.Status.NOT_FOUND).entity(""))
                 .build();

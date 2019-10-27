@@ -50,6 +50,15 @@ public interface ExamService {
     Optional<ExamWithOwners> getExam(final long examId);
 
     /**
+     * Finds the {@link Exam} with the given {@code examId}, wrapping the result in an {@link ExamWithScore} instance.
+     *
+     * @param examId The id of the {@link Exam} being requested.
+     * @return An {@link Optional} containing the requested {@link Exam} if it exists
+     * (wrapped in an {@link ExamWithScore} instance), or empty otherwise.
+     */
+    Optional<ExamWithScore> getExamWithScore(final long examId);
+
+    /**
      * Creates an {@link Exam} with the given values.
      *
      * @param description The {@link Exam}'s description.

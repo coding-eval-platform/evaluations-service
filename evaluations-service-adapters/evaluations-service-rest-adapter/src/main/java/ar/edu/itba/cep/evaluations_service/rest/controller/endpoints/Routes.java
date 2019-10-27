@@ -54,4 +54,7 @@ public class Routes {
     public static final String RETRY_SOLUTION_EXECUTION = "/solutions/{solutionId : \\d+}/retry";
 
     public static final String RETRY_SOLUTION_TEST_CASE_EXECUTION = "/solutions/{solutionId : \\d+}/retry/test-case/{testCaseId : \\d+}";
+
+
+    public static final String EXAM_INTERNAL = "/internal/exams/{examId : \\d+}";
 }

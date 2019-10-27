@@ -11,6 +11,7 @@ import ar.edu.itba.cep.evaluations_service.repositories.TestCaseRepository;
 import ar.edu.itba.cep.evaluations_service.security.authentication.AuthenticationHelper;
 import ar.edu.itba.cep.evaluations_service.services.ExamService;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithOwners;
+import ar.edu.itba.cep.evaluations_service.services.ExamWithScore;
 import ar.edu.itba.cep.evaluations_service.services.ExamWithoutOwners;
 import ar.edu.itba.cep.executor.models.Language;
 import com.bellotapps.webapps_commons.errors.IllegalEntityStateError;
@@ -85,6 +86,17 @@ public class ExamManager implements ExamService {
         return examRepository.findById(examId).map(exam -> {
             exam.getOwners().size(); // Initialize Lazy Collection
             return new ExamWithOwners(exam);
+        });
+    }
+
+    @Override
+    public Optional<ExamWithScore> getExamWithScore(final long examId) {
+        return examRepository.findById(examId).map(exam -> {
+            final var score = exerciseRepository.getExamExercises(exam)
+                    .stream()
+                    .mapToInt(Exercise::getAwardedScore)
+                    .sum();
+            return new ExamWithScore(exam, score);
         });
     }
 
