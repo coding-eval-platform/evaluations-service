@@ -19,13 +19,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ExecutionManager implements ExecutionResponseHandler<SolutionAndTestCaseIds> {
 
-    /**
-     * A proxy for the executor service.
-     */
     private final ExecutionRequestSender<SolutionAndTestCaseIds> executionRequester;
-    /**
-     * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
-     */
     private final ApplicationEventPublisher publisher;
 
 

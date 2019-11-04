@@ -6,22 +6,23 @@
 
     <parent>
         <groupId>ar.edu.itba.cep</groupId>
-        <artifactId>evaluations-service</artifactId>
+        <artifactId>evaluations-service-ports</artifactId>
         <version>0.4.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>evaluations-service-adapters</artifactId>
+    <artifactId>evaluations-service-external-cep-services</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <modules>
-        <module>evaluations-service-rest-adapter</module>
-        <module>evaluations-service-spring-data-adapter</module>
-        <module>evaluations-service-kafka-commands-senders</module>
-        <module>evaluations-service-external-cep-services-rest-adapter</module>
-    </modules>
+    <dependencies>
+        <!-- Third party libraries -->
+        <dependency>
+            <groupId>ar.edu.itba.cep</groupId>
+            <artifactId>commons-lti-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

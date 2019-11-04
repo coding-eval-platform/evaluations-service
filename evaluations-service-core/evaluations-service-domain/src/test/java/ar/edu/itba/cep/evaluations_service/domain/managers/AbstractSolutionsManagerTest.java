@@ -17,36 +17,11 @@ abstract class AbstractSolutionsManagerTest {
     // Mocks
     // ================================================================================================================
 
-    /**
-     * An {@link ExamRepository} that is injected to the {@link SolutionsManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
     /* package */ final ExamRepository examRepository;
-    /**
-     * An {@link ExerciseRepository} that is injected to the {@link SolutionsManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
     /* package */ final ExerciseRepository exerciseRepository;
-    /**
-     * An {@link ExamSolutionSubmissionRepository} that is injected to the {@link SolutionsManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
     /* package */ final ExamSolutionSubmissionRepository submissionRepository;
-    /**
-     * An {@link ExerciseSolutionRepository} that is injected to the {@link SolutionsManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
     /* package */ final ExerciseSolutionRepository solutionRepository;
-    /**
-     * An {@link ExerciseSolutionResultRepository} that is injected to the {@link SolutionsManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
     /* package */ final ExerciseSolutionResultRepository resultRepository;
-
-    /**
-     * An {@link ApplicationEventPublisher} that is injected to the {@link SolutionsManager}.
-     * This reference is saved in order to configure its behaviour in each test.
-     */
     /* package */ final ApplicationEventPublisher publisher;
 
 
@@ -67,8 +42,12 @@ abstract class AbstractSolutionsManagerTest {
     /**
      * Constructor.
      *
-     * @param examRepository     An {@link ExamRepository} that is injected to the {@link ExamManager}.
-     * @param exerciseRepository An {@link ExerciseRepository} that is injected to the {@link ExamManager}.
+     * @param examRepository       An {@link ExamRepository} to be injected to the {@link ExamManager}.
+     * @param exerciseRepository   An {@link ExerciseRepository} to be injected to the {@link ExamManager}.
+     * @param submissionRepository An {@link ExamSolutionSubmissionRepository} to be injected to the {@link ExamManager}.
+     * @param solutionRepository   An {@link ExerciseSolutionRepository} to be injected to the {@link ExamManager}.
+     * @param resultRepository     An {@link ExerciseSolutionResultRepository} to be injected to the {@link ExamManager}.
+     * @param publisher            An {@link ApplicationEventPublisher} to be injected to the {@link ExamManager}.
      */
     AbstractSolutionsManagerTest(
             final ExamRepository examRepository,

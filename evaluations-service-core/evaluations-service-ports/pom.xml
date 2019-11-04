@@ -22,5 +22,6 @@
         <module>evaluations-service-services</module>
         <module>evaluations-service-repositories</module>
         <module>evaluations-service-command-messages-senders</module>
+        <module>evaluations-service-external-cep-services</module>
     </modules>
 </project>
