@@ -1,6 +1,7 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.events.ExamScoredEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.TestHelper;
 import ar.edu.itba.cep.evaluations_service.models.*;
@@ -61,7 +62,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
      *                   (which is returned by {@link SolutionsManager#getSubmission(long)}).
      */
     @Test
-    void testSearchForExamThatExists(@Mock(name = "submission") final ExamSolutionSubmission submission) {
+    void testSearchForSubmissionThatExists(@Mock(name = "submission") final ExamSolutionSubmission submission) {
         final var submissionsId = TestHelper.validExerciseSolutionId();
         when(submission.getId()).thenReturn(submissionsId);
         when(submissionRepository.findById(submissionsId)).thenReturn(Optional.of(submission));
@@ -91,7 +92,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
      * @param securityContext A mocked {@link SecurityContext} to be retrieved from the {@link SecurityContextHolder}.
      */
     @Test
-    void testExamIsCreatedUsingValidArguments(
+    void testSubmissionIsCreatedUsingValidArguments(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise1") final Exercise exercise1,
             @Mock(name = "exercise1") final Exercise exercise2,
@@ -200,7 +201,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
      * @param result2b   A mocked {@link ExerciseSolutionResult} (represents a result of the {@code solution2}).
      */
     @Test
-    void testSubmissionIsNotScoredIfThereArePendingExecutions(
+    void testScoring(
             @Mock(name = "submission") final ExamSolutionSubmission submission,
             @Mock(name = "exercise1") final Exercise exercise1,
             @Mock(name = "solution1") final ExerciseSolution solution1,
@@ -259,7 +260,8 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         verify(resultRepository, atMost(1)).find(solution1);
         verify(resultRepository, atMost(1)).find(solution2);
         verifyNoMoreInteractions(resultRepository);
-        verifyZeroInteractions(publisher);
+        verify(publisher, only())
+                .publishEvent(argThat(eventContainsSubmissionAndScore(submission, exercise1AwardedScore)));
     }
 
 
@@ -301,7 +303,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
      *                 (which is returned by {@link SolutionsManager#getSolution(long)}).
      */
     @Test
-    void testSearchForExerciseThatExists(@Mock(name = "solution") final ExerciseSolution solution) {
+    void testSearchForExerciseSolutionThatExists(@Mock(name = "solution") final ExerciseSolution solution) {
         final var solutionId = TestHelper.validExerciseSolutionId();
         when(solution.getId()).thenReturn(solutionId);
         when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
@@ -328,7 +330,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
      * @param exercise A mocked {@link Exercise} (the one being modified).
      */
     @Test
-    void testModifyExerciseWithValidArgumentsForUpcomingExam(
+    void testModifyExerciseSolutionWithValidArgumentsForUpcomingExam(
             @Mock(name = "exam") final Exam exam,
             @Mock(name = "exercise") final Exercise exercise,
             @Mock(name = "submission") final ExamSolutionSubmission submission,
@@ -431,6 +433,19 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
      */
     private static ArgumentMatcher<ExamSolutionSubmittedEvent> eventContainsSubmission(
             final ExamSolutionSubmission submission) {
+        return event -> event.getSubmission().equals(submission);
+    }
+
+    /**
+     * Creates an {@link ArgumentMatcher} of {@link ExamScoredEvent} to check if the said event
+     * contains the given {@code submission} and {@code score}.
+     *
+     * @param submission The {@link ExamSolutionSubmission} to be checked.
+     * @param score      The score to be checked.
+     * @return The {@link ArgumentMatcher}.
+     */
+    private static ArgumentMatcher<ExamScoredEvent> eventContainsSubmissionAndScore(
+            final ExamSolutionSubmission submission, final int score) {
         return event -> event.getSubmission().equals(submission);
     }
 }

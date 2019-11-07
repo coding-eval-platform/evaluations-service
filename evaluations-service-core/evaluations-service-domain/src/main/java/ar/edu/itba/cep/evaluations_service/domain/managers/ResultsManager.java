@@ -43,22 +43,9 @@ import static ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult.
 @Transactional(readOnly = true)
 public class ResultsManager implements ResultsService {
 
-    /**
-     * The {@link ExerciseSolutionRepository}.
-     */
     private final ExerciseSolutionRepository exerciseSolutionRepository;
-    /**
-     * The {@link TestCaseRepository}.
-     */
     private final TestCaseRepository testCaseRepository;
-    /**
-     * The {@link ExerciseSolutionResultRepository}.
-     */
     private final ExerciseSolutionResultRepository exerciseSolutionResultRepository;
-
-    /**
-     * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
-     */
     private final ApplicationEventPublisher publisher;
 
 

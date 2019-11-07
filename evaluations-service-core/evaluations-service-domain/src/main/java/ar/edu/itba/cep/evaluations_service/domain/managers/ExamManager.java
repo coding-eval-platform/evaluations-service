@@ -42,22 +42,9 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class ExamManager implements ExamService {
 
-    /**
-     * Repository for {@link Exam}s.
-     */
     private final ExamRepository examRepository;
-    /**
-     * Repository for {@link Exercise}s.
-     */
     private final ExerciseRepository exerciseRepository;
-    /**
-     * Repository for {@link TestCase}s.
-     */
     private final TestCaseRepository testCaseRepository;
-
-    /**
-     * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
-     */
     private final ApplicationEventPublisher publisher;
 
 

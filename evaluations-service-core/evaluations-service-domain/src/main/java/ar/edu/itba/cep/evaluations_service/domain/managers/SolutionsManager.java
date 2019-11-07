@@ -1,10 +1,14 @@
 package ar.edu.itba.cep.evaluations_service.domain.managers;
 
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamFinishedEvent;
+import ar.edu.itba.cep.evaluations_service.domain.events.ExamScoredEvent;
 import ar.edu.itba.cep.evaluations_service.domain.events.ExamSolutionSubmittedEvent;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.DataLoadingHelper;
 import ar.edu.itba.cep.evaluations_service.domain.helpers.StateVerificationHelper;
-import ar.edu.itba.cep.evaluations_service.models.*;
+import ar.edu.itba.cep.evaluations_service.models.Exam;
+import ar.edu.itba.cep.evaluations_service.models.ExamSolutionSubmission;
+import ar.edu.itba.cep.evaluations_service.models.ExerciseSolution;
+import ar.edu.itba.cep.evaluations_service.models.ExerciseSolutionResult;
 import ar.edu.itba.cep.evaluations_service.repositories.*;
 import ar.edu.itba.cep.evaluations_service.security.authentication.AuthenticationHelper;
 import ar.edu.itba.cep.evaluations_service.services.SolutionService;
@@ -41,30 +45,11 @@ import static java.util.function.Predicate.not;
 @AllArgsConstructor
 public class SolutionsManager implements SolutionService {
 
-    /**
-     * Repository for {@link Exam}s.
-     */
     private final ExamRepository examRepository;
-    /**
-     * Repository for {@link Exercise}s.
-     */
     private final ExerciseRepository exerciseRepository;
-    /**
-     * Repository for {@link ExamSolutionSubmission}s.
-     */
     private final ExamSolutionSubmissionRepository submissionRepository;
-    /**
-     * Repository for {@link ExerciseSolution}s.
-     */
     private final ExerciseSolutionRepository solutionRepository;
-    /**
-     * Repository for {@link ExerciseSolutionResult}s.
-     */
     private final ExerciseSolutionResultRepository resultsRepository;
-
-    /**
-     * An {@link ApplicationEventPublisher} to publish relevant events to the rest of the application's components.
-     */
     private final ApplicationEventPublisher publisher;
 
 
@@ -164,6 +149,7 @@ public class SolutionsManager implements SolutionService {
                 .mapToInt(SolutionAndResultsContainer::getScore)
                 .sum();
         submission.score(totalScore);
+        publisher.publishEvent(ExamScoredEvent.create(submission));
         submissionRepository.save(submission);
     }
 

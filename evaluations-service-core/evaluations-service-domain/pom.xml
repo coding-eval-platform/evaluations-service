@@ -42,6 +42,11 @@
             <artifactId>evaluations-service-command-messages-senders</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>evaluations-service-external-cep-services</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
         <!-- Third party libraries-->
         <dependency>
