@@ -73,7 +73,7 @@ public class ExerciseSolutionEndpoint {
             @PathParam("solutionId") final long solutionId,
             @Valid @ConvertGroup(to = ExerciseSolutionUploadDto.Modify.class) final ExerciseSolutionUploadDto dto) {
         LOGGER.debug("Updating solution with id {}", solutionId);
-        solutionService.modifySolution(solutionId, dto.getAnswer(), dto.getCompilerFlags());
+        solutionService.modifySolution(solutionId, dto.getAnswer(), dto.getCompilerFlags(), dto.getMainFileName());
         return Response.noContent().build();
     }
 }

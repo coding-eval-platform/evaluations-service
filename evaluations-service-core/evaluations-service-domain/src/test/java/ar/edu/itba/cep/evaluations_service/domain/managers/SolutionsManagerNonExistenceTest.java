@@ -184,7 +184,8 @@ class SolutionsManagerNonExistenceTest extends AbstractSolutionsManagerTest {
                 () -> solutionsManager.modifySolution(
                         solutionId,
                         TestHelper.validExerciseSolutionAnswer(),
-                        TestHelper.validCompilerFlags()
+                        TestHelper.validCompilerFlags(),
+                        TestHelper.validMainFileName()
                 ),
                 "Trying to modify a solution that does not exist" +
                         " does not throw a NoSuchEntityException"

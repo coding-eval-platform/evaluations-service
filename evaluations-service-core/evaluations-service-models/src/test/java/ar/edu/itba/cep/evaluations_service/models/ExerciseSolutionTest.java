@@ -144,6 +144,68 @@ class ExerciseSolutionTest {
         verifyNoMoreInteractions(mockedExercise);
     }
 
+    /**
+     * Tests that setting a random {@link String} as compiler flags of an {@link ExerciseSolution} is allowed.
+     */
+    @Test
+    void testRandomCompilerFlagsAreSet() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        final var compilerFlags = Faker.instance().lorem().characters();
+        solution.setCompilerFlags(compilerFlags);
+        Assertions.assertEquals(
+                compilerFlags,
+                solution.getCompilerFlags(),
+                "The returned compiler flags are not the expected"
+        );
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that setting a random {@link String} as main file name of an {@link ExerciseSolution} is allowed.
+     */
+    @Test
+    void testRandomFileNameIsSet() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        final var mainFileName = Faker.instance().file().fileName();
+        solution.setMainFileName(mainFileName);
+        Assertions.assertEquals(
+                mainFileName,
+                solution.getMainFileName(),
+                "The returned main file name is not the expected"
+        );
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+    }
+
+    /**
+     * Tests that {@code null} can be used in all setters (as they are all optionals).
+     */
+    @Test
+    void testNullForOptionals() {
+        final var solutionTemplate = Faker.instance().lorem().characters();
+        when(mockedExercise.getExam()).thenReturn(mockedExam);
+        when(mockedSubmission.getExam()).thenReturn(mockedExam);
+        when(mockedExercise.getSolutionTemplate()).thenReturn(solutionTemplate);
+        final var solution = createExerciseSolution();
+        solution.setAnswer(null);
+        solution.setCompilerFlags(null);
+        solution.setMainFileName(null);
+        verify(mockedExercise, times(1)).getExam();
+        verify(mockedExercise, times(1)).getSolutionTemplate();
+        verifyNoMoreInteractions(mockedExercise);
+    }
+
 
     // ================================================================================================================
     // Constraint testing

@@ -21,6 +21,10 @@ public class ExerciseSolutionUploadDto {
      * The compiler flags for the solution.
      */
     private final String compilerFlags;
+    /**
+     * The name of the file in which the "main" will be placed (i.e the name of the file where the code will be copied).
+     */
+    private final String mainFileName;
 
 
     /**
@@ -28,13 +32,17 @@ public class ExerciseSolutionUploadDto {
      *
      * @param answer        The answer for the exercise's question.
      * @param compilerFlags The compiler flags for the solution.
+     * @param mainFileName  The name of the file in which the "main" will be placed
+     *                      (i.e the name of the file where the code will be copied).
      */
     @JsonCreator
     public ExerciseSolutionUploadDto(
             @JsonProperty(value = "answer", access = WRITE_ONLY) final String answer,
-            @JsonProperty(value = "compilerFlags", access = WRITE_ONLY) final String compilerFlags) {
+            @JsonProperty(value = "compilerFlags", access = WRITE_ONLY) final String compilerFlags,
+            @JsonProperty(value = "mainFileName", access = WRITE_ONLY) final String mainFileName) {
         this.answer = answer;
         this.compilerFlags = compilerFlags;
+        this.mainFileName = mainFileName;
     }
 
 

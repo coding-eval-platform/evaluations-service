@@ -339,6 +339,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         final var solutionId = TestHelper.validExerciseSolutionId();
         final var answer = TestHelper.validExerciseSolutionAnswer();
         final var compilerFlags = TestHelper.validExerciseSolutionAnswer();
+        final var mainFileName = TestHelper.validMainFileName();
         when(exercise.getExam()).thenReturn(exam);
         when(solution.getExercise()).thenReturn(exercise);
         when(solution.getSubmission()).thenReturn(submission);
@@ -346,10 +347,11 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         when(submission.getState()).thenReturn(UNPLACED);
         doNothing().when(solution).setAnswer(answer);
         doNothing().when(solution).setCompilerFlags(compilerFlags);
+        doNothing().when(solution).setMainFileName(mainFileName);
         when(solutionRepository.findById(solutionId)).thenReturn(Optional.of(solution));
         when(solutionRepository.save(solution)).thenReturn(solution);
         Assertions.assertDoesNotThrow(
-                () -> solutionsManager.modifySolution(solutionId, answer, compilerFlags),
+                () -> solutionsManager.modifySolution(solutionId, answer, compilerFlags, mainFileName),
                 "An unexpected exception was thrown"
         );
         verify(exam, only()).getState();
@@ -358,6 +360,7 @@ class SolutionsManagerHappyPathsTest extends AbstractSolutionsManagerTest {
         verify(solution, times(1)).getExercise();
         verify(solution, times(1)).setAnswer(answer);
         verify(solution, times(1)).setCompilerFlags(compilerFlags);
+        verify(solution, times(1)).setMainFileName(mainFileName);
         verifyNoMoreInteractions(solution);
         verifyZeroInteractions(examRepository);
         verifyZeroInteractions(exerciseRepository);

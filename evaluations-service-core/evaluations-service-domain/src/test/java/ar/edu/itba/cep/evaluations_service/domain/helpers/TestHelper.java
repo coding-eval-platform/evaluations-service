@@ -212,6 +212,13 @@ public final class TestHelper {
     }
 
     /**
+     * @return A valid main file name.
+     */
+    public static String validMainFileName() {
+        return new Random().nextBoolean() ? null : Faker.instance().file().fileName();
+    }
+
+    /**
      * @return A valid {@link ExamSolutionSubmission} id.
      */
     public static long validExamSolutionSubmissionId() {

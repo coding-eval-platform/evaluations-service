@@ -114,12 +114,14 @@ public interface SolutionService {
      * @param solutionId    The id of the {@link ExerciseSolution} to be modified.
      * @param answer        The new answer for the {@link ExerciseSolution}.
      * @param compilerFlags The compiler flags for the {@link ExerciseSolution}.
+     * @param mainFileName  The name of the file in which the "main" will be placed
+     *                      (i.e the name of the file where the code will be copied).
      * @throws NoSuchEntityException       If there is no {@link ExerciseSolution} with the given {@code solutionId}.
      * @throws IllegalEntityStateException If the {@link Exam} owning the {@link Exercise} of the solution
      *                                     is not in {@link Exam.State#IN_PROGRESS} state,
      *                                     or if the {@link ExamSolutionSubmission} to which the solution belongs to
      *                                     is already submitted.
      */
-    void modifySolution(final long solutionId, final String answer, final String compilerFlags)
+    void modifySolution(final long solutionId, final String answer, final String compilerFlags, final String mainFileName)
             throws NoSuchEntityException, IllegalEntityStateException;
 }

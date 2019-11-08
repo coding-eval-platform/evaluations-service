@@ -197,13 +197,14 @@ public class SolutionsManager implements SolutionService {
             "hasAuthority('STUDENT')" +
                     "   and @exerciseSolutionAuthorizationProvider.isOwner(#solutionId, principal)"
     )
-    public void modifySolution(final long solutionId, final String answer, final String compilerFlags)
+    public void modifySolution(final long solutionId, final String answer, final String compilerFlags, final String mainFileName)
             throws NoSuchEntityException, IllegalEntityStateException {
         final var solution = DataLoadingHelper.loadSolution(solutionRepository, solutionId);
         performExamInProgressStateVerification(solution.getExercise().getExam());
         performSolutionNotSubmittedVerification(solution.getSubmission());
         solution.setAnswer(answer);
-        solution.setCompilerFlags(compilerFlags); // TODO: fix
+        solution.setCompilerFlags(compilerFlags);
+        solution.setMainFileName(mainFileName);
         solutionRepository.save(solution);
     }
 

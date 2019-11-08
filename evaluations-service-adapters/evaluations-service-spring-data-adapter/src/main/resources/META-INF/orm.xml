@@ -146,10 +146,13 @@
                 <generated-value strategy="IDENTITY"/>
             </id>
             <basic name="answer">
-                <column name="answer" nullable="false" insertable="true" updatable="true"/>
+                <column name="answer" nullable="true" insertable="true" updatable="true"/>
             </basic>
             <basic name="compilerFlags">
-                <column name="compiler_flags" nullable="false" insertable="true" updatable="true"/>
+                <column name="compiler_flags" nullable="true" insertable="true" updatable="true"/>
+            </basic>
+            <basic name="mainFileName">
+                <column name="main_file_name" nullable="true" insertable="true" updatable="true"/>
             </basic>
             <many-to-one name="submission" fetch="LAZY" optional="false">
                 <join-column name="submission_id"

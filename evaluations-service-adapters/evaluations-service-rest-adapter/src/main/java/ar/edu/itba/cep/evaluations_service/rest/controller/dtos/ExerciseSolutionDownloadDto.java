@@ -24,6 +24,10 @@ public class ExerciseSolutionDownloadDto {
      * The compiler flags of the solution.
      */
     private final String compilerFlags;
+    /**
+     * The name of the file in which the "main" will be placed (i.e the name of the file where the code will be copied).
+     */
+    private final String mainFileName;
 
 
     /**
@@ -36,6 +40,7 @@ public class ExerciseSolutionDownloadDto {
         this.exerciseId = solution.getExercise().getId();
         this.answer = solution.getAnswer();
         this.compilerFlags = solution.getCompilerFlags();
+        this.mainFileName = solution.getMainFileName();
     }
 
 
@@ -69,5 +74,14 @@ public class ExerciseSolutionDownloadDto {
     @JsonProperty(value = "compilerFlags", access = JsonProperty.Access.READ_ONLY)
     public String getCompilerFlags() {
         return compilerFlags;
+    }
+
+    /**
+     * @return The name of the file in which the "main" will be placed
+     * (i.e the name of the file where the code will be copied).
+     */
+    @JsonProperty(value = "mainFileName", access = JsonProperty.Access.READ_ONLY)
+    public String getMainFileName() {
+        return mainFileName;
     }
 }

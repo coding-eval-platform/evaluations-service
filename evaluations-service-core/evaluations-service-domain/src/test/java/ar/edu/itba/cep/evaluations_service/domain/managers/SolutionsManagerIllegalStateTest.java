@@ -281,7 +281,8 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
                 () -> solutionsManager.modifySolution(
                         solutionId,
                         TestHelper.validExerciseSolutionAnswer(),
-                        TestHelper.validCompilerFlags()
+                        TestHelper.validCompilerFlags(),
+                        TestHelper.validMainFileName()
                 ),
                 "Modifying an already submitted solution is being allowed"
         );
@@ -385,7 +386,8 @@ class SolutionsManagerIllegalStateTest extends AbstractSolutionsManagerTest {
                 () -> solutionsManager.modifySolution(
                         solutionId,
                         TestHelper.validExerciseSolutionAnswer(),
-                        TestHelper.validCompilerFlags()
+                        TestHelper.validCompilerFlags(),
+                        TestHelper.validMainFileName()
                 ),
                 "Modifying a solution for an exam with " + state + " state is being allowed"
         );

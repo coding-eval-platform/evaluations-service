@@ -38,6 +38,7 @@ public class ExecutionManager implements ExecutionResponseHandler<SolutionAndTes
                 testCase.getStdin(),
                 solution.getCompilerFlags(),
                 testCase.getTimeout(),
+                solution.getMainFileName(),
                 solution.getExercise().getLanguage()
         );
         executionRequester.requestExecution(request, SolutionAndTestCaseIds.create(solution.getId(), testCase.getId()));
