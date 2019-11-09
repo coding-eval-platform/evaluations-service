@@ -493,36 +493,6 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
     /**
      * Performs an {@link ExecutionResponseArrivedEvent} received test,
      * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPLETED} result,
-     * with a zero exit code, but a non empty standard error output.
-     *
-     * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
-     * @param executionResponse An {@link ExecutionResponse} mock which is returned by the event.
-     */
-    @Test
-    void testProcessExecutionWithCompletedExecutionResultAndWithZeroExitCodeAndNonEmptyStderr(
-            @Mock(name = "event") final ExecutionResponseArrivedEvent event,
-            @Mock(name = "solutionResult", answer = RETURNS_DEEP_STUBS) final ExerciseSolutionResult solutionResult,
-            @Mock(name = "executionResponse") final ExecutionResponse executionResponse) {
-        testProcessExecution(
-                event,
-                solutionResult,
-                r -> {
-                },
-                executionResponse,
-                r -> {
-                    when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
-                    when(r.getExitCode()).thenReturn(0);
-                    when(r.getStderr()).thenReturn(TestHelper.validExerciseSolutionResultList());
-
-
-                },
-                ExerciseSolutionResult.Result.FAILED
-        );
-    }
-
-    /**
-     * Performs an {@link ExecutionResponseArrivedEvent} received test,
-     * in which the {@link ExecutionResponse} has a {@link ExecutionResponse.ExecutionResult#COMPLETED} result,
      * with a zero exit code, no standard error output and standard output not equal to the expected output.
      *
      * @param event             An {@link ExecutionResponseArrivedEvent} mock that is received by the manager.
@@ -544,7 +514,6 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                 r -> {
                     when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
                     when(r.getExitCode()).thenReturn(0);
-                    when(r.getStderr()).thenReturn(Collections.emptyList());
                     when(r.getStdout()).thenReturn(anotherOutputs);
 
                 },
@@ -574,7 +543,6 @@ class ResultsManagerHappyPathTest extends AbstractResultsManagerTest {
                 r -> {
                     when(r.getResult()).thenReturn(ExecutionResponse.ExecutionResult.COMPLETED);
                     when(r.getExitCode()).thenReturn(0);
-                    when(r.getStderr()).thenReturn(Collections.emptyList());
                     when(r.getStdout()).thenReturn(expectedOutputs);
 
                 },

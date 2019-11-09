@@ -355,8 +355,6 @@ public class ResultsManager implements ResultsService {
     private static boolean isApproved(
             final ExecutionResponse response,
             final Supplier<List<String>> expectedOutputsSupplier) {
-        return response.getExitCode() == 0
-                && response.getStderr().isEmpty()
-                && expectedOutputsSupplier.get().equals(response.getStdout());
+        return response.getExitCode() == 0 && expectedOutputsSupplier.get().equals(response.getStdout());
     }
 }
