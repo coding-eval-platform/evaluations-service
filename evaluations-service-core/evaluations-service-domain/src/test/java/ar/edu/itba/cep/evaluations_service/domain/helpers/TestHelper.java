@@ -8,11 +8,10 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -86,10 +85,12 @@ public final class TestHelper {
      * @return A valid {@link Exam} starting moment {@link LocalDateTime}.
      */
     public static LocalDateTime validExamStartingMoment() {
-        final var nextDayInstant = Instant.now().plus(Duration.ofDays(1));
-        return Faker.instance()
-                .date()
-                .future(DAYS_IN_A_YEAR, TimeUnit.DAYS, Date.from(nextDayInstant))
+
+        final var now = LocalDateTime.now();
+        return Faker.instance().date().between(
+                Date.from(now.minusYears(1).toInstant(ZoneOffset.UTC)),
+                Date.from(now.plusYears(1).toInstant(ZoneOffset.UTC))
+        )
                 .toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
@@ -305,21 +306,7 @@ public final class TestHelper {
      * @return An invalid {@link Exam} {@link LocalDateTime} starting moment.
      */
     public static LocalDateTime invalidExamStartingAt() {
-        final var possibleValues = new LinkedList<LocalDateTime>();
-        // Add a null value
-        possibleValues.add(null);
-        // Add a past date
-        final var previousDayInstant = Instant.now().minus(Duration.ofDays(1));
-        possibleValues.add(
-                Faker.instance()
-                        .date()
-                        .past(DAYS_IN_A_YEAR, TimeUnit.DAYS, Date.from(previousDayInstant))
-                        .toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime()
-        );
-        final var index = (int) Faker.instance().number().numberBetween(0L, possibleValues.size());
-        return possibleValues.get(index);
+        return null;
     }
 
     /**

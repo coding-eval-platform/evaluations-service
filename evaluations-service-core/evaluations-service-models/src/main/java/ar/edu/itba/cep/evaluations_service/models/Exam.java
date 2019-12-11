@@ -208,7 +208,6 @@ public class Exam {
      */
     private static void assertStartingAt(final LocalDateTime startingAt) throws IllegalArgumentException {
         Assert.notNull(startingAt, "The starting moment is missing");
-        Assert.isTrue(startingAt.isAfter(LocalDateTime.now()), "The starting moment must be in the future");
     }
 
     /**

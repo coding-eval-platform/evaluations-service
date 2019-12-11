@@ -6,11 +6,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Test class for {@link Exam}s
@@ -522,19 +521,6 @@ class ExamTest {
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
-     * when creating an {@link Exam} with a past staring at {@link LocalDateTime}.
-     */
-    @Test
-    void testPastStartingAtOnCreation() {
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> new Exam(validDescription(), pastStartingMoment(), validDuration(), validOwner()),
-                "Creating an exam with a past starting at local date time is being allowed."
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
      * when creating an {@link Exam} with a null duration.
      */
     @Test
@@ -693,20 +679,6 @@ class ExamTest {
 
     /**
      * Tests that an {@link IllegalArgumentException} is thrown
-     * when updating an {@link Exam} with a past starting at {@link LocalDateTime}.
-     */
-    @Test
-    void testPastStartingAtOnUpdate() {
-        final var exam = createExam();
-        Assertions.assertThrows(
-                IllegalArgumentException.class,
-                () -> exam.update(validDescription(), pastStartingMoment(), validDuration()),
-                "Updating an exam with a past starting at local date time is being allowed."
-        );
-    }
-
-    /**
-     * Tests that an {@link IllegalArgumentException} is thrown
      * when updating an {@link Exam} with a null duration.
      */
     @Test
@@ -844,13 +816,14 @@ class ExamTest {
     }
 
     /**
-     * @return A random {@link LocalDateTime} in the future (between tomorrow and next year).
+     * @return A random {@link LocalDateTime} that can be used as a starting moment for exams.
      */
     private static LocalDateTime validStartingMoment() {
-        final var nextDayInstant = Instant.now().plus(Duration.ofDays(1));
-        return Faker.instance()
-                .date()
-                .future(DAYS_IN_A_YEAR, TimeUnit.DAYS, Date.from(nextDayInstant))
+        final var now = LocalDateTime.now();
+        return Faker.instance().date().between(
+                Date.from(now.minusYears(1).toInstant(ZoneOffset.UTC)),
+                Date.from(now.plusYears(1).toInstant(ZoneOffset.UTC))
+        )
                 .toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime()
@@ -897,21 +870,6 @@ class ExamTest {
         return Faker.instance()
                 .lorem()
                 .fixedString(ValidationConstants.DESCRIPTION_MAX_LENGTH + 1);
-    }
-
-    /**
-     * @return A {@link LocalDateTime} that is invalid to be used in an {@link Exam} as a starting moment
-     * because it is a past moment.
-     */
-    private static LocalDateTime pastStartingMoment() {
-        final var previousDayInstant = Instant.now().minus(Duration.ofDays(1));
-        return Faker.instance()
-                .date()
-                .past(DAYS_IN_A_YEAR, TimeUnit.DAYS, Date.from(previousDayInstant))
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
-                ;
     }
 
     /**

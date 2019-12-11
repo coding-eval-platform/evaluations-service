@@ -57,12 +57,6 @@ public class ExamUploadDto {
                     Update.class,
             }
     )
-    @Future(message = "The starting moment must be in the future", payload = IllegalValue.class,
-            groups = {
-                    Create.class,
-                    Update.class,
-            }
-    )
     private final LocalDateTime startingAt;
 
     /**
